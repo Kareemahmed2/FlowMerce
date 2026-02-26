@@ -1,4 +1,4 @@
-package Registration.service;
+package UserManagement.service;
 
 public class MerchantService {
 }

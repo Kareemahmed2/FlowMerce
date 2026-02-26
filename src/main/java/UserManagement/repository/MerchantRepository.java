@@ -1,4 +1,4 @@
-package Registration.repository;
+package UserManagement.repository;
 
 public class MerchantRepository {
 }

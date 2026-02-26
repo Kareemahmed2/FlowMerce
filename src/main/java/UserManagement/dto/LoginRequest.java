@@ -1,4 +1,4 @@
-package Registration.dto;
+package UserManagement.dto;
 
 public class LoginRequest {
 }

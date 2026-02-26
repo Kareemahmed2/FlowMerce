@@ -1,4 +1,4 @@
-package Registration.controller;
+package UserManagement.controller;
 
 public class MerchantController {
 }
