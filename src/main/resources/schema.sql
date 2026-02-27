@@ -2,12 +2,12 @@
 -- USERS & ROLES
 -- =========================
 
-CREATE TABLE roles (
+CREATE TABLE IF NOT EXISTS roles  (
   role_id SERIAL PRIMARY KEY,
-  role_name VARCHAR(50) -- Admin, Merchant, Buyer, Guest
+  role_name VARCHAR(50) UNIQUE   -- Admin, Merchant, Buyer, Guest,,,add unique without it the ON CONFLICT (role_name) in data.sql will throw an error
 );
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   user_id SERIAL PRIMARY KEY,
   email VARCHAR(255) UNIQUE,
   password_hash VARCHAR(255),
@@ -19,7 +19,7 @@ CREATE TABLE users (
   FOREIGN KEY (role_id) REFERENCES roles(role_id)
 );
 
-CREATE TABLE user_profiles (
+CREATE TABLE IF NOT EXISTS user_profiles (
   profile_id SERIAL PRIMARY KEY,
   user_id INT,
   address TEXT,
@@ -31,7 +31,7 @@ CREATE TABLE user_profiles (
 -- MERCHANT & STORE
 -- =========================
 
-CREATE TABLE merchants (
+CREATE TABLE IF NOT EXISTS merchants (
   merchant_id SERIAL PRIMARY KEY,
   user_id INT,
   business_name VARCHAR(150),
@@ -39,7 +39,7 @@ CREATE TABLE merchants (
   FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
-CREATE TABLE stores (
+CREATE TABLE IF NOT EXISTS stores (
   store_id SERIAL PRIMARY KEY,
   merchant_id INT,
   store_name VARCHAR(150),
@@ -53,12 +53,12 @@ CREATE TABLE stores (
 -- PRODUCTS & CATALOG
 -- =========================
 
-CREATE TABLE categories (
+CREATE TABLE IF NOT EXISTS categories (
   category_id SERIAL PRIMARY KEY,
   name VARCHAR(100)
 );
 
-CREATE TABLE products (
+CREATE TABLE IF NOT EXISTS products (
   product_id SERIAL PRIMARY KEY,
   store_id INT,
   category_id INT,
@@ -71,14 +71,14 @@ CREATE TABLE products (
   FOREIGN KEY (category_id) REFERENCES categories(category_id)
 );
 
-CREATE TABLE product_media (
+CREATE TABLE IF NOT EXISTS product_media (
   media_id SERIAL PRIMARY KEY,
   product_id INT,
   media_url VARCHAR(255),
   FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
 
-CREATE TABLE reviews (
+CREATE TABLE IF NOT EXISTS reviews (
   review_id SERIAL PRIMARY KEY,
   product_id INT,
   user_id INT,
@@ -93,14 +93,14 @@ CREATE TABLE reviews (
 -- CART & CHECKOUT
 -- =========================
 
-CREATE TABLE carts (
+CREATE TABLE IF NOT EXISTS carts (
   cart_id SERIAL PRIMARY KEY,
   user_id INT,
   created_at TIMESTAMP WITHOUT TIME ZONE,
   FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
-CREATE TABLE cart_items (
+CREATE TABLE IF NOT EXISTS cart_items (
   cart_item_id SERIAL PRIMARY KEY,
   cart_id INT,
   product_id INT,
@@ -113,7 +113,7 @@ CREATE TABLE cart_items (
 -- ORDERS & PAYMENTS
 -- =========================
 
-CREATE TABLE orders (
+CREATE TABLE IF NOT EXISTS orders (
   order_id SERIAL PRIMARY KEY,
   user_id INT,
   store_id INT,
@@ -124,7 +124,7 @@ CREATE TABLE orders (
   FOREIGN KEY (store_id) REFERENCES stores(store_id)
 );
 
-CREATE TABLE order_items (
+CREATE TABLE IF NOT EXISTS order_items (
   order_item_id SERIAL PRIMARY KEY,
   order_id INT,
   product_id INT,
@@ -134,7 +134,7 @@ CREATE TABLE order_items (
   FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
 
-CREATE TABLE payments (
+CREATE TABLE IF NOT EXISTS payments (
   payment_id SERIAL PRIMARY KEY,
   order_id INT,
   payment_method VARCHAR(50), -- Stripe, Mada, STC Pay
@@ -143,7 +143,7 @@ CREATE TABLE payments (
   FOREIGN KEY (order_id) REFERENCES orders(order_id)
 );
 
-CREATE TABLE invoices (
+CREATE TABLE IF NOT EXISTS invoices (
   invoice_id SERIAL PRIMARY KEY,
   order_id INT,
   issued_at TIMESTAMP WITHOUT TIME ZONE,
@@ -154,12 +154,12 @@ CREATE TABLE invoices (
 -- DELIVERY SERVICE PROVIDER
 -- =========================
 
-CREATE TABLE delivery_providers (
+CREATE TABLE IF NOT EXISTS delivery_providers (
   dsp_id SERIAL PRIMARY KEY,
   company_name VARCHAR(150)
 );
 
-CREATE TABLE deliveries (
+CREATE TABLE IF NOT EXISTS deliveries (
   delivery_id SERIAL PRIMARY KEY,
   order_id INT,
   dsp_id INT,
@@ -172,7 +172,7 @@ CREATE TABLE deliveries (
 -- AI ASSISTANT
 -- =========================
 
-CREATE TABLE ai_suggestions (
+CREATE TABLE IF NOT EXISTS ai_suggestions (
   suggestion_id SERIAL PRIMARY KEY,
   store_id INT,
   suggestion_text TEXT,
@@ -185,7 +185,7 @@ CREATE TABLE ai_suggestions (
 -- NOTIFICATIONS
 -- =========================
 
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
   notification_id SERIAL PRIMARY KEY,
   user_id INT,
   message TEXT,
@@ -198,7 +198,7 @@ CREATE TABLE notifications (
 -- ANALYTICS & REPORTS
 -- =========================
 
-CREATE TABLE reports (
+CREATE TABLE IF NOT EXISTS reports (
   report_id SERIAL PRIMARY KEY,
   store_id INT,
   report_type VARCHAR(100),
