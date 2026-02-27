@@ -15,8 +15,29 @@ CREATE TABLE IF NOT EXISTS users (
   phone VARCHAR(20),
   is_mfa_enabled BOOLEAN,
   created_at TIMESTAMP WITHOUT TIME ZONE,
-  role_id INT,
-  FOREIGN KEY (role_id) REFERENCES roles(role_id)
+  role VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+  session_id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL,
+  token VARCHAR(512) NOT NULL,
+  is_revoked BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITHOUT TIME ZONE,
+  expires_at TIMESTAMP WITHOUT TIME ZONE,
+  FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE IF NOT EXISTS admins (
+  admin_id SERIAL PRIMARY KEY,
+  user_id INT UNIQUE NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE IF NOT EXISTS customers (
+  customer_id SERIAL PRIMARY KEY,
+  user_id INT UNIQUE NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
 CREATE TABLE IF NOT EXISTS user_profiles (
