@@ -23,8 +23,7 @@ public class MerchantController {
     public ResponseEntity<MerchantDTOs.MerchantResponse> createProfile(
             Principal principal,
             @Valid @RequestBody MerchantDTOs.MerchantRequest request) {
-        return ResponseEntity.ok(
-                merchantService.createMerchantProfile(principal.getName(), request));
+        return ResponseEntity.ok(merchantService.createMerchantProfile(principal.getName(), request));
     }
 
     // GET /api/merchants/me
@@ -35,8 +34,9 @@ public class MerchantController {
 
     // DELETE /api/merchants/me
     @DeleteMapping("/me")
-    public ResponseEntity<String> deleteMyAccount(Principal principal) {
-        return ResponseEntity.ok(merchantService.deleteMerchantAccount(principal.getName()));
+    public ResponseEntity<Void> deleteMyAccount(Principal principal) {
+        merchantService.deleteMerchantAccount(principal.getName());
+        return ResponseEntity.noContent().build();
     }
 
     // ── ADMIN ENDPOINTS ──────────────────────────
@@ -59,7 +59,8 @@ public class MerchantController {
     // DELETE /api/admin/merchants/{merchantId}
     @DeleteMapping("/api/admin/merchants/{merchantId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> deleteMerchant(@PathVariable Integer merchantId) {
-        return ResponseEntity.ok(merchantService.deleteMerchantById(merchantId));
+    public ResponseEntity<Void> deleteMerchant(@PathVariable Integer merchantId) {
+        merchantService.deleteMerchantById(merchantId);
+        return ResponseEntity.noContent().build();
     }
 }

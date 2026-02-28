@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Objects;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -38,6 +40,10 @@ public class AuthController {
     // POST /api/auth/logout  (requires Bearer token in header)
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader) {
+        Objects.requireNonNull(authHeader, "Authorization header is missing");
+        if (!authHeader.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Invalid token format");
+        }
         String token = authHeader.substring(7); // strip "Bearer "
         return ResponseEntity.ok(authService.logout(token));
     }

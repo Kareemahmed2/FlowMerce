@@ -1,5 +1,6 @@
 package UserManagement.repository;
 
+import UserManagement.entity.Role;
 import UserManagement.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -17,5 +18,5 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByEmail(String email);
 
     // Used by admin to list users by role
-    List<User> findByRole_RoleName(String roleName);
+    List<User> findByRole(Role role);
 }

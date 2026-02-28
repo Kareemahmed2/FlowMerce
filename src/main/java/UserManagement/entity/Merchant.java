@@ -24,5 +24,6 @@ public class Merchant {
     private String businessName;
 
     @Column(name = "is_verified")
+    @Builder.Default
     private Boolean isVerified = false;
 }

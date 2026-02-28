@@ -24,9 +24,11 @@ public class Session {
 
     // Stores the JWT token or a unique token ID (jti claim)
     @Column(name = "token", nullable = false, length = 512)
+
     private String token;
 
     @Column(name = "is_revoked")
+    @Builder.Default
     private Boolean isRevoked = false;
 
     @Column(name = "created_at", updatable = false)
