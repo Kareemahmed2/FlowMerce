@@ -1,6 +1,7 @@
 package UserManagement.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,8 +15,17 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j  // Lombok logging
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    //handling for AuthenticationException
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(
+            AccessDeniedException ex, HttpServletRequest request) {
+        return build(HttpStatus.FORBIDDEN, "Forbidden", ex.getMessage(), request);
+    }
 
     // ─────────────────────────────────────────────
     // 404 - Not Found
@@ -79,9 +89,11 @@ public class GlobalExceptionHandler {
     // ─────────────────────────────────────────────
     // 500 - Any unexpected exception
     // ─────────────────────────────────────────────
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(
             Exception ex, HttpServletRequest request) {
+        log.error("Unexpected error", ex);  // Log stack trace
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",
                 "An unexpected error occurred. Please try again later.", request);
     }
