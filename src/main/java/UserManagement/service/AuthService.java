@@ -45,7 +45,7 @@ public class AuthService {
         Role role = Role.BUYER;
         if (request.getRole() != null) {
             try {
-                role = Role.valueOf(request.getRole().toUpperCase());
+                String roleUpper = role.name().toUpperCase();
             } catch (IllegalArgumentException e) {
                 throw new BadRequestException("Invalid role: " + request.getRole()
                         + ". Valid values are: ADMIN, MERCHANT, BUYER, GUEST");
@@ -122,13 +122,25 @@ public class AuthService {
 
     @Transactional
     public String resetPassword(PasswordDTOs.ResetPasswordRequest request) {
+
         String email = passwordResetTokens.get(request.getToken());
+
         if (email == null) {
             throw new BadRequestException("Invalid or expired password reset token.");
         }
 
+        //Check password match
+        if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
+            throw new BadRequestException("New password and confirm password do not match");
+        }
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // Prevent using same old password
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("New password must be different from old password");
+        }
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);

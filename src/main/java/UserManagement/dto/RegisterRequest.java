@@ -3,6 +3,7 @@ package UserManagement.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import UserManagement.entity.Role;  // Import your enum
 import lombok.Data;
 
 @Data
@@ -22,5 +23,5 @@ public class RegisterRequest {
     private String phone;
 
     // Optional: if not provided, defaults to BUYER
-    private String role;
+    private Role role;  // Changed to enum for type-safety
 }

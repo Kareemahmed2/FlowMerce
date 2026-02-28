@@ -4,6 +4,7 @@ import UserManagement.dto.ChangePasswordRequest;
 import UserManagement.dto.UpdateProfileRequest;
 import UserManagement.dto.UserResponse;
 import UserManagement.entity.User;
+import UserManagement.exception.BadRequestException;
 import UserManagement.exception.ResourceNotFoundException;
 import UserManagement.exception.UnauthorizedException;
 import UserManagement.repository.SessionRepository;
@@ -39,13 +40,30 @@ public class UserService {
 
     @Transactional
     public String changePassword(String email, ChangePasswordRequest request) {
+
         User user = findByEmailOrThrow(email);
+
+        //Check current password
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
             throw new UnauthorizedException("Current password is incorrect");
         }
+
+        //Check new password matches confirm password
+        if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
+            throw new BadRequestException("New password and confirm password do not match");
+        }
+
+        //Prevent using same old password
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPasswordHash())) {
+            throw new BadRequestException("New password must be different from current password");
+        }
+
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+
+        // revoke all sessions after password change
         sessionRepository.revokeAllByUserId(user.getUserId());
+
         return "Password changed successfully. Please log in again.";
     }
 
