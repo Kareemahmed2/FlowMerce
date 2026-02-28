@@ -7,6 +7,10 @@ import UserManagement.dto.RegisterRequest;
 import UserManagement.entity.Role;
 import UserManagement.entity.Session;
 import UserManagement.entity.User;
+import UserManagement.exception.BadRequestException;
+import UserManagement.exception.ConflictException;
+import UserManagement.exception.UnauthorizedException;
+import UserManagement.exception.ResourceNotFoundException;
 import UserManagement.repository.SessionRepository;
 import UserManagement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,25 +33,22 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
 
-    // Temporary in-memory stores for tokens (replace with DB columns in production)
-    private final Map<String, String> activationTokens = new HashMap<>();   // token -> email
-    private final Map<String, String> passwordResetTokens = new HashMap<>(); // token -> email
+    private final Map<String, String> activationTokens = new HashMap<>();
+    private final Map<String, String> passwordResetTokens = new HashMap<>();
 
-    // ─────────────────────────────────────────────
-    // REGISTER
-    // ─────────────────────────────────────────────
     @Transactional
     public String register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already in use");
+            throw new ConflictException("Email is already registered: " + request.getEmail());
         }
 
-        Role role = Role.BUYER; // default role
+        Role role = Role.BUYER;
         if (request.getRole() != null) {
             try {
                 role = Role.valueOf(request.getRole().toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Invalid role: " + request.getRole());
+                throw new BadRequestException("Invalid role: " + request.getRole()
+                        + ". Valid values are: ADMIN, MERCHANT, BUYER, GUEST");
             }
         }
 
@@ -59,11 +60,8 @@ public class AuthService {
                 .role(role)
                 .build();
 
-        // Save as inactive — activated via email link
-        // We use a simple flag: store isActive in the token map until activated
         userRepository.save(user);
 
-        // Generate activation token and send email
         String activationToken = UUID.randomUUID().toString();
         activationTokens.put(activationToken, user.getEmail());
         emailService.sendActivationEmail(user.getEmail(), activationToken);
@@ -71,30 +69,23 @@ public class AuthService {
         return "Registration successful. Please check your email to activate your account.";
     }
 
-    // ─────────────────────────────────────────────
-    // ACTIVATE ACCOUNT
-    // ─────────────────────────────────────────────
     @Transactional
     public String activateAccount(String token) {
         String email = activationTokens.get(token);
         if (email == null) {
-            throw new RuntimeException("Invalid or expired activation token");
+            throw new BadRequestException("Invalid or expired activation token.");
         }
         activationTokens.remove(token);
-        // Account is already saved — activation just confirms the email is valid
         return "Account activated successfully. You can now log in.";
     }
 
-    // ─────────────────────────────────────────────
-    // LOGIN
-    // ─────────────────────────────────────────────
     @Transactional
     public String login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("Invalid email or password");
+            throw new UnauthorizedException("Invalid email or password");
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
@@ -111,20 +102,16 @@ public class AuthService {
         return token;
     }
 
-    // ─────────────────────────────────────────────
-    // LOGOUT
-    // ─────────────────────────────────────────────
     @Transactional
     public String logout(String token) {
+        if (!sessionRepository.existsByTokenAndIsRevokedFalse(token)) {
+            throw new BadRequestException("Token is already revoked or does not exist.");
+        }
         sessionRepository.revokeByToken(token);
-        return "Logged out successfully";
+        return "Logged out successfully.";
     }
 
-    // ─────────────────────────────────────────────
-    // FORGOT PASSWORD
-    // ─────────────────────────────────────────────
     public String forgotPassword(String email) {
-        // Always return the same message to prevent email enumeration attacks
         userRepository.findByEmail(email).ifPresent(user -> {
             String resetToken = UUID.randomUUID().toString();
             passwordResetTokens.put(resetToken, email);
@@ -133,23 +120,19 @@ public class AuthService {
         return "If this email is registered, a password reset link has been sent.";
     }
 
-    // ─────────────────────────────────────────────
-    // RESET PASSWORD
-    // ─────────────────────────────────────────────
     @Transactional
     public String resetPassword(PasswordDTOs.ResetPasswordRequest request) {
         String email = passwordResetTokens.get(request.getToken());
         if (email == null) {
-            throw new RuntimeException("Invalid or expired reset token");
+            throw new BadRequestException("Invalid or expired password reset token.");
         }
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
 
-        // Revoke all sessions after password reset for security
         sessionRepository.revokeAllByUserId(user.getUserId());
         passwordResetTokens.remove(request.getToken());
 

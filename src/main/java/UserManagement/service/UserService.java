@@ -4,6 +4,8 @@ import UserManagement.dto.ChangePasswordRequest;
 import UserManagement.dto.UpdateProfileRequest;
 import UserManagement.dto.UserResponse;
 import UserManagement.entity.User;
+import UserManagement.exception.ResourceNotFoundException;
+import UserManagement.exception.UnauthorizedException;
 import UserManagement.repository.SessionRepository;
 import UserManagement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,51 +24,31 @@ public class UserService {
     private final SessionRepository sessionRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // ─────────────────────────────────────────────
-    // GET MY PROFILE
-    // ─────────────────────────────────────────────
     public UserResponse getMyProfile(String email) {
-        User user = findByEmailOrThrow(email);
-        return toResponse(user);
+        return toResponse(findByEmailOrThrow(email));
     }
 
-    // ─────────────────────────────────────────────
-    // UPDATE MY PROFILE
-    // ─────────────────────────────────────────────
     @Transactional
     public UserResponse updateProfile(String email, UpdateProfileRequest request) {
         User user = findByEmailOrThrow(email);
         user.setFullName(request.getFullName());
-        if (request.getPhone() != null) {
-            user.setPhone(request.getPhone());
-        }
+        if (request.getPhone() != null) user.setPhone(request.getPhone());
         userRepository.save(user);
         return toResponse(user);
     }
 
-    // ─────────────────────────────────────────────
-    // CHANGE PASSWORD
-    // ─────────────────────────────────────────────
     @Transactional
     public String changePassword(String email, ChangePasswordRequest request) {
         User user = findByEmailOrThrow(email);
-
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("Current password is incorrect");
+            throw new UnauthorizedException("Current password is incorrect");
         }
-
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
-
-        // Revoke all sessions so the user must log in again
         sessionRepository.revokeAllByUserId(user.getUserId());
-
         return "Password changed successfully. Please log in again.";
     }
 
-    // ─────────────────────────────────────────────
-    // DELETE MY ACCOUNT
-    // ─────────────────────────────────────────────
     @Transactional
     public String deleteMyAccount(String email) {
         User user = findByEmailOrThrow(email);
@@ -75,34 +57,22 @@ public class UserService {
         return "Account deleted successfully.";
     }
 
-    // ─────────────────────────────────────────────
-    // ADMIN: LIST ALL USERS
-    // ─────────────────────────────────────────────
     public List<UserResponse> getAllUsers() {
-        return userRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return userRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    // ─────────────────────────────────────────────
-    // ADMIN: DELETE ANY USER
-    // ─────────────────────────────────────────────
     @Transactional
     public String deleteUserById(Integer userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
         sessionRepository.revokeAllByUserId(userId);
         userRepository.delete(user);
         return "User deleted successfully.";
     }
 
-    // ─────────────────────────────────────────────
-    // HELPER METHODS
-    // ─────────────────────────────────────────────
     private User findByEmailOrThrow(String email) {
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     }
 
     public UserResponse toResponse(User user) {
