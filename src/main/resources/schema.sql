@@ -61,14 +61,28 @@ CREATE TABLE IF NOT EXISTS merchants (
 );
 
 CREATE TABLE IF NOT EXISTS stores (
-  store_id SERIAL PRIMARY KEY,
-  merchant_id INT,
-  store_name VARCHAR(150),
-  theme VARCHAR(100),
-  status VARCHAR(50), -- Draft, Published
-  created_at TIMESTAMP WITHOUT TIME ZONE,
+  store_id    SERIAL PRIMARY KEY,
+  merchant_id INT NOT NULL,
+  store_name  VARCHAR(150) NOT NULL,
+  store_url   VARCHAR(255) UNIQUE,
+  description TEXT,
+  logo        VARCHAR(255),
+  status      VARCHAR(50) DEFAULT 'DRAFT',
+  created_at  TIMESTAMP WITHOUT TIME ZONE,
   FOREIGN KEY (merchant_id) REFERENCES merchants(merchant_id)
 );
+
+CREATE TABLE IF NOT EXISTS store_settings (
+  settings_id       SERIAL PRIMARY KEY,
+  store_id          INT NOT NULL UNIQUE,
+  currency          VARCHAR(10)  DEFAULT 'USD',
+  timezone          VARCHAR(100) DEFAULT 'UTC',
+  language          VARCHAR(20)  DEFAULT 'en',
+  tax_settings      TEXT,
+  shipping_settings TEXT,
+  FOREIGN KEY (store_id) REFERENCES stores(store_id)
+);
+
 
 -- =========================
 -- PRODUCTS & CATALOG
