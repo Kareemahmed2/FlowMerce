@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 @Service
 @RequiredArgsConstructor
 public class StoreService {
@@ -42,7 +43,7 @@ public class StoreService {
                 .storeUrl(request.getStoreUrl())
                 .description(request.getDescription())
                 .logo(request.getLogo())
-                .status("DRAFT")
+                .status(Store.StoreStatus.DRAFT)
                 .build();
 
         storeRepository.save(store);
@@ -55,6 +56,7 @@ public class StoreService {
                 .language("en")
                 .build();
         settingsRepository.save(settings);
+        store.setSettings(settings);
 
         return toResponse(store);
     }
@@ -84,7 +86,7 @@ public class StoreService {
     @Transactional
     public StoreDTOs.StoreResponse publishStore(String email, Integer storeId) {
         Store store = getStoreAndVerifyOwner(email, storeId);
-        store.setStatus("PUBLISHED");
+        store.setStatus(Store.StoreStatus.PUBLISHED);
         storeRepository.save(store);
         return toResponse(store);
     }
@@ -92,7 +94,7 @@ public class StoreService {
     @Transactional
     public StoreDTOs.StoreResponse deactivateStore(String email, Integer storeId) {
         Store store = getStoreAndVerifyOwner(email, storeId);
-        store.setStatus("DEACTIVATED");
+        store.setStatus(Store.StoreStatus.DEACTIVATED);
         storeRepository.save(store);
         return toResponse(store);
     }

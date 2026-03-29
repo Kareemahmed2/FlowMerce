@@ -1,5 +1,6 @@
 package com.example.flowmerceproject.StoreMangement.dto;
 
+import com.example.flowmerceproject.StoreMangement.entity.Store;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
@@ -42,7 +43,7 @@ public class StoreDTOs {
         private String storeUrl;
         private String description;
         private String logo;
-        private String status;
+        private Store.StoreStatus status;
         private LocalDateTime createdAt;
     }
 }
