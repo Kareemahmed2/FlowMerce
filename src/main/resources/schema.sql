@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
   phone VARCHAR(20),
   is_mfa_enabled BOOLEAN,
   created_at TIMESTAMP WITHOUT TIME ZONE,
-  role VARCHAR(50) NOT NULL
+  FOREIGN KEY (role_id) REFERENCES roles(role_id)
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
