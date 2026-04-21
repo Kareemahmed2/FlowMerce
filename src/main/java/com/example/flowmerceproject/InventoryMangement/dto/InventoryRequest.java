@@ -1,6 +1,5 @@
-package com.example.flowmerceproject.Inventory.dto;
+package com.example.flowmerceproject.InventoryMangement.dto;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 

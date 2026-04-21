@@ -1,4 +1,4 @@
-package com.example.flowmerceproject.Inventory.entity;
+package com.example.flowmerceproject.InventoryMangement.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

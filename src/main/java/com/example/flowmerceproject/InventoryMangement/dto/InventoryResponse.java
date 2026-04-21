@@ -1,4 +1,4 @@
-package com.example.flowmerceproject.Inventory.dto;
+package com.example.flowmerceproject.InventoryMangement.dto;
 
 import lombok.*;
 

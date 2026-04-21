@@ -1,4 +1,4 @@
-package com.example.flowmerceproject.Inventory.service;
+package com.example.flowmerceproject.InventoryMangement.service;
 
 public interface InventoryService {
 

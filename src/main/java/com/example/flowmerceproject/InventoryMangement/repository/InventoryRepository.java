@@ -1,6 +1,6 @@
-package com.example.flowmerceproject.Inventory.repository;
+package com.example.flowmerceproject.InventoryMangement.repository;
 
-import com.example.flowmerceproject.Inventory.entity.Inventory;
+import com.example.flowmerceproject.InventoryMangement.entity.Inventory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

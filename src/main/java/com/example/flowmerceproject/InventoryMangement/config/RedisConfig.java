@@ -1,4 +1,4 @@
-package com.example.flowmerceproject.Inventory.config;
+package com.example.flowmerceproject.InventoryMangement.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

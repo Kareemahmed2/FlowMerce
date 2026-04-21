@@ -1,7 +1,7 @@
-package com.example.flowmerceproject.Inventory.service;
+package com.example.flowmerceproject.InventoryMangement.service;
 
-import com.example.flowmerceproject.Inventory.entity.Inventory;
-import com.example.flowmerceproject.Inventory.repository.InventoryRepository;
+import com.example.flowmerceproject.InventoryMangement.entity.Inventory;
+import com.example.flowmerceproject.InventoryMangement.repository.InventoryRepository;
 import com.example.flowmerceproject.UserManagement.exception.BadRequestException;
 import com.example.flowmerceproject.UserManagement.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;

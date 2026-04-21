@@ -1,8 +1,8 @@
-package com.example.flowmerceproject.Inventory.controller;
+package com.example.flowmerceproject.InventoryMangement.controller;
 
-import com.example.flowmerceproject.Inventory.dto.InventoryRequest;
-import com.example.flowmerceproject.Inventory.dto.InventoryResponse;
-import com.example.flowmerceproject.Inventory.service.InventoryService;
+import com.example.flowmerceproject.InventoryMangement.dto.InventoryRequest;
+import com.example.flowmerceproject.InventoryMangement.dto.InventoryResponse;
+import com.example.flowmerceproject.InventoryMangement.service.InventoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
