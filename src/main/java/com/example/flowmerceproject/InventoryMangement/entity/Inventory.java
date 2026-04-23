@@ -23,8 +23,14 @@ public class Inventory {
     private Integer quantity;
 
     @Column(nullable = false)
-    private Integer reservedQuantity;
+    @Builder.Default
+    private Integer reservedQuantity = 0;
 
     @Column(nullable = false)
-    private Integer lowStockThreshold;
+    @Builder.Default
+    private Integer lowStockThreshold = 10;
+
+    // OptimisticLocking to prevent race conditions, concurrent updates
+    @Version
+    private Integer version;
 }
