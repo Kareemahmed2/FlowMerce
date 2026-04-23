@@ -14,4 +14,7 @@ public class InventoryRequest {
 
     @NotNull(message = "Quantity is required")
     private Integer quantity;
+
+    // "NORMAL", "RESERVED", "FLASH" — defaults to NORMAL
+    private String strategyType = "NORMAL";
 }
