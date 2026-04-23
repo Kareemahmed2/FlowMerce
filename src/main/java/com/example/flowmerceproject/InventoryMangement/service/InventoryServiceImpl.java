@@ -1,11 +1,16 @@
 package com.example.flowmerceproject.InventoryMangement.service;
 
 import com.example.flowmerceproject.InventoryMangement.entity.Inventory;
+import com.example.flowmerceproject.InventoryMangement.event.StockChangedEvent;
 import com.example.flowmerceproject.InventoryMangement.repository.InventoryRepository;
+import com.example.flowmerceproject.InventoryMangement.strategy.InventoryStrategy;
+import com.example.flowmerceproject.InventoryMangement.strategy.InventoryStrategyFactory;
 import com.example.flowmerceproject.UserManagement.exception.BadRequestException;
 import com.example.flowmerceproject.UserManagement.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,124 +22,153 @@ public class InventoryServiceImpl implements InventoryService {
 
     private final InventoryRepository inventoryRepository;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final InventoryStrategyFactory strategyFactory;
+    private final ApplicationEventPublisher eventPublisher;
 
     private static final String STOCK_KEY = "product:%d:stock";
 
-    // build Redis key
     private String key(Long productId) {
         return String.format(STOCK_KEY, productId);
     }
 
-    private Inventory getInventoryOrThrow(Long productId) {
+    private Inventory getOrThrow(Long productId) {
         return inventoryRepository.findByProductId(productId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Inventory not found for product: " + productId));
     }
 
-    // Load DB stock value into Redis (call on startup or after DB changes)
+    private String resolveStockStatus(Inventory inv) {
+        if (inv.getQuantity() == 0)                              return "OUT_OF_STOCK";
+        if (inv.getQuantity() <= inv.getLowStockThreshold())     return "LOW";
+        return "NORMAL";
+    }
+
+
     @Override
     public void cacheStock(Long productId, int quantity) {
         redisTemplate.opsForValue().set(key(productId), quantity);
-        log.info("Stock cached in Redis: product={}, quantity={}", productId, quantity);
+        log.info("Cached stock: product={}, qty={}", productId, quantity);
     }
 
+    @Override
+    public void adjustStock(Long productId, int quantity) {
 
-    // Updates DB first, then syncs Redis
+    }
+
     @Override
     @Transactional
-    public void adjustStock(Long productId, int quantity) {
-        Inventory inventory = getInventoryOrThrow(productId);
+    public void adjustStock(Long productId, int quantity, String strategyType) {
+        try {
+            Inventory inventory = getOrThrow(productId);
 
-        int newQuantity = inventory.getQuantity() + quantity;
-        if (newQuantity < 0) {
+            InventoryStrategy strategy = strategyFactory.getStrategy(strategyType);
+            strategy.updateStock(inventory, quantity);
+            inventoryRepository.save(inventory);
+
+            //Sync Redis cache
+            int available = inventory.getQuantity() - inventory.getReservedQuantity();
+            redisTemplate.opsForValue().set(key(productId), available);
+
+            //Observer listeners react automatically
+            eventPublisher.publishEvent(new StockChangedEvent(
+                    this, productId, inventory.getQuantity(),
+                    inventory.getLowStockThreshold(), "ADJUSTED"));
+
+            log.info("Stock adjusted [{}]: product={}, newQty={}",
+                    strategyType, productId, inventory.getQuantity());
+
+        } catch (OptimisticLockingFailureException e) {
+            // Optimistic Locking caught a race condition
             throw new BadRequestException(
-                    "Stock cannot go below zero. Current: "
-                            + inventory.getQuantity() + ", Adjustment: " + quantity);
+                    "Stock update conflict detected — concurrent update on product: "
+                            + productId + ". Please retry.");
         }
-
-        //Update DB
-        inventory.setQuantity(newQuantity);
-        inventoryRepository.save(inventory);
-
-        //Sync Redis cache so it stays consistent with DB
-        int available = newQuantity - inventory.getReservedQuantity();
-        redisTemplate.opsForValue().set(key(productId), available);
-
-        log.info("Stock adjusted: product={}, newQuantity={}, available={}",
-                productId, newQuantity, available);
     }
 
-    // Uses Redis atomic decrement — fast, no DB hit (called during checkout)
+    //Redis atomic + DB sync
+    // Called during checkout before payment
     @Override
+    @Transactional
     public boolean reserveStock(Long productId, int quantity) {
+        try {
+            //Ensure Redis has data (cache miss check)
+            String redisKey = key(productId);
+            if (Boolean.FALSE.equals(redisTemplate.hasKey(redisKey))) {
+                Inventory inv = getOrThrow(productId);
+                redisTemplate.opsForValue().set(redisKey,
+                        inv.getQuantity() - inv.getReservedQuantity());
+            }
 
-        // Ensure Redis has the stock loaded before decrementing
-        String redisKey = key(productId);
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(redisKey))) {
-            // Cache miss — load from DB first
-            Inventory inv = getInventoryOrThrow(productId);
-            int available = inv.getQuantity() - inv.getReservedQuantity();
-            redisTemplate.opsForValue().set(redisKey, available);
+            //Atomic decrement in Redis
+            Long newStock = redisTemplate.opsForValue().decrement(redisKey, quantity);
+            if (newStock == null || newStock < 0) {
+                // Rollback Redis
+                redisTemplate.opsForValue().increment(redisKey, quantity);
+                log.warn("Reservation failed — insufficient stock: product={}, qty={}",
+                        productId, quantity);
+                return false;
+            }
+
+            //Update reservedQuantity in DB
+            Inventory inventory = getOrThrow(productId);
+            strategyFactory.getStrategy("RESERVED").updateStock(inventory, quantity);
+            inventoryRepository.save(inventory);
+
+            eventPublisher.publishEvent(new StockChangedEvent(
+                    this, productId, inventory.getQuantity(),
+                    inventory.getLowStockThreshold(), "RESERVED"));
+
+            return true;
+
+        } catch (OptimisticLockingFailureException e) {
+            throw new BadRequestException(
+                    "Reservation conflict on product: " + productId + ". Please retry.");
         }
-
-        // Atomically decrement in Redis
-        Long newStock = redisTemplate.opsForValue().decrement(redisKey, quantity);
-
-        if (newStock == null || newStock < 0) {
-            // Rollback the Redis decrement
-            redisTemplate.opsForValue().increment(redisKey, quantity);
-            log.warn("Stock reservation failed (insufficient): product={}, requested={}",
-                    productId, quantity);
-            return false;
-        }
-
-        // Update reservedQuantity in DB to reflect the reservation
-        Inventory inventory = getInventoryOrThrow(productId);
-        inventory.setReservedQuantity(inventory.getReservedQuantity() + quantity);
-        inventoryRepository.save(inventory);
-
-        log.info("Stock reserved: product={}, reserved={}, remainingInRedis={}",
-                productId, quantity, newStock);
-        return true;
     }
 
     @Override
     @Transactional
     public void releaseStock(Long productId, int quantity) {
-        Inventory inventory = getInventoryOrThrow(productId);
+        try {
+            Inventory inventory = getOrThrow(productId);
 
-        int newReserved = inventory.getReservedQuantity() - quantity;
-        if (newReserved < 0) {
+            int newReserved = inventory.getReservedQuantity() - quantity;
+            if (newReserved < 0) {
+                throw new BadRequestException(
+                        "Cannot release more than reserved. Reserved: "
+                                + inventory.getReservedQuantity());
+            }
+
+            inventory.setReservedQuantity(newReserved);
+            inventoryRepository.save(inventory);
+
+            // Restore in Redis
+            redisTemplate.opsForValue().increment(key(productId), quantity);
+
+            eventPublisher.publishEvent(new StockChangedEvent(
+                    this, productId, inventory.getQuantity(),
+                    inventory.getLowStockThreshold(), "RELEASED"));
+
+            log.info("Stock released: product={}, released={}", productId, quantity);
+
+        } catch (OptimisticLockingFailureException e) {
             throw new BadRequestException(
-                    "Cannot release more stock than reserved. Reserved: "
-                            + inventory.getReservedQuantity() + ", Release: " + quantity);
+                    "Release conflict on product: " + productId + ". Please retry.");
         }
-
-        inventory.setReservedQuantity(newReserved);
-        inventoryRepository.save(inventory);
-
-        redisTemplate.opsForValue().increment(key(productId), quantity);
-
-        log.info("Stock released: product={}, released={}, newReserved={}",
-                productId, quantity, newReserved);
     }
 
-    // Reads from Redis first (fast), falls back to DB if cache miss
+    // Redis first → DB fallback
     @Override
     public int getAvailableQuantity(Long productId) {
-        String redisKey = key(productId);
-        Object cached = redisTemplate.opsForValue().get(redisKey);
-
+        Object cached = redisTemplate.opsForValue().get(key(productId));
         if (cached != null) {
-            log.debug("Cache hit for product={}", productId);
+            log.debug("Cache hit: product={}", productId);
             return ((Number) cached).intValue();
         }
-
-        // Cache miss — load from DB and cache the result
-        log.debug("Cache miss for product={}, loading from DB", productId);
-        Inventory inv = getInventoryOrThrow(productId);
+        log.debug("Cache miss: product={} — loading from DB", productId);
+        Inventory inv = getOrThrow(productId);
         int available = inv.getQuantity() - inv.getReservedQuantity();
-        redisTemplate.opsForValue().set(redisKey, available);
+        redisTemplate.opsForValue().set(key(productId), available);
         return available;
     }
 
@@ -143,33 +177,44 @@ public class InventoryServiceImpl implements InventoryService {
         return getAvailableQuantity(productId) >= requiredQty;
     }
 
-    // CONFIRM ORDER (called after payment success)
-    // Permanently reduces DB stock and clears reservation
+    //permanent DB stock reduction
+    //Called after payment is successful
     @Override
     @Transactional
     public void confirmOrder(Long productId, int quantity) {
-        Inventory inv = getInventoryOrThrow(productId);
+        try {
+            Inventory inv = getOrThrow(productId);
 
-        if (inv.getQuantity() < quantity) {
+            if (inv.getQuantity() < quantity) {
+                throw new BadRequestException(
+                        "Cannot confirm order — insufficient DB stock. " +
+                                "Available: " + inv.getQuantity() + ", Needed: " + quantity);
+            }
+
+            // Permanently reduce total stock
+            inv.setQuantity(inv.getQuantity() - quantity);
+
+            // Clear the reservation for this order
+            inv.setReservedQuantity(
+                    Math.max(0, inv.getReservedQuantity() - quantity));
+
+            inventoryRepository.save(inv);
+
+            // Sync Redis with final available quantity
+            int available = inv.getQuantity() - inv.getReservedQuantity();
+            redisTemplate.opsForValue().set(key(productId), available);
+
+            // Publish — triggers analytics, low stock alerts, etc.
+            eventPublisher.publishEvent(new StockChangedEvent(
+                    this, productId, inv.getQuantity(),
+                    inv.getLowStockThreshold(), "CONFIRMED"));
+
+            log.info("Order confirmed: product={}, sold={}, remaining={}",
+                    productId, quantity, inv.getQuantity());
+
+        } catch (OptimisticLockingFailureException e) {
             throw new BadRequestException(
-                    "Cannot confirm order: insufficient stock in DB. " +
-                            "Available: " + inv.getQuantity() + ", Requested: " + quantity);
+                    "Order confirmation conflict on product: " + productId + ". Please retry.");
         }
-
-        //Permanently reduce total stock in DB
-        inv.setQuantity(inv.getQuantity() - quantity);
-
-        //Also reduce reserved quantity (the reservation is now fulfilled)
-        int newReserved = Math.max(0, inv.getReservedQuantity() - quantity);
-        inv.setReservedQuantity(newReserved);
-
-        inventoryRepository.save(inv);
-
-        //Sync Redis with the new available quantity
-        int available = inv.getQuantity() - inv.getReservedQuantity();
-        redisTemplate.opsForValue().set(key(productId), available);
-
-        log.info("Order confirmed: product={}, sold={}, remainingStock={}",
-                productId, quantity, inv.getQuantity());
     }
 }

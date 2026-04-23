@@ -1,5 +1,7 @@
 package com.example.flowmerceproject.InventoryMangement.service;
 
+import org.springframework.transaction.annotation.Transactional;
+
 public interface InventoryService {
 
     // Load stock from DB into Redis cache on startup or on demand
@@ -7,6 +9,10 @@ public interface InventoryService {
 
     // ADD or SUBTRACT stock — updates both Redis AND DB
     void adjustStock(Long productId, int quantity);
+
+    // Updates DB first, then syncs Redis
+    @Transactional
+    void adjustStock(Long productId, int quantity, String strategyType);
 
     boolean reserveStock(Long productId, int quantity);
 
