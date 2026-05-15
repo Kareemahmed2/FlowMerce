@@ -50,7 +50,7 @@ public class ProductDTOs {
         private String name;
         private String description;
         private BigDecimal basePrice;
-
+        //  from inventory not product
         private Integer availableQuantity;
         private Boolean isActive;
         private Double rating;
