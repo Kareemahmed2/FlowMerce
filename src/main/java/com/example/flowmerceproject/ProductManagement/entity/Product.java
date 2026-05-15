@@ -1,6 +1,6 @@
 package com.example.flowmerceproject.ProductManagement.entity;
 
-import com.example.flowmerceproject.StoreMangement.entity.Store;
+import com.example.flowmerceproject.StoreManagement.entity.Store;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

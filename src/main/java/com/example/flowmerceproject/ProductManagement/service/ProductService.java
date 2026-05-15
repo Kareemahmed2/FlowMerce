@@ -1,8 +1,8 @@
 package com.example.flowmerceproject.ProductManagement.service;
 
-import com.example.flowmerceproject.InventoryMangement.entity.Inventory;
-import com.example.flowmerceproject.InventoryMangement.repository.InventoryRepository;
-import com.example.flowmerceproject.InventoryMangement.service.InventoryService;
+import com.example.flowmerceproject.InventoryManagement.entity.Inventory;
+import com.example.flowmerceproject.InventoryManagement.repository.InventoryRepository;
+import com.example.flowmerceproject.InventoryManagement.service.InventoryService;
 import com.example.flowmerceproject.ProductManagement.dto.ProductDTOs;
 import com.example.flowmerceproject.ProductManagement.entity.Category;
 import com.example.flowmerceproject.ProductManagement.entity.Product;
@@ -10,8 +10,8 @@ import com.example.flowmerceproject.ProductManagement.entity.ProductMedia;
 import com.example.flowmerceproject.ProductManagement.repository.CategoryRepository;
 import com.example.flowmerceproject.ProductManagement.repository.ProductMediaRepository;
 import com.example.flowmerceproject.ProductManagement.repository.ProductRepository;
-import com.example.flowmerceproject.StoreMangement.entity.Store;
-import com.example.flowmerceproject.StoreMangement.repository.StoreRepository;
+import com.example.flowmerceproject.StoreManagement.entity.Store;
+import com.example.flowmerceproject.StoreManagement.repository.StoreRepository;
 import com.example.flowmerceproject.UserManagement.exception.ForbiddenException;
 import com.example.flowmerceproject.UserManagement.exception.ResourceNotFoundException;
 import com.example.flowmerceproject.UserManagement.repository.MerchantRepository;
