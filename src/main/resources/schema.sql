@@ -2,255 +2,306 @@
 -- USERS & ROLES
 -- =========================
 
-CREATE TABLE IF NOT EXISTS roles  (
-  role_id SERIAL PRIMARY KEY,
-  role_name VARCHAR(50) UNIQUE   -- Admin, Merchant, Buyer, Guest,,,add unique without it the ON CONFLICT (role_name) in data.sql will throw an error
-);
+-- roles table kept for reference only
+-- actual role is stored as enum directly in users table
+CREATE TABLE IF NOT EXISTS roles (
+                                     role_id   SERIAL PRIMARY KEY,
+                                     role_name VARCHAR(50) UNIQUE
+    );
 
 CREATE TABLE IF NOT EXISTS users (
-  user_id SERIAL PRIMARY KEY,
-  email VARCHAR(255) UNIQUE,
-  password_hash VARCHAR(255),
-  full_name VARCHAR(100),
-  phone VARCHAR(20),
-  is_mfa_enabled BOOLEAN,
-  created_at TIMESTAMP WITHOUT TIME ZONE,
-  FOREIGN KEY (role_id) REFERENCES roles(role_id)
-);
+                                     user_id        SERIAL PRIMARY KEY,
+                                     email          VARCHAR(255) UNIQUE NOT NULL,
+    password_hash  VARCHAR(255) NOT NULL,
+    full_name      VARCHAR(100),
+    phone          VARCHAR(20),
+    is_mfa_enabled BOOLEAN DEFAULT false,
+    created_at     TIMESTAMP WITHOUT TIME ZONE,
+    role           VARCHAR(50) NOT NULL  -- ADMIN, MERCHANT, BUYER, GUEST (Java enum)
+    );
 
 CREATE TABLE IF NOT EXISTS sessions (
-  session_id SERIAL PRIMARY KEY,
-  user_id INT NOT NULL,
-  token VARCHAR(512) NOT NULL,
-  is_revoked BOOLEAN DEFAULT false,
-  created_at TIMESTAMP WITHOUT TIME ZONE,
-  expires_at TIMESTAMP WITHOUT TIME ZONE,
-  FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
+                                        session_id SERIAL PRIMARY KEY,
+                                        user_id    INT NOT NULL,
+                                        token      VARCHAR(512) NOT NULL,
+    is_revoked BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITHOUT TIME ZONE,
+    expires_at TIMESTAMP WITHOUT TIME ZONE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    );
 
 CREATE TABLE IF NOT EXISTS admins (
-  admin_id SERIAL PRIMARY KEY,
-  user_id INT UNIQUE NOT NULL,
-  FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
+                                      admin_id SERIAL PRIMARY KEY,
+                                      user_id  INT UNIQUE NOT NULL,
+                                      FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    );
 
 CREATE TABLE IF NOT EXISTS customers (
-  customer_id SERIAL PRIMARY KEY,
-  user_id INT UNIQUE NOT NULL,
-  FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
+                                         customer_id SERIAL PRIMARY KEY,
+                                         user_id     INT UNIQUE NOT NULL,
+                                         FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    );
 
 CREATE TABLE IF NOT EXISTS user_profiles (
-  profile_id SERIAL PRIMARY KEY,
-  user_id INT,
-  address TEXT,
-  profile_image VARCHAR(255),
-  FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
+                                             profile_id    SERIAL PRIMARY KEY,
+                                             user_id       INT UNIQUE NOT NULL,
+                                             address       TEXT,
+                                             profile_image VARCHAR(255),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    );
 
 -- =========================
 -- MERCHANT & STORE
 -- =========================
 
 CREATE TABLE IF NOT EXISTS merchants (
-  merchant_id SERIAL PRIMARY KEY,
-  user_id INT,
-  business_name VARCHAR(150),
-  is_verified BOOLEAN,
-  FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
+                                         merchant_id   SERIAL PRIMARY KEY,
+                                         user_id       INT UNIQUE NOT NULL,
+                                         business_name VARCHAR(150),
+    is_verified   BOOLEAN DEFAULT false,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    );
 
 CREATE TABLE IF NOT EXISTS stores (
-  store_id    SERIAL PRIMARY KEY,
-  merchant_id INT NOT NULL,
-  store_name  VARCHAR(150) NOT NULL,
-  store_url   VARCHAR(255) UNIQUE,
-  description TEXT,
-  logo        VARCHAR(255),
-  status      VARCHAR(50) DEFAULT 'DRAFT',
-  created_at  TIMESTAMP WITHOUT TIME ZONE,
-  FOREIGN KEY (merchant_id) REFERENCES merchants(merchant_id)
-);
+                                      store_id    SERIAL PRIMARY KEY,
+                                      merchant_id INT NOT NULL,
+                                      store_name  VARCHAR(150) NOT NULL,
+    store_url   VARCHAR(255) UNIQUE NOT NULL,
+    description TEXT,
+    logo        VARCHAR(255),
+    status      VARCHAR(50) DEFAULT 'DRAFT',  -- DRAFT, PUBLISHED, DEACTIVATED (Java enum)
+    created_at  TIMESTAMP WITHOUT TIME ZONE,
+    FOREIGN KEY (merchant_id) REFERENCES merchants(merchant_id) ON DELETE CASCADE
+    );
 
 CREATE TABLE IF NOT EXISTS store_settings (
-  settings_id       SERIAL PRIMARY KEY,
-  store_id          INT NOT NULL UNIQUE,
-  currency          VARCHAR(10)  DEFAULT 'USD',
-  timezone          VARCHAR(100) DEFAULT 'UTC',
-  language          VARCHAR(20)  DEFAULT 'en',
-  tax_settings      TEXT,
-  shipping_settings TEXT,
-  FOREIGN KEY (store_id) REFERENCES stores(store_id)
-);
-
+                                              settings_id       SERIAL PRIMARY KEY,
+                                              store_id          INT NOT NULL UNIQUE,
+                                              currency          VARCHAR(10)  DEFAULT 'USD',
+    timezone          VARCHAR(100) DEFAULT 'UTC',
+    language          VARCHAR(20)  DEFAULT 'en',
+    tax_settings      TEXT,
+    shipping_settings TEXT,
+    FOREIGN KEY (store_id) REFERENCES stores(store_id) ON DELETE CASCADE
+    );
 
 -- =========================
 -- PRODUCTS & CATALOG
 -- =========================
 
 CREATE TABLE IF NOT EXISTS categories (
-  category_id SERIAL PRIMARY KEY,
-  name VARCHAR(100)
-);
+                                          category_id SERIAL PRIMARY KEY,
+                                          name        VARCHAR(100) NOT NULL,
+    description TEXT
+    );
 
 CREATE TABLE IF NOT EXISTS products (
-  product_id SERIAL PRIMARY KEY,
-  store_id INT,
-  category_id INT,
-  name VARCHAR(150),
-  description TEXT,
-  price DECIMAL(10,2),
-  inventory INT,
-  rating FLOAT,
-  FOREIGN KEY (store_id) REFERENCES stores(store_id),
-  FOREIGN KEY (category_id) REFERENCES categories(category_id)
-);
+                                        product_id  SERIAL PRIMARY KEY,
+                                        store_id    INT NOT NULL,
+                                        category_id INT,
+                                        name        VARCHAR(150) NOT NULL,
+    description TEXT,
+    base_price  DECIMAL(10,2) NOT NULL,
+    -- quantity removed from here
+    -- actual quantity lives in inventory table (source of truth)
+    is_active   BOOLEAN DEFAULT true,
+    rating      FLOAT DEFAULT 0.0,
+    created_at  TIMESTAMP WITHOUT TIME ZONE,
+    updated_at  TIMESTAMP WITHOUT TIME ZONE,
+    FOREIGN KEY (store_id)    REFERENCES stores(store_id)        ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES categories(category_id)
+    );
 
 CREATE TABLE IF NOT EXISTS product_media (
-  media_id SERIAL PRIMARY KEY,
-  product_id INT,
-  media_url VARCHAR(255),
-  FOREIGN KEY (product_id) REFERENCES products(product_id)
-);
+                                             media_id   SERIAL PRIMARY KEY,
+                                             product_id INT NOT NULL,
+                                             media_url  VARCHAR(255) NOT NULL,
+    media_type VARCHAR(50) DEFAULT 'IMAGE',  -- IMAGE, VIDEO
+    alt_text   VARCHAR(255),
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
+    );
 
 CREATE TABLE IF NOT EXISTS reviews (
-  review_id SERIAL PRIMARY KEY,
-  product_id INT,
-  user_id INT,
-  rating INT,
-  comment TEXT,
-  created_at TIMESTAMP WITHOUT TIME ZONE,
-  FOREIGN KEY (product_id) REFERENCES products(product_id),
-  FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
+                                       review_id   SERIAL PRIMARY KEY,
+                                       product_id  INT NOT NULL,
+                                       customer_id INT NOT NULL,
+                                       rating      INT NOT NULL CHECK (rating BETWEEN 1 AND 5),  -- enforced at DB level
+    title       VARCHAR(150),
+    comment     TEXT,
+    created_at  TIMESTAMP WITHOUT TIME ZONE,
+    FOREIGN KEY (product_id)  REFERENCES products(product_id)   ON DELETE CASCADE,
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE
+    );
 
 -- =========================
 -- INVENTORY
 -- =========================
 
 CREATE TABLE IF NOT EXISTS inventory (
-  inventory_id        SERIAL PRIMARY KEY,
-  product_id          BIGINT NOT NULL UNIQUE,
-  quantity            INT NOT NULL DEFAULT 0,
-  reserved_quantity   INT NOT NULL DEFAULT 0,
-  low_stock_threshold INT NOT NULL DEFAULT 10,
-  version             INT NOT NULL DEFAULT 0,
-  FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
-);
+                                         inventory_id        SERIAL PRIMARY KEY,
+                                         product_id          BIGINT NOT NULL UNIQUE,
+                                         quantity            INT NOT NULL DEFAULT 0,      -- total available stock
+                                         reserved_quantity   INT NOT NULL DEFAULT 0,      -- held during checkout process
+                                         low_stock_threshold INT NOT NULL DEFAULT 10,     -- triggers SSE low stock alert
+                                         version             INT NOT NULL DEFAULT 0,      -- optimistic locking (@Version)
+                                         FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
+    );
 
 -- =========================
 -- CART & CHECKOUT
 -- =========================
 
-CREATE TABLE IF NOT EXISTS carts (
-  cart_id SERIAL PRIMARY KEY,
-  user_id INT,
-  created_at TIMESTAMP WITHOUT TIME ZONE,
-  FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
+CREATE TABLE IF NOT EXISTS shopping_carts (
+                                              cart_id     SERIAL PRIMARY KEY,
+                                              customer_id INT NOT NULL,
+                                              created_at  TIMESTAMP WITHOUT TIME ZONE,
+                                              expires_at  TIMESTAMP WITHOUT TIME ZONE,
+                                              FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE
+    );
 
 CREATE TABLE IF NOT EXISTS cart_items (
-  cart_item_id SERIAL PRIMARY KEY,
-  cart_id INT,
-  product_id INT,
-  quantity INT,
-  FOREIGN KEY (cart_id) REFERENCES carts(cart_id),
-  FOREIGN KEY (product_id) REFERENCES products(product_id)
-);
+                                          cart_item_id SERIAL PRIMARY KEY,
+                                          cart_id      INT NOT NULL,
+                                          product_id   INT NOT NULL,
+                                          quantity     INT NOT NULL DEFAULT 1,
+                                          price_at_add DECIMAL(10,2) NOT NULL,  -- price snapshot at the time of adding to cart
+    added_at     TIMESTAMP WITHOUT TIME ZONE,
+    FOREIGN KEY (cart_id)    REFERENCES shopping_carts(cart_id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+    );
 
 -- =========================
 -- ORDERS & PAYMENTS
 -- =========================
 
 CREATE TABLE IF NOT EXISTS orders (
-  order_id SERIAL PRIMARY KEY,
-  user_id INT,
-  store_id INT,
-  status VARCHAR(50), -- Pending, Shipped, Delivered
-  total_amount DECIMAL(10,2),
-  created_at TIMESTAMP WITHOUT TIME ZONE,
-  FOREIGN KEY (user_id) REFERENCES users(user_id),
-  FOREIGN KEY (store_id) REFERENCES stores(store_id)
-);
+                                      order_id         SERIAL PRIMARY KEY,
+                                      customer_id      INT NOT NULL,
+                                      store_id         INT NOT NULL,
+                                      status           VARCHAR(50) DEFAULT 'PENDING',  -- PENDING, SHIPPED, DELIVERED, CANCELLED
+    order_date       TIMESTAMP WITHOUT TIME ZONE,
+    shipping_address TEXT,
+    billing_address  TEXT,
+    subtotal         DECIMAL(10,2),
+    tax              DECIMAL(10,2),
+    shipping_cost    DECIMAL(10,2),
+    total            DECIMAL(10,2),
+    payment_method   VARCHAR(50),  -- STRIPE, MADA, STC_PAY
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
+    FOREIGN KEY (store_id)    REFERENCES stores(store_id)
+    );
 
 CREATE TABLE IF NOT EXISTS order_items (
-  order_item_id SERIAL PRIMARY KEY,
-  order_id INT,
-  product_id INT,
-  quantity INT,
-  price DECIMAL(10,2),
-  FOREIGN KEY (order_id) REFERENCES orders(order_id),
-  FOREIGN KEY (product_id) REFERENCES products(product_id)
-);
+                                           order_item_id SERIAL PRIMARY KEY,
+                                           order_id      INT NOT NULL,
+                                           product_id    INT NOT NULL,
+                                           quantity      INT NOT NULL,
+                                           price         DECIMAL(10,2) NOT NULL,
+    discount      DECIMAL(10,2) DEFAULT 0,
+    tax           DECIMAL(10,2) DEFAULT 0,
+    FOREIGN KEY (order_id)   REFERENCES orders(order_id)   ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+    );
 
 CREATE TABLE IF NOT EXISTS payments (
-  payment_id SERIAL PRIMARY KEY,
-  order_id INT,
-  payment_method VARCHAR(50), -- Stripe, Mada, STC Pay
-  payment_status VARCHAR(50),
-  paid_at TIMESTAMP WITHOUT TIME ZONE,
-  FOREIGN KEY (order_id) REFERENCES orders(order_id)
-);
+                                        payment_id     SERIAL PRIMARY KEY,
+                                        order_id       INT NOT NULL,
+                                        amount         DECIMAL(10,2) NOT NULL,
+    payment_method VARCHAR(50),   -- STRIPE, MADA, STC_PAY
+    transaction_id VARCHAR(255),
+    status         VARCHAR(50),   -- PENDING, SUCCESS, FAILED, REFUNDED
+    processed_at   TIMESTAMP WITHOUT TIME ZONE,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id)
+    );
 
 CREATE TABLE IF NOT EXISTS invoices (
-  invoice_id SERIAL PRIMARY KEY,
-  order_id INT,
-  issued_at TIMESTAMP WITHOUT TIME ZONE,
-  FOREIGN KEY (order_id) REFERENCES orders(order_id)
-);
+                                        invoice_id SERIAL PRIMARY KEY,
+                                        order_id   INT NOT NULL,
+                                        issued_at  TIMESTAMP WITHOUT TIME ZONE,
+                                        FOREIGN KEY (order_id) REFERENCES orders(order_id)
+    );
 
 -- =========================
--- DELIVERY SERVICE PROVIDER
+-- DELIVERY & SHIPPING
 -- =========================
 
 CREATE TABLE IF NOT EXISTS delivery_providers (
-  dsp_id SERIAL PRIMARY KEY,
-  company_name VARCHAR(150)
-);
+                                                  provider_id  SERIAL PRIMARY KEY,
+                                                  name         VARCHAR(150) NOT NULL,
+    api_endpoint VARCHAR(255)
+    );
 
-CREATE TABLE IF NOT EXISTS deliveries (
-  delivery_id SERIAL PRIMARY KEY,
-  order_id INT,
-  dsp_id INT,
-  delivery_status VARCHAR(50),
-  FOREIGN KEY (order_id) REFERENCES orders(order_id),
-  FOREIGN KEY (dsp_id) REFERENCES delivery_providers(dsp_id)
-);
+CREATE TABLE IF NOT EXISTS shipments (
+                                         shipment_id     SERIAL PRIMARY KEY,
+                                         order_id        INT NOT NULL,
+                                         provider_id     INT,
+                                         tracking_number VARCHAR(255),
+    shipped_date    TIMESTAMP WITHOUT TIME ZONE,
+    delivery_date   TIMESTAMP WITHOUT TIME ZONE,
+    status          VARCHAR(50),  -- PENDING, SHIPPED, DELIVERED, RETURNED
+    FOREIGN KEY (order_id)    REFERENCES orders(order_id),
+    FOREIGN KEY (provider_id) REFERENCES delivery_providers(provider_id)
+    );
 
--- =========================
--- AI ASSISTANT
--- =========================
-
-CREATE TABLE IF NOT EXISTS ai_suggestions (
-  suggestion_id SERIAL PRIMARY KEY,
-  store_id INT,
-  suggestion_text TEXT,
-  accepted BOOLEAN,
-  created_at TIMESTAMP WITHOUT TIME ZONE,
-  FOREIGN KEY (store_id) REFERENCES stores(store_id)
-);
+CREATE TABLE IF NOT EXISTS tracking_info (
+                                             tracking_id SERIAL PRIMARY KEY,
+                                             shipment_id INT NOT NULL,
+                                             status      VARCHAR(100),
+    location    VARCHAR(255),
+    timestamp   TIMESTAMP WITHOUT TIME ZONE,
+    FOREIGN KEY (shipment_id) REFERENCES shipments(shipment_id) ON DELETE CASCADE
+    );
 
 -- =========================
 -- NOTIFICATIONS
 -- =========================
 
 CREATE TABLE IF NOT EXISTS notifications (
-  notification_id SERIAL PRIMARY KEY,
-  user_id INT,
-  message TEXT,
-  channel VARCHAR(50), -- Email, SMS, WhatsApp
-  sent_at TIMESTAMP WITHOUT TIME ZONE,
-  FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
+                                             notification_id SERIAL PRIMARY KEY,
+                                             user_id         INT NOT NULL,
+                                             type            VARCHAR(50),   -- ORDER_UPDATE, ACCOUNT_ACTIVITY, LOW_STOCK, SYSTEM_ALERT
+    message         TEXT NOT NULL,
+    channel         VARCHAR(50),   -- EMAIL, SMS, SSE
+    status          VARCHAR(50) DEFAULT 'PENDING',  -- PENDING, SENT, FAILED
+    sent_at         TIMESTAMP WITHOUT TIME ZONE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    );
+
+-- =========================
+-- AI ASSISTANT
+-- =========================
+
+CREATE TABLE IF NOT EXISTS ai_suggestions (
+                                              suggestion_id SERIAL PRIMARY KEY,
+                                              store_id      INT NOT NULL,
+                                              type          VARCHAR(100),
+    title         VARCHAR(255),
+    description   TEXT,
+    priority      VARCHAR(50),
+    status        VARCHAR(50) DEFAULT 'PENDING',  -- PENDING, ACCEPTED, REJECTED
+    created_at    TIMESTAMP WITHOUT TIME ZONE,
+    FOREIGN KEY (store_id) REFERENCES stores(store_id) ON DELETE CASCADE
+    );
 
 -- =========================
 -- ANALYTICS & REPORTS
 -- =========================
 
-CREATE TABLE IF NOT EXISTS reports (
-  report_id SERIAL PRIMARY KEY,
-  store_id INT,
-  report_type VARCHAR(100),
-  generated_at TIMESTAMP WITHOUT TIME ZONE,
-  FOREIGN KEY (store_id) REFERENCES stores(store_id)
-);
+CREATE TABLE IF NOT EXISTS analytics (
+                                         analytics_id SERIAL PRIMARY KEY,
+                                         store_id     INT NOT NULL,
+                                         period       VARCHAR(50),  -- DAILY, WEEKLY, MONTHLY
+    metrics      TEXT,         -- stored as JSON string
+    FOREIGN KEY (store_id) REFERENCES stores(store_id) ON DELETE CASCADE
+    );
+
+CREATE TABLE IF NOT EXISTS sales_reports (
+                                             report_id       SERIAL PRIMARY KEY,
+                                             store_id        INT NOT NULL,
+                                             date_range      VARCHAR(100),
+    total_sales     DECIMAL(10,2),
+    order_count     INT,
+    avg_order_value DECIMAL(10,2),
+    generated_at    TIMESTAMP WITHOUT TIME ZONE,
+    FOREIGN KEY (store_id) REFERENCES stores(store_id) ON DELETE CASCADE
+    );
