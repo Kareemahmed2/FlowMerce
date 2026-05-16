@@ -19,6 +19,7 @@ public class Store {
     public enum StoreStatus {
         DRAFT,
         PUBLISHED,
+        PAUSED,
         DEACTIVATED
     }
 
@@ -34,7 +35,7 @@ public class Store {
     @Column(name = "store_name", nullable = false, length = 150)
     private String storeName;
 
-    @Column(name = "store_url",nullable = false, unique = true, length = 255)
+    @Column(name = "store_url", nullable = false, unique = true, length = 255)
     private String storeUrl;
 
     @Column(name = "description", columnDefinition = "TEXT")
@@ -43,17 +44,22 @@ public class Store {
     @Column(name = "logo", length = 255)
     private String logo;
 
-    // DRAFT, PUBLISHED, DEACTIVATED
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     @Builder.Default
     private StoreStatus status = StoreStatus.DRAFT;
 
+    @Column(name = "current_step")
+    @Builder.Default
+    private Integer currentStep = 0;
+
+    @Column(name = "payment_methods", columnDefinition = "TEXT")
+    private String paymentMethods;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    // One store has one settings object
     @OneToOne(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private StoreSettings settings;
 }

@@ -1,26 +1,29 @@
 package com.example.flowmerceproject.UserManagement.service;
 
 import com.example.flowmerceproject.UserManagement.config.JwtUtil;
+import com.example.flowmerceproject.UserManagement.dto.AuthResponse;
 import com.example.flowmerceproject.UserManagement.dto.LoginRequest;
 import com.example.flowmerceproject.UserManagement.dto.PasswordDTOs;
 import com.example.flowmerceproject.UserManagement.dto.RegisterRequest;
+import com.example.flowmerceproject.UserManagement.dto.UserResponse;
 import com.example.flowmerceproject.UserManagement.entity.Role;
 import com.example.flowmerceproject.UserManagement.entity.Session;
 import com.example.flowmerceproject.UserManagement.entity.User;
+import com.example.flowmerceproject.UserManagement.entity.VerificationToken;
 import com.example.flowmerceproject.UserManagement.exception.BadRequestException;
 import com.example.flowmerceproject.UserManagement.exception.ConflictException;
-import com.example.flowmerceproject.UserManagement.exception.UnauthorizedException;
 import com.example.flowmerceproject.UserManagement.exception.ResourceNotFoundException;
+import com.example.flowmerceproject.UserManagement.exception.UnauthorizedException;
 import com.example.flowmerceproject.UserManagement.repository.SessionRepository;
 import com.example.flowmerceproject.UserManagement.repository.UserRepository;
+import com.example.flowmerceproject.UserManagement.repository.VerificationTokenRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -29,12 +32,15 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final SessionRepository sessionRepository;
+    private final VerificationTokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
 
-    private final Map<String, String> activationTokens = new HashMap<>();
-    private final Map<String, String> passwordResetTokens = new HashMap<>();
+    @Value("${jwt.expiration-ms:86400000}")
+    private long jwtExpirationMs;
+
+    // ── REGISTER ──────────────────────────────────────────────────────────────
 
     @Transactional
     public String register(RegisterRequest request) {
@@ -42,15 +48,8 @@ public class AuthService {
             throw new ConflictException("Email is already registered: " + request.getEmail());
         }
 
-        Role role = Role.BUYER;
-        if (request.getRole() != null) {
-            try {
-                String roleUpper = role.name().toUpperCase();
-            } catch (IllegalArgumentException e) {
-                throw new BadRequestException("Invalid role: " + request.getRole()
-                        + ". Valid values are: ADMIN, MERCHANT, BUYER, GUEST");
-            }
-        }
+        // Merchant registration endpoint always creates MERCHANT role
+        Role role = Role.MERCHANT;
 
         User user = User.builder()
                 .email(request.getEmail())
@@ -63,24 +62,45 @@ public class AuthService {
         userRepository.save(user);
 
         String activationToken = UUID.randomUUID().toString();
-        activationTokens.put(activationToken, user.getEmail());
-        emailService.sendActivationEmail(user.getEmail(), activationToken);
+        tokenRepository.deleteByEmailAndType(user.getEmail(), VerificationToken.TokenType.ACTIVATION);
+        tokenRepository.save(VerificationToken.builder()
+                .token(activationToken)
+                .email(user.getEmail())
+                .type(VerificationToken.TokenType.ACTIVATION)
+                .expiresAt(LocalDateTime.now().plusHours(24))
+                .build());
 
+        emailService.sendActivationEmail(user.getEmail(), activationToken);
         return "Registration successful. Please check your email to activate your account.";
     }
 
+    // ── ACTIVATE ──────────────────────────────────────────────────────────────
+
     @Transactional
     public String activateAccount(String token) {
-        String email = activationTokens.get(token);
-        if (email == null) {
-            throw new BadRequestException("Invalid or expired activation token.");
+        VerificationToken vt = tokenRepository
+                .findByTokenAndTypeAndUsedFalse(token, VerificationToken.TokenType.ACTIVATION)
+                .orElseThrow(() -> new BadRequestException("Invalid or expired activation token."));
+
+        if (vt.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Activation token has expired.");
         }
-        activationTokens.remove(token);
+
+        vt.setUsed(true);
+        tokenRepository.save(vt);
+
+        User user = userRepository.findByEmail(vt.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        user.setIsActive(true);
+        userRepository.save(user);
+
         return "Account activated successfully. You can now log in.";
     }
 
+    // ── LOGIN ─────────────────────────────────────────────────────────────────
+
     @Transactional
-    public String login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
 
@@ -88,19 +108,57 @@ public class AuthService {
             throw new UnauthorizedException("Invalid email or password");
         }
 
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+        String accessToken = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
 
-        Session session = Session.builder()
+        Session accessSession = Session.builder()
                 .user(user)
-                .token(token)
+                .token(accessToken)
                 .isRevoked(false)
                 .createdAt(LocalDateTime.now())
-                .expiresAt(LocalDateTime.now().plusHours(24))
+                .expiresAt(LocalDateTime.now().plusSeconds(jwtExpirationMs / 1000))
                 .build();
+        sessionRepository.save(accessSession);
 
-        sessionRepository.save(session);
-        return token;
+        String refreshToken = UUID.randomUUID().toString();
+        Session refreshSession = Session.builder()
+                .user(user)
+                .token(refreshToken)
+                .isRevoked(false)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusDays(30))
+                .build();
+        sessionRepository.save(refreshSession);
+
+        return buildAuthResponse(user, accessToken, refreshToken);
     }
+
+    // ── REFRESH ───────────────────────────────────────────────────────────────
+
+    @Transactional
+    public AuthResponse refreshToken(String token) {
+        Session session = sessionRepository.findByTokenAndIsRevokedFalse(token)
+                .orElseThrow(() -> new UnauthorizedException("Invalid or revoked refresh token"));
+
+        if (session.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new UnauthorizedException("Refresh token has expired");
+        }
+
+        String newAccessToken = jwtUtil.generateToken(
+                session.getUser().getEmail(), session.getUser().getRole().name());
+
+        Session newAccess = Session.builder()
+                .user(session.getUser())
+                .token(newAccessToken)
+                .isRevoked(false)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusSeconds(jwtExpirationMs / 1000))
+                .build();
+        sessionRepository.save(newAccess);
+
+        return buildAuthResponse(session.getUser(), newAccessToken, token);
+    }
+
+    // ── LOGOUT ────────────────────────────────────────────────────────────────
 
     @Transactional
     public String logout(String token) {
@@ -111,33 +169,60 @@ public class AuthService {
         return "Logged out successfully.";
     }
 
+    // ── GET CURRENT USER ──────────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public UserResponse getCurrentUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return UserResponse.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .phone(user.getPhone())
+                .role(user.getRole())
+                .isActive(user.getIsActive())
+                .createdAt(user.getCreatedAt())
+                .build();
+    }
+
+    // ── FORGOT PASSWORD ───────────────────────────────────────────────────────
+
+    @Transactional
     public String forgotPassword(String email) {
         userRepository.findByEmail(email).ifPresent(user -> {
             String resetToken = UUID.randomUUID().toString();
-            passwordResetTokens.put(resetToken, email);
+            tokenRepository.deleteByEmailAndType(email, VerificationToken.TokenType.PASSWORD_RESET);
+            tokenRepository.save(VerificationToken.builder()
+                    .token(resetToken)
+                    .email(email)
+                    .type(VerificationToken.TokenType.PASSWORD_RESET)
+                    .expiresAt(LocalDateTime.now().plusHours(1))
+                    .build());
             emailService.sendPasswordResetEmail(email, resetToken);
         });
         return "If this email is registered, a password reset link has been sent.";
     }
 
+    // ── RESET PASSWORD ────────────────────────────────────────────────────────
+
     @Transactional
     public String resetPassword(PasswordDTOs.ResetPasswordRequest request) {
+        VerificationToken vt = tokenRepository
+                .findByTokenAndTypeAndUsedFalse(request.getToken(), VerificationToken.TokenType.PASSWORD_RESET)
+                .orElseThrow(() -> new BadRequestException("Invalid or expired password reset token."));
 
-        String email = passwordResetTokens.get(request.getToken());
-
-        if (email == null) {
-            throw new BadRequestException("Invalid or expired password reset token.");
+        if (vt.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Password reset token has expired.");
         }
 
-        //Check password match
         if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
             throw new BadRequestException("New password and confirm password do not match");
         }
 
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmail(vt.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // Prevent using same old password
         if (passwordEncoder.matches(request.getNewPassword(), user.getPasswordHash())) {
             throw new BadRequestException("New password must be different from old password");
         }
@@ -145,9 +230,27 @@ public class AuthService {
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
 
-        sessionRepository.revokeAllByUserId(user.getUserId());
-        passwordResetTokens.remove(request.getToken());
+        vt.setUsed(true);
+        tokenRepository.save(vt);
 
+        sessionRepository.revokeAllByUserId(user.getUserId());
         return "Password reset successfully. Please log in again.";
+    }
+
+    // ── HELPER ────────────────────────────────────────────────────────────────
+
+    private AuthResponse buildAuthResponse(User user, String accessToken, String refreshToken) {
+        return AuthResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .expiresIn(jwtExpirationMs)
+                .user(AuthResponse.UserInfo.builder()
+                        .id(user.getUserId())
+                        .name(user.getFullName())
+                        .email(user.getEmail())
+                        .role(user.getRole().name())
+                        .createdAt(user.getCreatedAt())
+                        .build())
+                .build();
     }
 }

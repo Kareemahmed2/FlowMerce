@@ -1,8 +1,10 @@
 package com.example.flowmerceproject.StoreMangement.controller;
 
 import com.example.flowmerceproject.StoreMangement.dto.StoreDTOs;
+import com.example.flowmerceproject.StoreMangement.dto.StoreDTOs.*;
 import com.example.flowmerceproject.StoreMangement.dto.StoreSettingsDTOs;
 import com.example.flowmerceproject.StoreMangement.service.StoreService;
+import com.example.flowmerceproject.common.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,95 +16,127 @@ import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/stores")
+@RequestMapping("/stores")
 @RequiredArgsConstructor
 public class StoreController {
 
     private final StoreService storeService;
 
-    // POST /api/stores — merchant creates a store
     @PostMapping
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<StoreDTOs.StoreResponse> createStore(
+    public ResponseEntity<ApiResponse<StoreResponse>> createStore(
             Principal principal,
-            @Valid @RequestBody StoreDTOs.CreateStoreRequest request) {
+            @Valid @RequestBody CreateStoreRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(storeService.createStore(principal.getName(), request));
+                .body(ApiResponse.ok(storeService.createStore(principal.getName(), request),
+                        "Store created successfully"));
     }
 
-    // GET /api/stores/me — get all my stores
     @GetMapping("/me")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<List<StoreDTOs.StoreResponse>> getMyStores(Principal principal) {
-        return ResponseEntity.ok(storeService.getMyStores(principal.getName()));
+    public ResponseEntity<ApiResponse<List<StoreResponse>>> getMyStores(Principal principal) {
+        return ResponseEntity.ok(ApiResponse.ok(storeService.getMyStores(principal.getName())));
     }
 
-    // GET /api/stores/{storeId}
     @GetMapping("/{storeId}")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<StoreDTOs.StoreResponse> getStore(
+    public ResponseEntity<ApiResponse<StoreResponse>> getStore(
             Principal principal, @PathVariable Integer storeId) {
-        return ResponseEntity.ok(storeService.getStoreById(principal.getName(), storeId));
+        return ResponseEntity.ok(ApiResponse.ok(
+                storeService.getStoreById(principal.getName(), storeId)));
     }
 
-    // PUT /api/stores/{storeId}
+    @GetMapping("/slug/{slug}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<StoreResponse>> getBySlug(@PathVariable String slug) {
+        return ResponseEntity.ok(ApiResponse.ok(storeService.getBySlug(slug)));
+    }
+
     @PutMapping("/{storeId}")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<StoreDTOs.StoreResponse> updateStore(
+    public ResponseEntity<ApiResponse<StoreResponse>> updateStore(
             Principal principal,
             @PathVariable Integer storeId,
-            @Valid @RequestBody StoreDTOs.UpdateStoreRequest request) {
-        return ResponseEntity.ok(storeService.updateStore(principal.getName(), storeId, request));
+            @Valid @RequestBody UpdateStoreRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                storeService.updateStore(principal.getName(), storeId, request)));
     }
 
-    // PUT /api/stores/{storeId}/publish
-    @PutMapping("/{storeId}/publish")
+    @PutMapping("/{storeId}/brand")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<StoreDTOs.StoreResponse> publishStore(
-            Principal principal, @PathVariable Integer storeId) {
-        return ResponseEntity.ok(storeService.publishStore(principal.getName(), storeId));
+    public ResponseEntity<ApiResponse<StoreResponse>> updateBrand(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @Valid @RequestBody BrandUpdateRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                storeService.updateBrand(principal.getName(), storeId, request)));
     }
 
-    // PUT /api/stores/{storeId}/deactivate
-    @PutMapping("/{storeId}/deactivate")
+    @PutMapping("/{storeId}/payment-methods")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<StoreDTOs.StoreResponse> deactivateStore(
-            Principal principal, @PathVariable Integer storeId) {
-        return ResponseEntity.ok(storeService.deactivateStore(principal.getName(), storeId));
+    public ResponseEntity<ApiResponse<StoreResponse>> updatePaymentMethods(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @Valid @RequestBody PaymentMethodsRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                storeService.updatePaymentMethods(principal.getName(), storeId, request)));
     }
 
-    // DELETE /api/stores/{storeId}
+    @PutMapping("/{storeId}/onboarding-step")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<StoreResponse>> updateOnboardingStep(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @Valid @RequestBody OnboardingStepRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                storeService.updateOnboardingStep(principal.getName(), storeId, request)));
+    }
+
+    @PostMapping("/{storeId}/publish")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<StoreResponse>> publishStore(
+            Principal principal, @PathVariable Integer storeId) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                storeService.publishStore(principal.getName(), storeId)));
+    }
+
+    @PostMapping("/{storeId}/unpublish")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<StoreResponse>> unpublishStore(
+            Principal principal, @PathVariable Integer storeId) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                storeService.unpublishStore(principal.getName(), storeId)));
+    }
+
     @DeleteMapping("/{storeId}")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<String> deleteStore(
+    public ResponseEntity<ApiResponse<String>> deleteStore(
             Principal principal, @PathVariable Integer storeId) {
-        return ResponseEntity.ok(storeService.deleteStore(principal.getName(), storeId));
+        return ResponseEntity.ok(ApiResponse.ok(
+                storeService.deleteStore(principal.getName(), storeId)));
     }
 
-    // GET /api/stores/{storeId}/settings
     @GetMapping("/{storeId}/settings")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<StoreSettingsDTOs.SettingsResponse> getSettings(
+    public ResponseEntity<ApiResponse<StoreSettingsDTOs.SettingsResponse>> getSettings(
             Principal principal, @PathVariable Integer storeId) {
-        return ResponseEntity.ok(storeService.getSettings(principal.getName(), storeId));
+        return ResponseEntity.ok(ApiResponse.ok(
+                storeService.getSettings(principal.getName(), storeId)));
     }
 
-    // PUT /api/stores/{storeId}/settings
     @PutMapping("/{storeId}/settings")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<StoreSettingsDTOs.SettingsResponse> updateSettings(
+    public ResponseEntity<ApiResponse<StoreSettingsDTOs.SettingsResponse>> updateSettings(
             Principal principal,
             @PathVariable Integer storeId,
             @RequestBody StoreSettingsDTOs.UpdateSettingsRequest request) {
-        return ResponseEntity.ok(
-                storeService.updateSettings(principal.getName(), storeId, request));
+        return ResponseEntity.ok(ApiResponse.ok(
+                storeService.updateSettings(principal.getName(), storeId, request)));
     }
 
- //ADMIN
-    // GET /api/admin/stores
     @GetMapping("/admin/all")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<StoreDTOs.StoreResponse>> getAllStores() {
-        return ResponseEntity.ok(storeService.getAllStores());
+    public ResponseEntity<ApiResponse<List<StoreResponse>>> getAllStores() {
+        return ResponseEntity.ok(ApiResponse.ok(storeService.getAllStores()));
     }
 }

@@ -1,7 +1,10 @@
-package com.example.flowmerceproject.InventoryMangement.entity;
+package com.example.flowmerceproject.InventoryManagement.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "inventory")
@@ -20,7 +23,12 @@ public class Inventory {
     private Long productId;
 
     @Column(nullable = false)
-    private Integer quantity;
+    @Builder.Default
+    private Integer storeId = 0;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer quantity = 0;
 
     @Column(nullable = false)
     @Builder.Default
@@ -28,9 +36,12 @@ public class Inventory {
 
     @Column(nullable = false)
     @Builder.Default
-    private Integer lowStockThreshold = 10;
+    private Integer lowStockThreshold = 5;
 
-    // OptimisticLocking to prevent race conditions, concurrent updates
     @Version
     private Integer version;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

@@ -1,6 +1,6 @@
-package com.example.flowmerceproject.InventoryMangement.repository;
+package com.example.flowmerceproject.InventoryManagement.repository;
 
-import com.example.flowmerceproject.InventoryMangement.entity.Inventory;
+import com.example.flowmerceproject.InventoryManagement.entity.Inventory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,9 +12,9 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
 
     Optional<Inventory> findByProductId(Long productId);
 
-    // Products at or below low stock threshold
+    List<Inventory> findByStoreId(Integer storeId);
+
     List<Inventory> findByQuantityLessThanEqual(Integer threshold);
 
-    // Out of stock products
     List<Inventory> findByQuantity(Integer quantity);
 }

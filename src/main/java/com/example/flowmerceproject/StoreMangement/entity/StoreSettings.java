@@ -23,7 +23,7 @@ public class StoreSettings {
 
     @Column(name = "currency", length = 10)
     @Builder.Default
-    private String currency = "USD";
+    private String currency = "EGP";
 
     @Column(name = "timezone", length = 100)
     @Builder.Default

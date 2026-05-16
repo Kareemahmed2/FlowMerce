@@ -1,6 +1,6 @@
-package com.example.flowmerceproject.InventoryMangement.event;
+package com.example.flowmerceproject.InventoryManagement.event;
 
-import com.example.flowmerceproject.InventoryMangement.repository.InventoryRepository;
+import com.example.flowmerceproject.InventoryManagement.repository.InventoryRepository;
 import com.example.flowmerceproject.UserManagement.service.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,23 +23,12 @@ public class StockEventListener {
         log.info("Stock event received: product={}, qty={}, type={}",
                 event.getProductId(), event.getNewQuantity(), event.getChangeType());
 
-        // ── LOW STOCK ALERT ───────────────────────
         if (event.getNewQuantity() <= event.getThreshold()
                 && event.getNewQuantity() > 0) {
 
             log.warn("LOW STOCK: product={}, remaining={}",
                     event.getProductId(), event.getNewQuantity());
 
-            // TODO: inject ProductRepository and get merchant email
-            // String merchantEmail = productRepository
-            //         .findById(event.getProductId())
-            //         .map(p -> p.getStore().getMerchant().getUser().getEmail())
-            //         .orElse(null);
-            // if (merchantEmail != null) {
-            //     sseService.sendStockUpdate(event, merchantEmail);
-            // }
-
-            // For now — broadcast so merchant sees it on /stream/stock
             sseService.broadcast("STOCK_ALERT", new java.util.HashMap<>() {{
                 put("productId",   event.getProductId());
                 put("newQuantity", event.getNewQuantity());
@@ -48,7 +37,6 @@ public class StockEventListener {
             }});
         }
 
-        // ── OUT OF STOCK ──────────────────────────
         if (event.getNewQuantity() == 0) {
             log.warn("OUT OF STOCK: product={}", event.getProductId());
 
@@ -60,10 +48,8 @@ public class StockEventListener {
             }});
         }
 
-        // ── ORDER CONFIRMED ───────────────────────
         if ("CONFIRMED".equals(event.getChangeType())) {
             log.info("Order confirmed for product={}", event.getProductId());
-            // OrderService already sends SSE to buyer directly
         }
     }
 }

@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @Service
 @RequiredArgsConstructor
 public class StoreService {
@@ -48,12 +47,11 @@ public class StoreService {
 
         storeRepository.save(store);
 
-        // Auto-create default settings for the new store
         StoreSettings settings = StoreSettings.builder()
                 .store(store)
-                .currency("USD")
-                .timezone("UTC")
-                .language("en")
+                .currency("EGP")
+                .timezone("Africa/Cairo")
+                .language("ar")
                 .build();
         settingsRepository.save(settings);
         store.setSettings(settings);
@@ -63,13 +61,18 @@ public class StoreService {
 
     public List<StoreDTOs.StoreResponse> getMyStores(String email) {
         Merchant merchant = getMerchantByEmail(email);
-        return storeRepository.findByMerchant_MerchantId(merchant.getMerchantId())
+        return storeRepository.findByMerchantIdWithMerchant(merchant.getMerchantId())
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-  //owner only
     public StoreDTOs.StoreResponse getStoreById(String email, Integer storeId) {
         return toResponse(getStoreAndVerifyOwner(email, storeId));
+    }
+
+    public StoreDTOs.StoreResponse getBySlug(String slug) {
+        Store store = storeRepository.findByStoreUrl(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Store not found: " + slug));
+        return toResponse(store);
     }
 
     @Transactional
@@ -92,9 +95,41 @@ public class StoreService {
     }
 
     @Transactional
-    public StoreDTOs.StoreResponse deactivateStore(String email, Integer storeId) {
+    public StoreDTOs.StoreResponse unpublishStore(String email, Integer storeId) {
         Store store = getStoreAndVerifyOwner(email, storeId);
-        store.setStatus(Store.StoreStatus.DEACTIVATED);
+        store.setStatus(Store.StoreStatus.PAUSED);
+        storeRepository.save(store);
+        return toResponse(store);
+    }
+
+    @Transactional
+    public StoreDTOs.StoreResponse updateBrand(String email, Integer storeId,
+                                               StoreDTOs.BrandUpdateRequest request) {
+        Store store = getStoreAndVerifyOwner(email, storeId);
+        store.setStoreName(request.getBrandName());
+        if (request.getLogoUrl() != null) store.setLogo(request.getLogoUrl());
+        storeRepository.save(store);
+        return toResponse(store);
+    }
+
+    @Transactional
+    public StoreDTOs.StoreResponse updatePaymentMethods(String email, Integer storeId,
+                                                        StoreDTOs.PaymentMethodsRequest request) {
+        Store store = getStoreAndVerifyOwner(email, storeId);
+        // Serialize list as JSON array string
+        String json = "[" + request.getMethods().stream()
+                .map(m -> "\"" + m + "\"")
+                .collect(Collectors.joining(",")) + "]";
+        store.setPaymentMethods(json);
+        storeRepository.save(store);
+        return toResponse(store);
+    }
+
+    @Transactional
+    public StoreDTOs.StoreResponse updateOnboardingStep(String email, Integer storeId,
+                                                        StoreDTOs.OnboardingStepRequest request) {
+        Store store = getStoreAndVerifyOwner(email, storeId);
+        store.setCurrentStep(request.getStep());
         storeRepository.save(store);
         return toResponse(store);
     }
@@ -114,7 +149,6 @@ public class StoreService {
         return toSettingsResponse(settings);
     }
 
-
     @Transactional
     public StoreSettingsDTOs.SettingsResponse updateSettings(String email, Integer storeId,
                                                              StoreSettingsDTOs.UpdateSettingsRequest request) {
@@ -133,15 +167,12 @@ public class StoreService {
         return toSettingsResponse(settings);
     }
 
-  //Only Admin
     public List<StoreDTOs.StoreResponse> getAllStores() {
-        return storeRepository.findAll()
-                .stream().map(this::toResponse).collect(Collectors.toList());
+        return storeRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    // ─────────────────────────────────────────────
-    // HELPERS
-    // ─────────────────────────────────────────────
+    // ── HELPERS ───────────────────────────────────────────────────────────────
+
     private Merchant getMerchantByEmail(String email) {
         var user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -170,6 +201,8 @@ public class StoreService {
                 .description(store.getDescription())
                 .logo(store.getLogo())
                 .status(store.getStatus())
+                .currentStep(store.getCurrentStep())
+                .paymentMethods(store.getPaymentMethods())
                 .createdAt(store.getCreatedAt())
                 .build();
     }

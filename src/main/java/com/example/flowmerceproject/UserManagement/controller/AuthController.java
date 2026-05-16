@@ -1,64 +1,75 @@
 package com.example.flowmerceproject.UserManagement.controller;
 
-import com.example.flowmerceproject.UserManagement.dto.LoginRequest;
-import com.example.flowmerceproject.UserManagement.dto.PasswordDTOs;
-import com.example.flowmerceproject.UserManagement.dto.RegisterRequest;
+import com.example.flowmerceproject.UserManagement.dto.*;
 import com.example.flowmerceproject.UserManagement.service.AuthService;
+import com.example.flowmerceproject.common.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.Objects;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth/merchant")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
 
-    // POST /api/auth/register
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
+    public ResponseEntity<ApiResponse<String>> register(
+            @Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok(authService.register(request), "Registration successful"));
     }
 
-    // GET /api/auth/activate?token=xxx
     @GetMapping("/activate")
-    public ResponseEntity<String> activateAccount(@RequestParam String token) {
-        return ResponseEntity.ok(authService.activateAccount(token));
+    public ResponseEntity<ApiResponse<String>> activateAccount(@RequestParam String token) {
+        return ResponseEntity.ok(ApiResponse.ok(authService.activateAccount(token)));
     }
 
-    // POST /api/auth/login
     @PostMapping("/login")
-    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request) {
-        String jwt = authService.login(request);
-        return ResponseEntity.ok(jwt);
+    public ResponseEntity<ApiResponse<AuthResponse>> login(
+            @Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(authService.login(request), "Login successful"));
     }
 
-    // POST /api/auth/logout  (requires Bearer token in header)
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<AuthResponse>> refresh(
+            @Valid @RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(authService.refreshToken(request.getRefreshToken())));
+    }
+
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<ApiResponse<String>> logout(
+            @RequestHeader("Authorization") String authHeader) {
         Objects.requireNonNull(authHeader, "Authorization header is missing");
         if (!authHeader.startsWith("Bearer ")) {
             throw new IllegalArgumentException("Invalid token format");
         }
-        String token = authHeader.substring(7); // strip "Bearer "
-        return ResponseEntity.ok(authService.logout(token));
+        String token = authHeader.substring(7);
+        return ResponseEntity.ok(ApiResponse.ok(authService.logout(token)));
     }
 
-    // POST /api/auth/forgot-password
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<UserResponse>> me(Principal principal) {
+        return ResponseEntity.ok(ApiResponse.ok(authService.getCurrentUser(principal.getName())));
+    }
+
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(
+    public ResponseEntity<ApiResponse<String>> forgotPassword(
             @Valid @RequestBody PasswordDTOs.ForgotPasswordRequest request) {
-        return ResponseEntity.ok(authService.forgotPassword(request.getEmail()));
+        return ResponseEntity.ok(ApiResponse.ok(authService.forgotPassword(request.getEmail())));
     }
 
-    // POST /api/auth/reset-password
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(
+    public ResponseEntity<ApiResponse<String>> resetPassword(
             @Valid @RequestBody PasswordDTOs.ResetPasswordRequest request) {
-        return ResponseEntity.ok(authService.resetPassword(request));
+        return ResponseEntity.ok(ApiResponse.ok(authService.resetPassword(request)));
     }
 }

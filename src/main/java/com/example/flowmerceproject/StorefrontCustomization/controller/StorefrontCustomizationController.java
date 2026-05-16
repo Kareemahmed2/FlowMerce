@@ -2,6 +2,8 @@ package com.example.flowmerceproject.StorefrontCustomization.controller;
 
 import com.example.flowmerceproject.StorefrontCustomization.dto.StorefrontDTOs.*;
 import com.example.flowmerceproject.StorefrontCustomization.service.StorefrontCustomizationService;
+import com.example.flowmerceproject.common.ApiResponse;
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -10,142 +12,277 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
-/**
- * StorefrontCustomizationController — merchant-facing storefront management.
- *
- * All routes are scoped under:
- *   /api/stores/{storeId}/storefront/...
- *
- * Route map:
- * ─────────────────────────────────────────────────────────────────────
- *  POST  /init        Create (idempotent) StorefrontTemplate + ThemeTemplate + HOME page
- *  GET   /            Fetch StorefrontTemplate for the dashboard
- *  POST  /publish     Make storefront publicly visible; bumps version counter
- *  POST  /unpublish   Pause storefront; removes it from Redis public cache
- *  GET   /colors      Fetch current ThemeTemplate (spec §3.3 colours)
- *  PUT   /colors      Partial-update theme colours with write-behind caching
- *                       (spec §3.1 PUT /stores/:id/colors)
- * ─────────────────────────────────────────────────────────────────────
- */
 @RestController
-@RequestMapping("/api/stores/{storeId}/storefront")
+@RequestMapping("/stores/{storeId}/storefront")
 @RequiredArgsConstructor
 public class StorefrontCustomizationController {
 
     private final StorefrontCustomizationService service;
 
-    // ── Storefront lifecycle ──────────────────────────────────────────────────
+    // ── LIFECYCLE ─────────────────────────────────────────────────────────────
 
-    /**
-     * POST /api/stores/{storeId}/storefront/init
-     *
-     * Creates a StorefrontTemplate with a default ThemeTemplate and an
-     * auto-created HOME page. Idempotent — safe to call multiple times.
-     * Optional body allows pre-seeding the theme colours on first creation.
-     */
     @PostMapping("/init")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<StorefrontTemplateResponse> initStorefront(
+    public ResponseEntity<ApiResponse<StorefrontTemplateResponse>> initStorefront(
             Principal principal,
             @PathVariable Integer storeId,
             @Valid @RequestBody(required = false) CreateStorefrontRequest request) {
-
         CreateStorefrontRequest req = request != null ? request : new CreateStorefrontRequest();
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(service.createStorefront(principal.getName(), storeId, req));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok(
+                        service.createStorefront(principal.getName(), storeId, req),
+                        "Storefront initialised"));
     }
 
-    /**
-     * GET /api/stores/{storeId}/storefront
-     *
-     * Returns the full StorefrontTemplate (theme + page list) for the merchant
-     * dashboard builder. Reads directly from DB — not cached.
-     */
     @GetMapping
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<StorefrontTemplateResponse> getStorefront(
-            Principal principal,
-            @PathVariable Integer storeId) {
-
-        return ResponseEntity.ok(service.getStorefront(principal.getName(), storeId));
+    public ResponseEntity<ApiResponse<StorefrontTemplateResponse>> getStorefront(
+            Principal principal, @PathVariable Integer storeId) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.getStorefront(principal.getName(), storeId)));
     }
 
-    /**
-     * POST /api/stores/{storeId}/storefront/publish
-     *
-     * Makes the storefront publicly visible at the store URL.
-     * Increments the version counter and refreshes the Redis public cache.
-     */
     @PostMapping("/publish")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<StorefrontTemplateResponse> publishStorefront(
-            Principal principal,
-            @PathVariable Integer storeId) {
-
-        return ResponseEntity.ok(service.publishStorefront(principal.getName(), storeId));
+    public ResponseEntity<ApiResponse<StorefrontTemplateResponse>> publishStorefront(
+            Principal principal, @PathVariable Integer storeId) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.publishStorefront(principal.getName(), storeId)));
     }
 
-    /**
-     * POST /api/stores/{storeId}/storefront/unpublish
-     *
-     * Pauses the storefront (status → PAUSED). The public URL returns 404 while
-     * paused. Removes the entry from the Redis public cache immediately.
-     */
     @PostMapping("/unpublish")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<StorefrontTemplateResponse> unpublishStorefront(
-            Principal principal,
-            @PathVariable Integer storeId) {
-
-        return ResponseEntity.ok(service.unpublishStorefront(principal.getName(), storeId));
+    public ResponseEntity<ApiResponse<StorefrontTemplateResponse>> unpublishStorefront(
+            Principal principal, @PathVariable Integer storeId) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.unpublishStorefront(principal.getName(), storeId)));
     }
 
-    // ── Theme colours (spec §3.1 PUT /stores/:id/colors + §3.3) ─────────────
+    // ── DESIGN ────────────────────────────────────────────────────────────────
 
-    /**
-     * GET /api/stores/{storeId}/storefront/colors
-     *
-     * Returns the six theme colour tokens (background, header, footer,
-     * accent, text, card) as defined in spec §3.3.
-     */
+    @GetMapping("/design")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<DesignResponse>> getDesign(
+            Principal principal, @PathVariable Integer storeId) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.getDesign(principal.getName(), storeId)));
+    }
+
+    @PutMapping("/design")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<DesignResponse>> saveDesign(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @RequestBody JsonNode data) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.saveDesign(principal.getName(), storeId, data)));
+    }
+
     @GetMapping("/colors")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<ThemeResponse> getTheme(
-            Principal principal,
-            @PathVariable Integer storeId) {
-
+    public ResponseEntity<ApiResponse<ThemeResponse>> getTheme(
+            Principal principal, @PathVariable Integer storeId) {
         StorefrontTemplateResponse sf = service.getStorefront(principal.getName(), storeId);
-        return ResponseEntity.ok(sf.getTheme());
+        return ResponseEntity.ok(ApiResponse.ok(sf.getTheme()));
     }
 
-    /**
-     * PUT /api/stores/{storeId}/storefront/colors
-     *
-     * Partial update of the theme colour tokens. Matches spec §3.1
-     * {@code PUT /stores/:id/colors} and §3.3 "Theme Colors Schema".
-     *
-     * Uses write-behind caching:
-     *   • Cache is updated immediately → merchant receives 200 without
-     *     waiting for the database write.
-     *   • The database is updated asynchronously in the background.
-     *
-     * All fields are optional; omitted fields retain their current values.
-     *
-     * Example body:
-     * {
-     *   "background": "#F5F5F5",
-     *   "accent":     "#FF6B35"
-     * }
-     */
     @PutMapping("/colors")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<ThemeResponse> updateTheme(
+    public ResponseEntity<ApiResponse<ThemeResponse>> updateTheme(
             Principal principal,
             @PathVariable Integer storeId,
             @Valid @RequestBody UpdateThemeRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.updateTheme(principal.getName(), storeId, request)));
+    }
 
-        return ResponseEntity.ok(service.updateTheme(principal.getName(), storeId, request));
+    // ── PAGES ─────────────────────────────────────────────────────────────────
+
+    @GetMapping("/pages")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<List<PageSummary>>> listPages(
+            Principal principal, @PathVariable Integer storeId) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.listPages(principal.getName(), storeId)));
+    }
+
+    @PostMapping("/pages")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<PageResponse>> createPage(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @RequestBody JsonNode data) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok(
+                        service.createPage(principal.getName(), storeId, data),
+                        "Page created"));
+    }
+
+    @GetMapping("/pages/{pageId}")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<PageResponse>> getPage(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @PathVariable Long pageId) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.getPage(principal.getName(), storeId, pageId)));
+    }
+
+    @PutMapping("/pages/{pageId}")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<PageResponse>> updatePage(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @PathVariable Long pageId,
+            @RequestBody JsonNode data) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.updatePage(principal.getName(), storeId, pageId, data)));
+    }
+
+    @DeleteMapping("/pages/{pageId}")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<String>> deletePage(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @PathVariable Long pageId) {
+        service.deletePage(principal.getName(), storeId, pageId);
+        return ResponseEntity.ok(ApiResponse.ok("Page deleted"));
+    }
+
+    // ── COMPONENTS ────────────────────────────────────────────────────────────
+
+    @GetMapping("/pages/{pageId}/components")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<List<ComponentResponse>>> listComponents(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @PathVariable Long pageId) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.listComponents(principal.getName(), storeId, pageId)));
+    }
+
+    @PostMapping("/pages/{pageId}/components")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<ComponentResponse>> addComponent(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @PathVariable Long pageId,
+            @RequestBody JsonNode data) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok(
+                        service.addComponent(principal.getName(), storeId, pageId, data),
+                        "Component added"));
+    }
+
+    @PutMapping("/pages/{pageId}/components/{componentId}")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<ComponentResponse>> updateComponent(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @PathVariable Long pageId,
+            @PathVariable Long componentId,
+            @RequestBody JsonNode data) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.updateComponent(principal.getName(), storeId, pageId, componentId, data)));
+    }
+
+    @DeleteMapping("/pages/{pageId}/components/{componentId}")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<String>> deleteComponent(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @PathVariable Long pageId,
+            @PathVariable Long componentId) {
+        service.deleteComponent(principal.getName(), storeId, pageId, componentId);
+        return ResponseEntity.ok(ApiResponse.ok("Component deleted"));
+    }
+
+    @PutMapping("/pages/{pageId}/components/reorder")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<List<ComponentResponse>>> reorderComponents(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @PathVariable Long pageId,
+            @RequestBody JsonNode data) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.reorderComponents(principal.getName(), storeId, pageId, data)));
+    }
+
+    // ── DECORATORS ────────────────────────────────────────────────────────────
+
+    @GetMapping("/components/{componentId}/decorators")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<List<DecoratorResponse>>> listDecorators(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @PathVariable Long componentId) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.listDecorators(principal.getName(), storeId, componentId)));
+    }
+
+    @PostMapping("/components/{componentId}/decorators")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<DecoratorResponse>> addDecorator(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @PathVariable Long componentId,
+            @RequestBody JsonNode data) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.addDecorator(principal.getName(), storeId, componentId, data)));
+    }
+
+    @PutMapping("/components/{componentId}/decorators/{decoratorId}")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<DecoratorResponse>> updateDecorator(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @PathVariable Long componentId,
+            @PathVariable Long decoratorId,
+            @RequestBody JsonNode data) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.updateDecorator(principal.getName(), storeId, componentId, decoratorId, data)));
+    }
+
+    @DeleteMapping("/components/{componentId}/decorators/{decoratorId}")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<String>> deleteDecorator(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @PathVariable Long componentId,
+            @PathVariable Long decoratorId) {
+        service.deleteDecorator(principal.getName(), storeId, componentId, decoratorId);
+        return ResponseEntity.ok(ApiResponse.ok("Decorator deleted"));
+    }
+
+    // ── MEDIA ─────────────────────────────────────────────────────────────────
+
+    @GetMapping("/media")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<List<Object>>> listMedia(
+            Principal principal, @PathVariable Integer storeId) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.listMedia(principal.getName(), storeId)));
+    }
+
+    @PostMapping("/media")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<Object>> saveMedia(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @RequestBody JsonNode data) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                service.saveMedia(principal.getName(), storeId, data)));
+    }
+
+    @DeleteMapping("/media/{mediaId}")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<String>> deleteMedia(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @PathVariable Long mediaId) {
+        service.deleteMedia(principal.getName(), storeId, mediaId);
+        return ResponseEntity.ok(ApiResponse.ok("Media deleted"));
     }
 }

@@ -15,88 +15,68 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // ── 404 ──────────────────────────────────────
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(
             ResourceNotFoundException ex, HttpServletRequest request) {
-        return ResponseEntity
-                .status(ex.getStatus())
-                .body(ex.toApiResponse(request.getRequestURI()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of(404, "Not Found", ex.getMessage(),
+                        "NOT_FOUND", request.getRequestURI()));
     }
 
-    // ── 409 ──────────────────────────────────────
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ErrorResponse> handleConflict(
             ConflictException ex, HttpServletRequest request) {
-        return ResponseEntity
-                .status(ex.getStatus())
-                .body(ex.toApiResponse(request.getRequestURI()));
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of(409, "Conflict", ex.getMessage(),
+                        "CONFLICT", request.getRequestURI()));
     }
 
-    // ── 401 ──────────────────────────────────────
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorResponse> handleUnauthorized(
             UnauthorizedException ex, HttpServletRequest request) {
-        return ResponseEntity
-                .status(ex.getStatus())
-                .body(ex.toApiResponse(request.getRequestURI()));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.of(401, "Unauthorized", ex.getMessage(),
+                        "UNAUTHORIZED", request.getRequestURI()));
     }
 
-    // ── 400 ──────────────────────────────────────
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ErrorResponse> handleBadRequest(
             BadRequestException ex, HttpServletRequest request) {
-        return ResponseEntity
-                .status(ex.getStatus())
-                .body(ex.toApiResponse(request.getRequestURI()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(400, "Bad Request", ex.getMessage(),
+                        "BAD_REQUEST", request.getRequestURI()));
     }
 
-    // ── 403 ──────────────────────────────────────
     @ExceptionHandler({ForbiddenException.class, AccessDeniedException.class})
     public ResponseEntity<ErrorResponse> handleForbidden(
             RuntimeException ex, HttpServletRequest request) {
-        // AccessDeniedException comes from Spring Security, doesn't have toApiResponse()
-        // so we handle it manually
-        if (ex instanceof ForbiddenException fe) {
-            return ResponseEntity
-                    .status(fe.getStatus())
-                    .body(fe.toApiResponse(request.getRequestURI()));
-        }
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(ErrorResponse.of(403, "Forbidden",
-                        "You do not have permission to access this resource.",
-                        request.getRequestURI()));
+        String msg = ex instanceof ForbiddenException
+                ? ex.getMessage()
+                : "You do not have permission to access this resource.";
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponse.of(403, "Forbidden", msg,
+                        "FORBIDDEN", request.getRequestURI()));
     }
 
-    // ── 400 Validation (@Valid failures) ─────────
-    // Returns a map of { "fieldName": "error message" }
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidation(
+    public ResponseEntity<ErrorResponse> handleValidation(
             MethodArgumentNotValidException ex, HttpServletRequest request) {
-
-        Map<String, String> fieldErrors = new HashMap<>();
-        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
-            fieldErrors.put(fieldError.getField(), fieldError.getDefaultMessage());
+        Map<String, Object> fieldErrors = new HashMap<>();
+        for (FieldError fe : ex.getBindingResult().getFieldErrors()) {
+            fieldErrors.put(fe.getField(), fe.getDefaultMessage());
         }
-
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", 400);
-        body.put("error", "Validation Failed");
-        body.put("path", request.getRequestURI());
-        body.put("fields", fieldErrors);
-
-        return ResponseEntity.badRequest().body(body);
+        return ResponseEntity.badRequest()
+                .body(ErrorResponse.of(400, "Validation Failed",
+                        "One or more fields failed validation.",
+                        "VALIDATION_ERROR", request.getRequestURI(), fieldErrors));
     }
 
-    // ── 500 Fallback ──────────────────────────────
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(
             Exception ex, HttpServletRequest request) {
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.of(500, "Internal Server Error",
                         "An unexpected error occurred. Please try again later.",
-                        request.getRequestURI()));
+                        "INTERNAL_ERROR", request.getRequestURI()));
     }
 }

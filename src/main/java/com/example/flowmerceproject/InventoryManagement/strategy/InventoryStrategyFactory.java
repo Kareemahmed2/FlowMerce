@@ -1,4 +1,4 @@
-package com.example.flowmerceproject.InventoryMangement.strategy;
+package com.example.flowmerceproject.InventoryManagement.strategy;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -9,9 +9,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class InventoryStrategyFactory {
 
-    // Spring automatically injects all beans that implement InventoryStrategy into this Map.
-// This is NOT a traditional Factory Pattern
-// Instead, Spring handles object creation and wiring using Dependency Injection.
     private final Map<String, InventoryStrategy> strategies;
 
     public InventoryStrategy getStrategy(String type) {

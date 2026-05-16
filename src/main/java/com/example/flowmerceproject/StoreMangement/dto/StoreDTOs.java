@@ -1,16 +1,15 @@
 package com.example.flowmerceproject.StoreMangement.dto;
 
 import com.example.flowmerceproject.StoreMangement.entity.Store;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class StoreDTOs {
 
-    // REQUEST
     @Data
     public static class CreateStoreRequest {
         @NotBlank(message = "Store name is required")
@@ -33,7 +32,26 @@ public class StoreDTOs {
         private String logo;
     }
 
-    // RESPONSE
+    @Data
+    public static class BrandUpdateRequest {
+        @NotBlank
+        private String brandName;
+        private String logoUrl;
+    }
+
+    @Data
+    public static class PaymentMethodsRequest {
+        @NotNull
+        private List<String> methods;
+    }
+
+    @Data
+    public static class OnboardingStepRequest {
+        @NotNull
+        @Min(0) @Max(5)
+        private Integer step;
+    }
+
     @Data
     @Builder
     public static class StoreResponse {
@@ -44,6 +62,8 @@ public class StoreDTOs {
         private String description;
         private String logo;
         private Store.StoreStatus status;
+        private Integer currentStep;
+        private String paymentMethods;
         private LocalDateTime createdAt;
     }
 }

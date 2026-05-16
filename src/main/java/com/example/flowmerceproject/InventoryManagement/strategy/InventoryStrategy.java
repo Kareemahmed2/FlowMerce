@@ -1,6 +1,6 @@
-package com.example.flowmerceproject.InventoryMangement.strategy;
+package com.example.flowmerceproject.InventoryManagement.strategy;
 
-import com.example.flowmerceproject.InventoryMangement.entity.Inventory;
+import com.example.flowmerceproject.InventoryManagement.entity.Inventory;
 
 public interface InventoryStrategy {
     void updateStock(Inventory inventory, int quantity);

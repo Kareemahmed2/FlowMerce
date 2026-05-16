@@ -16,6 +16,8 @@ public interface SessionRepository extends JpaRepository<Session, Integer> {
     // Find a session by JWT token string (used to validate incoming requests)
     Optional<Session> findByToken(String token);
 
+    Optional<Session> findByTokenAndIsRevokedFalse(String token);
+
     // Check if a token is valid (exists and not revoked)
     boolean existsByTokenAndIsRevokedFalse(String token);
 
