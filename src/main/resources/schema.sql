@@ -151,11 +151,14 @@ CREATE TABLE IF NOT EXISTS inventory (
 -- CART & CHECKOUT
 -- =========================
 
+-- one cart per customer, expires after 7 days of inactivity
+-- CartCleanupScheduler runs at 2AM daily to delete expired carts
+-- and release their reserved stock back to inventory
 CREATE TABLE IF NOT EXISTS shopping_carts (
                                               cart_id     SERIAL PRIMARY KEY,
-                                              customer_id INT NOT NULL,
+                                              customer_id INT NOT NULL UNIQUE,  -- one cart per customer
                                               created_at  TIMESTAMP WITHOUT TIME ZONE,
-                                              expires_at  TIMESTAMP WITHOUT TIME ZONE,
+                                              expires_at  TIMESTAMP WITHOUT TIME ZONE,  -- set to now() + 7 days on creation
                                               FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE
     );
 
@@ -165,9 +168,22 @@ CREATE TABLE IF NOT EXISTS cart_items (
                                           product_id   INT NOT NULL,
                                           quantity     INT NOT NULL DEFAULT 1,
                                           price_at_add DECIMAL(10,2) NOT NULL,  -- price snapshot at the time of adding to cart
+-- protects buyer if merchant changes price later
     added_at     TIMESTAMP WITHOUT TIME ZONE,
     FOREIGN KEY (cart_id)    REFERENCES shopping_carts(cart_id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(product_id)
+    );
+
+-- wishlist: buyer saves products to buy later
+-- one product per user enforced by UNIQUE constraint
+CREATE TABLE IF NOT EXISTS wishlists (
+                                         wishlist_id SERIAL PRIMARY KEY,
+                                         user_id     INT NOT NULL,
+                                         product_id  INT NOT NULL,
+                                         created_at  TIMESTAMP WITHOUT TIME ZONE,
+                                         UNIQUE (user_id, product_id),  -- prevent duplicate wishlist entries
+    FOREIGN KEY (user_id)    REFERENCES users(user_id)       ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
     );
 
 -- =========================
@@ -183,8 +199,8 @@ CREATE TABLE IF NOT EXISTS orders (
     shipping_address TEXT,
     billing_address  TEXT,
     subtotal         DECIMAL(10,2),
-    tax              DECIMAL(10,2),
-    shipping_cost    DECIMAL(10,2),
+    tax              DECIMAL(10,2) DEFAULT 0,  -- 0 for MVP, configurable via app.tax.rate
+    shipping_cost    DECIMAL(10,2),            -- flat rate, configurable via app.shipping.flat-rate
     total            DECIMAL(10,2),
     payment_method   VARCHAR(50),  -- STRIPE, MADA, STC_PAY
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
