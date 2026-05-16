@@ -1,9 +1,9 @@
 package com.example.flowmerceproject.InventoryMangement.service;
 
+import com.example.flowmerceproject.InventoryMangement.dto.InventoryResponse;
 import com.example.flowmerceproject.InventoryMangement.entity.Inventory;
 import com.example.flowmerceproject.InventoryMangement.event.StockChangedEvent;
 import com.example.flowmerceproject.InventoryMangement.repository.InventoryRepository;
-import com.example.flowmerceproject.InventoryMangement.strategy.InventoryStrategy;
 import com.example.flowmerceproject.InventoryMangement.strategy.InventoryStrategyFactory;
 import com.example.flowmerceproject.UserManagement.exception.BadRequestException;
 import com.example.flowmerceproject.UserManagement.exception.ResourceNotFoundException;
@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.OptimisticLockingFailureException;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class InventoryServiceImpl implements InventoryService {
 
     private final InventoryRepository inventoryRepository;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final StringRedisTemplate redisTemplate;
     private final InventoryStrategyFactory strategyFactory;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -46,13 +46,13 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public void cacheStock(Long productId, int quantity) {
-        redisTemplate.opsForValue().set(key(productId), quantity);
+        redisTemplate.opsForValue().set(key(productId), String.valueOf(quantity));
         log.info("Cached stock: product={}, qty={}", productId, quantity);
     }
 
     @Override
     public void adjustStock(Long productId, int quantity) {
-
+        adjustStock(productId, quantity, "NORMAL");
     }
 
     @Override
@@ -67,7 +67,7 @@ public class InventoryServiceImpl implements InventoryService {
 
             //Sync Redis cache
             int available = inventory.getQuantity() - inventory.getReservedQuantity();
-            redisTemplate.opsForValue().set(key(productId), available);
+            redisTemplate.opsForValue().set(key(productId), String.valueOf(available));
 
             //Observer listeners react automatically
             eventPublisher.publishEvent(new StockChangedEvent(
@@ -96,7 +96,7 @@ public class InventoryServiceImpl implements InventoryService {
             if (Boolean.FALSE.equals(redisTemplate.hasKey(redisKey))) {
                 Inventory inv = getOrThrow(productId);
                 redisTemplate.opsForValue().set(redisKey,
-                        inv.getQuantity() - inv.getReservedQuantity());
+                        String.valueOf(inv.getQuantity() - inv.getReservedQuantity()));
             }
 
             //Atomic decrement in Redis
@@ -160,15 +160,15 @@ public class InventoryServiceImpl implements InventoryService {
     // Redis first → DB fallback
     @Override
     public int getAvailableQuantity(Long productId) {
-        Object cached = redisTemplate.opsForValue().get(key(productId));
+        String cached = redisTemplate.opsForValue().get(key(productId));
         if (cached != null) {
             log.debug("Cache hit: product={}", productId);
-            return ((Number) cached).intValue();
+            return Integer.parseInt(cached);
         }
         log.debug("Cache miss: product={} — loading from DB", productId);
         Inventory inv = getOrThrow(productId);
         int available = inv.getQuantity() - inv.getReservedQuantity();
-        redisTemplate.opsForValue().set(key(productId), available);
+        redisTemplate.opsForValue().set(key(productId), String.valueOf(available));
         return available;
     }
 
@@ -202,7 +202,7 @@ public class InventoryServiceImpl implements InventoryService {
 
             // Sync Redis with final available quantity
             int available = inv.getQuantity() - inv.getReservedQuantity();
-            redisTemplate.opsForValue().set(key(productId), available);
+            redisTemplate.opsForValue().set(key(productId), String.valueOf(available));
 
             // Publish — triggers analytics, low stock alerts, etc.
             eventPublisher.publishEvent(new StockChangedEvent(
@@ -216,5 +216,19 @@ public class InventoryServiceImpl implements InventoryService {
             throw new BadRequestException(
                     "Order confirmation conflict on product: " + productId + ". Please retry.");
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public InventoryResponse getInventoryDetails(Long productId) {
+        Inventory inv = getOrThrow(productId);
+        int available = inv.getQuantity() - inv.getReservedQuantity();
+        return InventoryResponse.builder()
+                .productId(productId)
+                .availableQuantity(available)
+                .reservedQuantity(inv.getReservedQuantity())
+                .totalQuantity(inv.getQuantity())
+                .stockStatus(resolveStockStatus(inv))
+                .build();
     }
 }

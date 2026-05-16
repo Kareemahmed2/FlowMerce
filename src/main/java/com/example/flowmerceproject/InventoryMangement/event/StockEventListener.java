@@ -56,7 +56,7 @@ public class StockEventListener {
                 put("productId",   event.getProductId());
                 put("newQuantity", 0);
                 put("alertLevel",  "OUT_OF_STOCK");
-                put("message",     "Prod!uct #" + event.getProductId() + " is OUT OF STOCK!");
+                put("message",     "Product #" + event.getProductId() + " is OUT OF STOCK!");
             }});
         }
 

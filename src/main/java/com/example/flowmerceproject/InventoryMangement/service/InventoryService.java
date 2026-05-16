@@ -1,17 +1,16 @@
 package com.example.flowmerceproject.InventoryMangement.service;
 
-import org.springframework.transaction.annotation.Transactional;
+import com.example.flowmerceproject.InventoryMangement.dto.InventoryResponse;
 
 public interface InventoryService {
 
     // Load stock from DB into Redis cache on startup or on demand
     void cacheStock(Long productId, int quantity);
 
-    // ADD or SUBTRACT stock — updates both Redis AND DB
+    // ADD or SUBTRACT stock using NORMAL strategy (signed quantity: + adds, - removes)
     void adjustStock(Long productId, int quantity);
 
-    // Updates DB first, then syncs Redis
-    @Transactional
+    // ADD or SUBTRACT stock using the given strategy — updates DB then syncs Redis
     void adjustStock(Long productId, int quantity, String strategyType);
 
     boolean reserveStock(Long productId, int quantity);
@@ -22,6 +21,9 @@ public interface InventoryService {
     int getAvailableQuantity(Long productId);
 
     boolean checkAvailability(Long productId, int requiredQty);
+
+    // Full inventory snapshot for a product (used by the controller response)
+    InventoryResponse getInventoryDetails(Long productId);
 
     // Called when order is confirmed — permanently reduces DB stock
     void confirmOrder(Long productId, int quantity);
