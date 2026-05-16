@@ -126,6 +126,20 @@ CREATE TABLE IF NOT EXISTS reviews (
 );
 
 -- =========================
+-- INVENTORY
+-- =========================
+
+CREATE TABLE IF NOT EXISTS inventory (
+  inventory_id        SERIAL PRIMARY KEY,
+  product_id          BIGINT NOT NULL UNIQUE,
+  quantity            INT NOT NULL DEFAULT 0,
+  reserved_quantity   INT NOT NULL DEFAULT 0,
+  low_stock_threshold INT NOT NULL DEFAULT 10,
+  version             INT NOT NULL DEFAULT 0,
+  FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
+);
+
+-- =========================
 -- CART & CHECKOUT
 -- =========================
 

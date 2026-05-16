@@ -25,7 +25,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults())  // Add this for CORS (configure in CorsConfig if needed)
+                .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -40,6 +40,8 @@ public class SecurityConfig {
                                 "/actuator/health",
                                 "/api/public/storefront/**"
                         ).permitAll()
+                        // SSE private stream — needs JWT
+                        .requestMatchers("/stream/private").authenticated()
                         // Admin-only endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // Everything else requires authentication
