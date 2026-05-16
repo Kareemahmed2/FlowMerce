@@ -100,6 +100,7 @@ public class UserService {
                 .fullName(user.getFullName())
                 .phone(user.getPhone())
                 .role(user.getRole())
+                .isActive(user.getIsActive())
                 .createdAt(user.getCreatedAt())
                 .build();
     }

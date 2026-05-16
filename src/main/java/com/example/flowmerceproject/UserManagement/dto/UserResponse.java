@@ -16,6 +16,6 @@ public class UserResponse {
     private String fullName;
     private String phone;
     private Role role;
-    private Boolean isMfaEnabled;
+    private Boolean isActive;
     private LocalDateTime createdAt;
 }
