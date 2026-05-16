@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS roles  (
 
 CREATE TABLE IF NOT EXISTS users (
   user_id SERIAL PRIMARY KEY,
+  role_id INT,
   email VARCHAR(255) UNIQUE,
   password_hash VARCHAR(255),
   full_name VARCHAR(100),
@@ -241,6 +242,75 @@ CREATE TABLE IF NOT EXISTS notifications (
   channel VARCHAR(50), -- Email, SMS, WhatsApp
   sent_at TIMESTAMP WITHOUT TIME ZONE,
   FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+-- ===================================
+-- STOREFRONT CUSTOMIZATION
+-- ===================================
+
+-- Six theme colour tokens (spec §3.3): background, header, footer, accent, text, card.
+-- One ThemeTemplate belongs to one StorefrontTemplate (1:1, owned side).
+CREATE TABLE IF NOT EXISTS theme_templates (
+  theme_id    SERIAL PRIMARY KEY,
+  background  VARCHAR(7)  NOT NULL DEFAULT '#FFFFFF',
+  header      VARCHAR(7)  NOT NULL DEFAULT '#1A1A2E',
+  footer      VARCHAR(7)  NOT NULL DEFAULT '#16213E',
+  accent      VARCHAR(7)  NOT NULL DEFAULT '#E94560',
+  text_color  VARCHAR(7)  NOT NULL DEFAULT '#1A1A1A',
+  card        VARCHAR(7)  NOT NULL DEFAULT '#F9F9F9',
+  created_at  TIMESTAMP WITHOUT TIME ZONE,
+  updated_at  TIMESTAMP WITHOUT TIME ZONE
+);
+
+-- Top-level aggregate for a merchant's storefront presentation.
+-- One Store → One StorefrontTemplate (1:1, unique on store_id).
+CREATE TABLE IF NOT EXISTS storefront_templates (
+  template_id  SERIAL PRIMARY KEY,
+  store_id     INT  NOT NULL UNIQUE,
+  theme_id     INT,
+  status       VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
+  version      INT         NOT NULL DEFAULT 1,
+  published_at TIMESTAMP WITHOUT TIME ZONE,
+  created_at   TIMESTAMP WITHOUT TIME ZONE,
+  updated_at   TIMESTAMP WITHOUT TIME ZONE,
+  FOREIGN KEY (store_id) REFERENCES stores(store_id)  ON DELETE CASCADE,
+  FOREIGN KEY (theme_id) REFERENCES theme_templates(theme_id) ON DELETE SET NULL
+);
+
+-- Individual navigable pages within a storefront.
+-- Slug must be unique per storefront. "home" is reserved and auto-created.
+CREATE TABLE IF NOT EXISTS storefront_pages (
+  page_id          SERIAL PRIMARY KEY,
+  storefront_id    INT          NOT NULL,
+  title            VARCHAR(100) NOT NULL,
+  slug             VARCHAR(100) NOT NULL,
+  page_type        VARCHAR(20)  NOT NULL DEFAULT 'CUSTOM',
+  is_published     BOOLEAN      NOT NULL DEFAULT false,
+  meta_description VARCHAR(300),
+  nav_order        INT          NOT NULL DEFAULT 0,
+  show_in_nav      BOOLEAN      NOT NULL DEFAULT true,
+  created_at       TIMESTAMP WITHOUT TIME ZONE,
+  updated_at       TIMESTAMP WITHOUT TIME ZONE,
+  FOREIGN KEY (storefront_id) REFERENCES storefront_templates(template_id) ON DELETE CASCADE,
+  CONSTRAINT uq_storefront_page_slug UNIQUE (storefront_id, slug)
+);
+
+-- Atomic UI elements placed on a storefront page.
+-- is_visible is the core flag: false hides the component from the frontend renderer.
+-- content is a JSON string whose schema varies per component_type.
+CREATE TABLE IF NOT EXISTS base_components (
+  component_id   SERIAL PRIMARY KEY,
+  store_id       INT          NOT NULL,
+  page_id        INT          NOT NULL,
+  component_type VARCHAR(50)  NOT NULL,
+  name           VARCHAR(100) NOT NULL,
+  content        TEXT,
+  sort_order     INT          NOT NULL DEFAULT 0,
+  is_visible     BOOLEAN      NOT NULL DEFAULT true,
+  created_at     TIMESTAMP WITHOUT TIME ZONE,
+  updated_at     TIMESTAMP WITHOUT TIME ZONE,
+  FOREIGN KEY (store_id) REFERENCES stores(store_id) ON DELETE CASCADE,
+  FOREIGN KEY (page_id)  REFERENCES storefront_pages(page_id) ON DELETE CASCADE
 );
 
 -- =========================

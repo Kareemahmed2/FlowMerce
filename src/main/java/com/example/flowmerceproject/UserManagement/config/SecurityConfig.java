@@ -38,7 +38,7 @@ public class SecurityConfig {
                                 "/api/auth/forgot-password",
                                 "/api/auth/reset-password",
                                 "/actuator/health",
-                                "/stream/stock"      // SSE broadcast — open to all
+                                "/api/public/storefront/**"
                         ).permitAll()
                         // SSE private stream — needs JWT
                         .requestMatchers("/stream/private").authenticated()
