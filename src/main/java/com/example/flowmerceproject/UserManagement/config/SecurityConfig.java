@@ -37,7 +37,8 @@ public class SecurityConfig {
                                 "/api/auth/activate",
                                 "/api/auth/forgot-password",
                                 "/api/auth/reset-password",
-                                "/actuator/health"
+                                "/actuator/health",
+                                "/api/public/storefront/**"
                         ).permitAll()
                         // Admin-only endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
