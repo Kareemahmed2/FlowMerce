@@ -8,9 +8,12 @@ import com.example.flowmerceproject.InventoryManagement.service.InventoryService
 import com.example.flowmerceproject.ProductManagement.entity.Product;
 import com.example.flowmerceproject.ProductManagement.entity.ProductMedia;
 import com.example.flowmerceproject.ProductManagement.repository.ProductRepository;
+import com.example.flowmerceproject.UserManagement.entity.Customer;
 import com.example.flowmerceproject.UserManagement.entity.User;
+import com.example.flowmerceproject.UserManagement.exception.BadRequestException;
 import com.example.flowmerceproject.UserManagement.exception.ConflictException;
 import com.example.flowmerceproject.UserManagement.exception.ResourceNotFoundException;
+import com.example.flowmerceproject.UserManagement.repository.CustomerRepository;
 import com.example.flowmerceproject.UserManagement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,51 +31,53 @@ public class WishlistService {
     private final WishlistRepository wishlistRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
     private final InventoryService inventoryService;
     private final CartService cartService;
 
     public WishlistDTOs.WishlistResponse getMyWishlist(String email) {
-        User user = findUserByEmail(email);
-        List<Wishlist> items = wishlistRepository.findByUser_UserId(user.getUserId());
-        return toResponse(user.getUserId(), items);
+        Customer customer = findCustomerByEmail(email);
+        List<Wishlist> items = wishlistRepository.findByCustomer_CustomerId(customer.getCustomerId());
+        return toResponse(customer.getCustomerId(), items);
     }
 
     @Transactional
     public WishlistDTOs.WishlistResponse addToWishlist(String email,
                                                        WishlistDTOs.AddToWishlistRequest request) {
-        User user = findUserByEmail(email);
+        Customer customer = findCustomerByEmail(email);
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Product not found: " + request.getProductId()));
 
-        if (wishlistRepository.existsByUser_UserIdAndProduct_ProductId(
-                user.getUserId(), product.getProductId())) {
+        if (wishlistRepository.existsByCustomer_CustomerIdAndProduct_ProductId(
+                customer.getCustomerId(), product.getProductId())) {
             throw new ConflictException("Product already in your wishlist.");
         }
 
-        wishlistRepository.save(Wishlist.builder().user(user).product(product).build());
+        wishlistRepository.save(Wishlist.builder().customer(customer).product(product).build());
         return getMyWishlist(email);
     }
 
     @Transactional
     public WishlistDTOs.WishlistResponse removeFromWishlist(String email, Integer productId) {
-        User user = findUserByEmail(email);
+        Customer customer = findCustomerByEmail(email);
 
-        if (!wishlistRepository.existsByUser_UserIdAndProduct_ProductId(
-                user.getUserId(), productId)) {
+        if (!wishlistRepository.existsByCustomer_CustomerIdAndProduct_ProductId(
+                customer.getCustomerId(), productId)) {
             throw new ResourceNotFoundException("Product not found in your wishlist.");
         }
 
-        wishlistRepository.deleteByUser_UserIdAndProduct_ProductId(user.getUserId(), productId);
+        wishlistRepository.deleteByCustomer_CustomerIdAndProduct_ProductId(
+                customer.getCustomerId(), productId);
         return getMyWishlist(email);
     }
 
     @Transactional
     public CartDTOs.CartResponse moveToCart(String email, Integer productId) {
-        User user = findUserByEmail(email);
+        Customer customer = findCustomerByEmail(email);
 
-        if (!wishlistRepository.existsByUser_UserIdAndProduct_ProductId(
-                user.getUserId(), productId)) {
+        if (!wishlistRepository.existsByCustomer_CustomerIdAndProduct_ProductId(
+                customer.getCustomerId(), productId)) {
             throw new ResourceNotFoundException("Product not found in your wishlist.");
         }
 
@@ -81,16 +86,19 @@ public class WishlistService {
         cartRequest.setQuantity(1);
 
         CartDTOs.CartResponse cartResponse = cartService.addItem(email, cartRequest);
-        wishlistRepository.deleteByUser_UserIdAndProduct_ProductId(user.getUserId(), productId);
+        wishlistRepository.deleteByCustomer_CustomerIdAndProduct_ProductId(
+                customer.getCustomerId(), productId);
         return cartResponse;
     }
 
-    private User findUserByEmail(String email) {
-        return userRepository.findByEmail(email)
+    private Customer findCustomerByEmail(String email) {
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return customerRepository.findByUser_UserId(user.getUserId())
+                .orElseThrow(() -> new BadRequestException("Only customers can use the wishlist."));
     }
 
-    private WishlistDTOs.WishlistResponse toResponse(Integer userId, List<Wishlist> items) {
+    private WishlistDTOs.WishlistResponse toResponse(Integer customerId, List<Wishlist> items) {
         List<WishlistDTOs.WishlistItemResponse> itemResponses = items.stream()
                 .map(w -> {
                     Product p = w.getProduct();
@@ -123,7 +131,7 @@ public class WishlistService {
                 .collect(Collectors.toList());
 
         return WishlistDTOs.WishlistResponse.builder()
-                .userId(userId)
+                .userId(customerId)
                 .items(itemResponses)
                 .totalItems(itemResponses.size())
                 .build();

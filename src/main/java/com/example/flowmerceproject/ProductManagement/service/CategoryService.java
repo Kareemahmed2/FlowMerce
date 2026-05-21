@@ -20,7 +20,10 @@ public class CategoryService {
 
     @Transactional
     public CategoryDTOs.CategoryResponse createCategory(CategoryDTOs.CategoryRequest request) {
-        if (categoryRepository.existsByName(request.getName())) {
+        boolean nameExists = request.getStoreId() != null
+                ? categoryRepository.existsByNameAndStore_StoreId(request.getName(), request.getStoreId())
+                : categoryRepository.existsByName(request.getName());
+        if (nameExists) {
             throw new ConflictException("Category already exists: " + request.getName());
         }
         Category category = Category.builder()

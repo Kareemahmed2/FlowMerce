@@ -20,7 +20,7 @@ public class Inventory {
     private Long inventoryId;
 
     @Column(nullable = false, unique = true)
-    private Long productId;
+    private Integer productId;
 
     @Column(nullable = false)
     @Builder.Default

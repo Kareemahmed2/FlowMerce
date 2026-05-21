@@ -46,9 +46,9 @@ public class AdminController {
     }
 
     @DeleteMapping("/merchants/{merchantId}")
-    public ResponseEntity<Void> deleteMerchant(@PathVariable Integer merchantId) {
+    public ResponseEntity<ApiResponse<String>> deleteMerchant(@PathVariable Integer merchantId) {
         merchantService.deleteMerchantById(merchantId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.ok(null, "Merchant deleted successfully."));
     }
 
     @GetMapping("/stores")

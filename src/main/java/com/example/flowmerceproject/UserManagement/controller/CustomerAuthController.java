@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.flowmerceproject.UserManagement.exception.BadRequestException;
 import java.security.Principal;
 import java.util.Objects;
 
@@ -49,7 +50,7 @@ public class CustomerAuthController {
             @RequestHeader("Authorization") String authHeader) {
         Objects.requireNonNull(authHeader, "Authorization header is missing");
         if (!authHeader.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("Invalid token format");
+            throw new BadRequestException("Invalid token format");
         }
         return ResponseEntity.ok(ApiResponse.ok(authService.logout(authHeader.substring(7))));
     }

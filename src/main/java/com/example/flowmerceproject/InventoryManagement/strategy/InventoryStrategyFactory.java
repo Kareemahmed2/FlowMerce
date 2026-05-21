@@ -1,5 +1,6 @@
 package com.example.flowmerceproject.InventoryManagement.strategy;
 
+import com.example.flowmerceproject.UserManagement.exception.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +15,7 @@ public class InventoryStrategyFactory {
     public InventoryStrategy getStrategy(String type) {
         InventoryStrategy strategy = strategies.get(type.toUpperCase());
         if (strategy == null) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "Unknown strategy: " + type + ". Valid: NORMAL, RESERVED, FLASH");
         }
         return strategy;

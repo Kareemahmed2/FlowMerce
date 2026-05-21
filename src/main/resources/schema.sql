@@ -101,8 +101,11 @@ CREATE TABLE IF NOT EXISTS categories (
   store_id    INT,
   name        VARCHAR(100) NOT NULL,
   description TEXT,
+  created_at  TIMESTAMP WITHOUT TIME ZONE,
   FOREIGN KEY (store_id) REFERENCES stores(store_id) ON DELETE CASCADE
 );
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS
+  created_at TIMESTAMP WITHOUT TIME ZONE;
 CREATE INDEX IF NOT EXISTS idx_categories_store ON categories(store_id);
 
 CREATE TABLE IF NOT EXISTS products (
@@ -150,7 +153,7 @@ CREATE TABLE IF NOT EXISTS reviews (
 
 CREATE TABLE IF NOT EXISTS inventory (
   inventory_id        SERIAL PRIMARY KEY,
-  product_id          BIGINT NOT NULL UNIQUE,
+  product_id          INT    NOT NULL UNIQUE,
   store_id            INT    NOT NULL DEFAULT 0,
   quantity            INT    NOT NULL DEFAULT 0,
   reserved_quantity   INT    NOT NULL DEFAULT 0,
@@ -159,6 +162,7 @@ CREATE TABLE IF NOT EXISTS inventory (
   updated_at          TIMESTAMP WITHOUT TIME ZONE,
   FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
 );
+ALTER TABLE inventory ALTER COLUMN product_id TYPE INT;
 
 CREATE TABLE IF NOT EXISTS inventory_transactions (
   txn_id          SERIAL PRIMARY KEY,
@@ -201,18 +205,27 @@ CREATE TABLE IF NOT EXISTS cart_items (
   FOREIGN KEY (cart_id)    REFERENCES shopping_carts(cart_id) ON DELETE CASCADE,
   FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
+ALTER TABLE cart_items
+  DROP CONSTRAINT IF EXISTS cart_items_product_id_fkey,
+  ADD CONSTRAINT fk_cart_items_product
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE;
 CREATE INDEX IF NOT EXISTS idx_cart_items_cart ON cart_items(cart_id);
 
--- Wishlist: one product per user enforced by UNIQUE
+-- Wishlist: one product per customer enforced by UNIQUE
 CREATE TABLE IF NOT EXISTS wishlists (
   wishlist_id SERIAL PRIMARY KEY,
-  user_id     INT NOT NULL,
+  customer_id INT NOT NULL,
   product_id  INT NOT NULL,
   created_at  TIMESTAMP WITHOUT TIME ZONE,
-  UNIQUE (user_id, product_id),
-  FOREIGN KEY (user_id)    REFERENCES users(user_id)       ON DELETE CASCADE,
-  FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
+  UNIQUE (customer_id, product_id),
+  FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id)  REFERENCES products(product_id)  ON DELETE CASCADE
 );
+ALTER TABLE wishlists DROP CONSTRAINT IF EXISTS wishlists_user_id_fkey;
+ALTER TABLE wishlists RENAME COLUMN user_id TO customer_id;
+ALTER TABLE wishlists
+  ADD CONSTRAINT fk_wishlists_customer
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE;
 
 -- =========================
 -- ORDERS & PAYMENTS
@@ -369,6 +382,20 @@ CREATE TABLE IF NOT EXISTS storefront_media (
   FOREIGN KEY (store_id) REFERENCES stores(store_id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_sf_media_store ON storefront_media(store_id);
+
+CREATE TABLE IF NOT EXISTS component_decorators (
+  decorator_id BIGSERIAL    PRIMARY KEY,
+  component_id BIGINT       NOT NULL,
+  priority     INT          NOT NULL DEFAULT 0,
+  data         TEXT         NOT NULL DEFAULT '{}',
+  created_at   TIMESTAMP WITHOUT TIME ZONE,
+  updated_at   TIMESTAMP WITHOUT TIME ZONE,
+  CONSTRAINT fk_decorator_component
+    FOREIGN KEY (component_id)
+    REFERENCES base_components(component_id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_decorators_component_id
+  ON component_decorators(component_id);
 
 -- =========================
 -- ANALYTICS & REPORTS

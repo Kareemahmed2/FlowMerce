@@ -9,8 +9,15 @@ import com.example.flowmerceproject.InventoryManagement.repository.InventoryRepo
 import com.example.flowmerceproject.InventoryManagement.repository.InventoryTransactionRepository;
 import com.example.flowmerceproject.InventoryManagement.strategy.InventoryStrategy;
 import com.example.flowmerceproject.InventoryManagement.strategy.InventoryStrategyFactory;
+import com.example.flowmerceproject.ProductManagement.entity.Product;
+import com.example.flowmerceproject.ProductManagement.repository.ProductRepository;
+import com.example.flowmerceproject.UserManagement.entity.Merchant;
+import com.example.flowmerceproject.UserManagement.entity.User;
 import com.example.flowmerceproject.UserManagement.exception.BadRequestException;
+import com.example.flowmerceproject.UserManagement.exception.ForbiddenException;
 import com.example.flowmerceproject.UserManagement.exception.ResourceNotFoundException;
+import com.example.flowmerceproject.UserManagement.repository.MerchantRepository;
+import com.example.flowmerceproject.UserManagement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +40,9 @@ public class InventoryServiceImpl implements InventoryService {
     private final StringRedisTemplate redisTemplate;
     private final InventoryStrategyFactory strategyFactory;
     private final ApplicationEventPublisher eventPublisher;
+    private final UserRepository userRepository;
+    private final MerchantRepository merchantRepository;
+    private final ProductRepository productRepository;
 
     @Value("${inventory.low-stock-threshold:5}")
     private int lowStockThreshold;
@@ -44,9 +54,22 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     private Inventory getOrThrow(Long productId) {
-        return inventoryRepository.findByProductId(productId)
+        return inventoryRepository.findByProductId(productId.intValue())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Inventory not found for product: " + productId));
+    }
+
+    private void verifyProductOwnership(String email, Long productId) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Merchant merchant = merchantRepository.findByUser_UserId(user.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Merchant not found"));
+        Product product = productRepository.findById(productId.intValue())
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        if (!product.getStore().getMerchant().getMerchantId()
+                .equals(merchant.getMerchantId())) {
+            throw new ForbiddenException("You do not own this product.");
+        }
     }
 
     private String resolveStockStatus(Inventory inv) {
@@ -58,7 +81,7 @@ public class InventoryServiceImpl implements InventoryService {
     private void saveTransaction(Inventory inv, int qtyBefore, int quantityChange,
                                   Type type, String createdBy, String referenceId, String note) {
         transactionRepository.save(InventoryTransaction.builder()
-                .productId(inv.getProductId())
+                .productId((long) inv.getProductId())
                 .storeId(inv.getStoreId())
                 .type(type)
                 .quantityChange(quantityChange)
@@ -90,6 +113,9 @@ public class InventoryServiceImpl implements InventoryService {
     @Transactional
     public void adjustStock(Long productId, int quantity, String strategyType,
                              Integer storeId, String createdBy, String referenceId, String note) {
+        if (createdBy != null && !createdBy.equals("system")) {
+            verifyProductOwnership(createdBy, productId);
+        }
         try {
             Inventory inventory = getOrThrow(productId);
             int qtyBefore = inventory.getQuantity();
@@ -246,14 +272,17 @@ public class InventoryServiceImpl implements InventoryService {
     @Transactional(readOnly = true)
     public List<InventoryResponse> getStoreInventory(Integer storeId) {
         return inventoryRepository.findByStoreId(storeId).stream()
-                .map(inv -> InventoryResponse.builder()
-                        .productId(inv.getProductId())
-                        .storeId(inv.getStoreId())
-                        .availableQuantity(inv.getQuantity() - inv.getReservedQuantity())
-                        .reservedQuantity(inv.getReservedQuantity())
-                        .totalQuantity(inv.getQuantity())
-                        .stockStatus(resolveStockStatus(inv))
-                        .build())
+                .map(inv -> {
+                    InventoryResponse r = InventoryResponse.builder()
+                            .productId((long) inv.getProductId())
+                            .storeId(inv.getStoreId())
+                            .availableQuantity(inv.getQuantity() - inv.getReservedQuantity())
+                            .reservedQuantity(inv.getReservedQuantity())
+                            .totalQuantity(inv.getQuantity())
+                            .stockStatus(resolveStockStatus(inv))
+                            .build();
+                    return r;
+                })
                 .collect(Collectors.toList());
     }
 

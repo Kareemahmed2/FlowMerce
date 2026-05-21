@@ -65,7 +65,7 @@ public class ProductController {
                         principal.getName(), storeId, productId, request)));
     }
 
-    @PutMapping("/{productId}/toggle")
+    @PatchMapping("/{productId}/status")
     @PreAuthorize("hasRole('MERCHANT')")
     public ResponseEntity<ApiResponse<ProductDTOs.ProductResponse>> toggle(
             Principal principal,

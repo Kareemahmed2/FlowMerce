@@ -12,6 +12,7 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
 
     Optional<Category> findByName(String name);
     boolean existsByName(String name);
+    boolean existsByNameAndStore_StoreId(String name, Integer storeId);
 
     List<Category> findByStore_StoreId(Integer storeId);
     List<Category> findByStoreIsNull();

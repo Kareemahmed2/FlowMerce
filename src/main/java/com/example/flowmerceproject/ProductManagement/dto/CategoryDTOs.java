@@ -11,6 +11,7 @@ public class CategoryDTOs {
         @NotBlank(message = "Category name is required")
         private String name;
         private String description;
+        private Integer storeId;
     }
 
     @Data

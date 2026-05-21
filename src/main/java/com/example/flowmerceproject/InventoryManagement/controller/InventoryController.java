@@ -71,13 +71,13 @@ public class InventoryController {
     @PostMapping("/inventory/adjust")
     @PreAuthorize("hasRole('MERCHANT')")
     public ResponseEntity<ApiResponse<String>> adjustStock(
-            @Valid @RequestBody InventoryRequest request) {
+            @Valid @RequestBody InventoryRequest request,
+            Principal principal) {
+        String strategy = request.getStrategyType() != null ? request.getStrategyType() : "NORMAL";
         inventoryService.adjustStock(
-                request.getProductId(),
-                request.getQuantity(),
-                request.getStrategyType() != null ? request.getStrategyType() : "NORMAL");
-        return ResponseEntity.ok(ApiResponse.ok("Stock adjusted using "
-                + request.getStrategyType() + " strategy"));
+                request.getProductId(), request.getQuantity(), strategy,
+                null, principal.getName(), null, null);
+        return ResponseEntity.ok(ApiResponse.ok("Stock adjusted using " + strategy + " strategy"));
     }
 
     @PostMapping("/inventory/reserve")

@@ -3,6 +3,9 @@ package com.example.flowmerceproject.ProductManagement.entity;
 import com.example.flowmerceproject.StoreMangement.entity.Store;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "categories")
@@ -25,4 +28,8 @@ public class Category {
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 }

@@ -515,3 +515,30 @@ Updated the import to `com.example.flowmerceproject.InventoryManagement.event.St
 | F-26 application.properties | LOW | Configuration | application.properties |
 | Bonus pom.xml version | BUILD BLOCKER | Build | pom.xml |
 | Bonus SseService import | BUILD ERROR | Package rename | SseService.java |
+
+---
+
+## Post-Integration Audit Fixes (2026-05-22)
+
+| Fix ID | Severity | File(s) Changed | Description |
+|--------|----------|-----------------|-------------|
+| C1 | CRITICAL | `AuthService.java` | Already done: `login()` checks `user.isActive` before issuing JWT |
+| C2 | CRITICAL | `CheckoutService.java` | Already done: `confirmOrder()` debits inventory per item |
+| C3 | CRITICAL | `ReviewService.java` | Already done: `getProductReviews()` is `@Transactional(readOnly = true)` |
+| H4 | HIGH | `ProductRepository.java`, `ProductService.java` | Already done: JOIN FETCH query eliminates N+1 on product list |
+| H5 | HIGH | `ComponentDecorator.java`, `ComponentDecoratorRepository.java`, `StorefrontCustomizationService.java` | Already done: entity + repo created; decorator CRUD implemented |
+| H6 | HIGH | `InventoryServiceImpl.java`, `InventoryController.java` | Added `verifyProductOwnership()` guard to `adjustStock()`; legacy endpoint now passes Principal |
+| M7 | MEDIUM | `schema.sql` | Added `ON DELETE CASCADE` to `cart_items.product_id` FK |
+| M8 | MEDIUM | `Inventory.java`, `InventoryRepository.java`, `InventoryServiceImpl.java`, `ProductService.java`, `schema.sql` | Aligned `Inventory.productId` to `Integer`; updated repo, service casts, and schema |
+| M9 | MEDIUM | `ProductService.java` | `deleteMedia()` now verifies media belongs to the requesting merchant's store |
+| M10 | MEDIUM | `AuthController.java`, `CustomerAuthController.java`, `InventoryStrategyFactory.java`, `GlobalExceptionHandler.java` | `IllegalArgumentException` replaced with `BadRequestException`; added global handler |
+| M11 | MEDIUM | `Wishlist.java`, `WishlistRepository.java`, `WishlistService.java`, `schema.sql` | `Wishlist.user` → `Wishlist.customer`; column renamed `user_id`→`customer_id`; FK updated to `customers` |
+| M12 | MEDIUM | `CheckoutService.java` | `processCheckout()` throws 400 if any item's product is inactive |
+| M13 | MEDIUM | `ProductController.java` | `PUT /{productId}/toggle` → `PATCH /{productId}/status` |
+| M14 | MEDIUM | `application.properties` | Removed hardcoded fallbacks for `DB_PASSWORD` and `JWT_SECRET` |
+| P15 | PARTIAL | `StorefrontCustomizationService.java`, `StorefrontDTOs.java` | Public storefront now returns full nested tree (pages → components → decorators); `toDecoratorResponse()` added; `PageSummary` gets `components` field |
+| L15 | LOW | `AdminController.java` | `deleteMerchant()` returns wrapped `ApiResponse` instead of `ResponseEntity<Void>` |
+| L16 | LOW | `Category.java`, `schema.sql` | Added `@CreationTimestamp createdAt` to Category entity |
+| L18 | LOW | `pom.xml` | Removed duplicate `spring-boot-starter-data-redis` dependency |
+| L19 | LOW | `CategoryRepository.java`, `CategoryDTOs.java`, `CategoryService.java` | Category uniqueness check scoped to store when `storeId` provided |
+| L20 | LOW | `EmailService.java` | `MessagingException` logged and swallowed; no longer rethrown as `RuntimeException` |

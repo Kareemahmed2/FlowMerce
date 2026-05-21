@@ -84,6 +84,7 @@ public class StorefrontDTOs {
         private Boolean isPublished;
         private Boolean showInNav;
         private Integer navOrder;
+        private List<ComponentResponse> components;
     }
 
     @Data @NoArgsConstructor @AllArgsConstructor @Builder
@@ -120,15 +121,21 @@ public class StorefrontDTOs {
         private String content;
         private Boolean isVisible;
         private Integer sortOrder;
+        private List<DecoratorResponse> decorators;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
     }
 
-    // ── DECORATOR (stub — no entity exists) ──────────────────────────────────
+    // ── DECORATOR ─────────────────────────────────────────────────────────────
 
     @Data @NoArgsConstructor @AllArgsConstructor @Builder
     public static class DecoratorResponse implements Serializable {
-        private String message;
+        private Long decoratorId;
+        private Long componentId;
+        private Integer priority;
+        private String data;
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
     }
 
     // ── DESIGN (alias for theme) ──────────────────────────────────────────────

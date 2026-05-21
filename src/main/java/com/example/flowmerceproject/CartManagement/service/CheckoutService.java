@@ -52,6 +52,10 @@ public class CheckoutService {
 
         List<String> stockErrors = new ArrayList<>();
         for (CartItem item : cart.getItems()) {
+            if (!item.getProduct().getIsActive()) {
+                throw new BadRequestException(
+                        "Product '" + item.getProduct().getName() + "' is no longer available.");
+            }
             boolean available = inventoryService.checkAvailability(
                     item.getProduct().getProductId().longValue(), item.getQuantity());
             if (!available) {
@@ -111,6 +115,14 @@ public class CheckoutService {
         ShoppingCart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Cart not found: " + cartId));
+
+        // Debit committed stock from inventory.quantity for every item
+        for (CartItem item : cart.getItems()) {
+            inventoryService.confirmOrder(
+                    item.getProduct().getProductId().longValue(),
+                    item.getQuantity());
+        }
+
         cart.getItems().clear();
         cartRepository.save(cart);
     }

@@ -111,6 +111,11 @@ public class AuthService {
             throw new UnauthorizedException("Invalid email or password");
         }
 
+        if (!user.getIsActive()) {
+            throw new UnauthorizedException(
+                "Account is not activated. Please check your email for the activation link.");
+        }
+
         String accessToken = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
 
         Session accessSession = Session.builder()

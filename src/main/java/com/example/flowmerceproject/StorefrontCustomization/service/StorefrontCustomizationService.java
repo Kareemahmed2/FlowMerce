@@ -5,6 +5,7 @@ import com.example.flowmerceproject.StoreMangement.repository.StoreRepository;
 import com.example.flowmerceproject.StorefrontCustomization.dto.StorefrontDTOs;
 import com.example.flowmerceproject.StorefrontCustomization.dto.StorefrontDTOs.*;
 import com.example.flowmerceproject.StorefrontCustomization.entity.*;
+import com.example.flowmerceproject.StorefrontCustomization.entity.ComponentDecorator;
 import com.example.flowmerceproject.StorefrontCustomization.entity.StorefrontMedia;
 import com.example.flowmerceproject.StorefrontCustomization.repository.*;
 import com.example.flowmerceproject.UserManagement.entity.Merchant;
@@ -13,7 +14,6 @@ import com.example.flowmerceproject.UserManagement.exception.ForbiddenException;
 import com.example.flowmerceproject.UserManagement.exception.ResourceNotFoundException;
 import com.example.flowmerceproject.UserManagement.repository.MerchantRepository;
 import com.example.flowmerceproject.UserManagement.repository.UserRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +45,7 @@ public class StorefrontCustomizationService {
     private final ObjectMapper objectMapper;
     private final StorefrontWriteBehindService writeBehindService;
     private final MediaRepository mediaRepository;
+    private final ComponentDecoratorRepository decoratorRepository;
 
     @Value("${storefront.cache.ttl-minutes:30}")
     private long ttlMinutes;
@@ -376,32 +377,56 @@ public class StorefrontCustomizationService {
                 .stream().map(this::toComponentResponse).collect(Collectors.toList());
     }
 
-    // ── DECORATORS (stub — DecoratorComponent is an interface, no entity exists) ──
+    // ── DECORATORS ────────────────────────────────────────────────────────────
 
-    public List<DecoratorResponse> listDecorators(String email, Integer storeId, Long componentId) {
+    @Transactional(readOnly = true)
+    public List<DecoratorResponse> listDecorators(String email, Integer storeId,
+                                                  Long componentId) {
         getStoreAndVerifyOwner(email, storeId);
-        return List.of(); // No decorator entity — return empty list
+        return decoratorRepository
+                .findByComponent_ComponentIdOrderByPriorityAsc(componentId)
+                .stream().map(this::toDecoratorResponse).collect(Collectors.toList());
     }
 
+    @Transactional
     public DecoratorResponse addDecorator(String email, Integer storeId,
                                           Long componentId, JsonNode data) {
         getStoreAndVerifyOwner(email, storeId);
-        return DecoratorResponse.builder()
-                .message("Decorator persistence not yet implemented — no entity defined.")
+        BaseComponent component = requireComponent(componentId);
+        int priority = data.has("priority") ? data.get("priority").asInt() : 0;
+        String dataStr = data.has("data") ? data.get("data").toString() : "{}";
+        ComponentDecorator decorator = ComponentDecorator.builder()
+                .component(component)
+                .priority(priority)
+                .data(dataStr)
                 .build();
+        evictCache(storeId);
+        return toDecoratorResponse(decoratorRepository.save(decorator));
     }
 
+    @Transactional
     public DecoratorResponse updateDecorator(String email, Integer storeId,
-                                             Long componentId, Long decoratorId, JsonNode data) {
+                                             Long componentId, Long decoratorId,
+                                             JsonNode data) {
         getStoreAndVerifyOwner(email, storeId);
-        return DecoratorResponse.builder()
-                .message("Decorator persistence not yet implemented — no entity defined.")
-                .build();
+        ComponentDecorator decorator = decoratorRepository.findById(decoratorId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Decorator not found: " + decoratorId));
+        if (data.has("priority")) decorator.setPriority(data.get("priority").asInt());
+        if (data.has("data"))     decorator.setData(data.get("data").toString());
+        evictCache(storeId);
+        return toDecoratorResponse(decoratorRepository.save(decorator));
     }
 
+    @Transactional
     public void deleteDecorator(String email, Integer storeId,
                                 Long componentId, Long decoratorId) {
         getStoreAndVerifyOwner(email, storeId);
+        decoratorRepository.findById(decoratorId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Decorator not found: " + decoratorId));
+        decoratorRepository.deleteById(decoratorId);
+        evictCache(storeId);
     }
 
     // ── MEDIA ─────────────────────────────────────────────────────────────────
@@ -528,8 +553,19 @@ public class StorefrontCustomizationService {
         List<PageSummary> pages = pageRepository
                 .findByStorefrontTemplate_TemplateIdOrderByNavOrderAsc(t.getTemplateId())
                 .stream().map(p -> {
-                    PageSummary ps = toPageSummary(p);
-                    return ps;
+                    List<ComponentResponse> components = componentRepository
+                            .findByPage_PageIdOrderBySortOrderAsc(p.getPageId())
+                            .stream().map(this::toComponentResponse).collect(Collectors.toList());
+                    return PageSummary.builder()
+                            .pageId(p.getPageId())
+                            .title(p.getTitle())
+                            .slug(p.getSlug())
+                            .pageType(p.getPageType().name())
+                            .isPublished(p.getIsPublished())
+                            .showInNav(p.getShowInNav())
+                            .navOrder(p.getNavOrder())
+                            .components(components)
+                            .build();
                 }).collect(Collectors.toList());
         return StorefrontTemplateResponse.builder()
                 .templateId(t.getTemplateId())
@@ -604,6 +640,9 @@ public class StorefrontCustomizationService {
     }
 
     private ComponentResponse toComponentResponse(BaseComponent c) {
+        List<DecoratorResponse> decorators = decoratorRepository
+                .findByComponent_ComponentIdOrderByPriorityAsc(c.getComponentId())
+                .stream().map(this::toDecoratorResponse).collect(Collectors.toList());
         return ComponentResponse.builder()
                 .componentId(c.getComponentId())
                 .componentType(c.getComponentType().name())
@@ -611,8 +650,20 @@ public class StorefrontCustomizationService {
                 .content(c.getContent())
                 .isVisible(c.getIsVisible())
                 .sortOrder(c.getSortOrder())
+                .decorators(decorators)
                 .createdAt(c.getCreatedAt())
                 .updatedAt(c.getUpdatedAt())
+                .build();
+    }
+
+    private DecoratorResponse toDecoratorResponse(ComponentDecorator d) {
+        return DecoratorResponse.builder()
+                .decoratorId(d.getDecoratorId())
+                .componentId(d.getComponent().getComponentId())
+                .priority(d.getPriority())
+                .data(d.getData())
+                .createdAt(d.getCreatedAt())
+                .updatedAt(d.getUpdatedAt())
                 .build();
     }
 

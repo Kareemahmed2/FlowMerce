@@ -66,7 +66,7 @@ public class ProductService {
         int threshold  = request.getLowStockThreshold() != null ? request.getLowStockThreshold() : 10;
 
         Inventory inventory = Inventory.builder()
-                .productId(product.getProductId().longValue())
+                .productId(product.getProductId())
                 .storeId(storeId)
                 .quantity(initialQty)
                 .reservedQuantity(0)
@@ -85,7 +85,7 @@ public class ProductService {
 
     public List<ProductDTOs.ProductResponse> getStoreProducts(String email, Integer storeId) {
         getStoreAndVerifyOwner(email, storeId);
-        return productRepository.findByStore_StoreId(storeId)
+        return productRepository.findByStore_StoreIdWithMedia(storeId)
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
@@ -175,6 +175,9 @@ public class ProductService {
         getStoreAndVerifyOwner(email, storeId);
         ProductMedia media = mediaRepository.findById(mediaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Media not found: " + mediaId));
+        if (!media.getProduct().getStore().getStoreId().equals(storeId)) {
+            throw new ForbiddenException("Media does not belong to this store.");
+        }
         mediaRepository.delete(media);
         return "Media deleted successfully.";
     }

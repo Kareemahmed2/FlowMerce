@@ -102,6 +102,7 @@ public class ReviewService {
         return "Review deleted successfully.";
     }
 
+    @Transactional(readOnly = true)
     public List<ReviewDTOs.ReviewResponse> getProductReviews(Integer productId) {
         productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException(
