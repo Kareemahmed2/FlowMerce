@@ -1,14 +1,16 @@
 package com.example.flowmerceproject.StoreMangement.service;
 
+import com.example.flowmerceproject.ProductManagement.entity.Category;
+import com.example.flowmerceproject.ProductManagement.entity.Product;
+import com.example.flowmerceproject.ProductManagement.repository.CategoryRepository;
+import com.example.flowmerceproject.ProductManagement.repository.ProductRepository;
+import com.example.flowmerceproject.ProductManagement.service.CategoryService;
+import com.example.flowmerceproject.ProductManagement.service.ProductService;
 import com.example.flowmerceproject.StoreMangement.dto.CatalogDTOs;
 import com.example.flowmerceproject.StoreMangement.dto.StoreDTOs;
 import com.example.flowmerceproject.StoreMangement.dto.StoreSettingsDTOs;
-import com.example.flowmerceproject.StoreMangement.entity.Category;
-import com.example.flowmerceproject.StoreMangement.entity.Product;
 import com.example.flowmerceproject.StoreMangement.entity.Store;
 import com.example.flowmerceproject.StoreMangement.entity.StoreSettings;
-import com.example.flowmerceproject.StoreMangement.repository.CategoryRepository;
-import com.example.flowmerceproject.StoreMangement.repository.ProductRepository;
 import com.example.flowmerceproject.StoreMangement.repository.StoreRepository;
 import com.example.flowmerceproject.StoreMangement.repository.StoreSettingsRepository;
 import com.example.flowmerceproject.UserManagement.entity.Merchant;
@@ -34,6 +36,8 @@ public class StoreService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
+    private final CategoryService categoryService;
+    private final ProductService productService;
 
     @Transactional
     public StoreDTOs.StoreResponse createStore(String email, StoreDTOs.CreateStoreRequest request) {
@@ -192,15 +196,16 @@ public class StoreService {
     }
 
     @Transactional(readOnly = true)
-    public List<CatalogDTOs.ProductResponse> getPublicProducts(Integer storeId, Integer categoryId) {
+    public List<CatalogDTOs.ProductResponse> getPublicProducts(Integer storeId,
+                                                                Integer categoryId) {
         List<Product> products = categoryId != null
                 ? productRepository.findByStore_StoreIdAndCategory_CategoryId(storeId, categoryId)
-                : productRepository.findByStore_StoreId(storeId);
+                : productRepository.findByStore_StoreIdAndIsActive(storeId, true);
         return products.stream().map(this::toProductResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public CatalogDTOs.ProductResponse getPublicProduct(Integer storeId, Long productId) {
+    public CatalogDTOs.ProductResponse getPublicProduct(Integer storeId, Integer productId) {
         Product product = productRepository.findByProductIdAndStore_StoreId(productId, storeId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Product not found: " + productId));
@@ -245,15 +250,14 @@ public class StoreService {
 
     private CatalogDTOs.ProductResponse toProductResponse(Product p) {
         return CatalogDTOs.ProductResponse.builder()
-                .productId(p.getProductId())
+                .productId(p.getProductId() != null ? p.getProductId().longValue() : null)
                 .storeId(p.getStore() != null ? p.getStore().getStoreId() : null)
                 .categoryId(p.getCategory() != null ? p.getCategory().getCategoryId() : null)
                 .categoryName(p.getCategory() != null ? p.getCategory().getName() : null)
                 .name(p.getName())
                 .description(p.getDescription())
-                .price(p.getPrice())
-                .inventory(p.getInventory())
-                .rating(p.getRating())
+                .price(p.getBasePrice())
+                .rating(p.getRating() != null ? p.getRating().floatValue() : null)
                 .build();
     }
 

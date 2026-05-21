@@ -49,7 +49,13 @@ public class SecurityConfig {
                                 "/auth/customer/refresh",
                                 "/actuator/health",
                                 "/public/**",
-                                "/stream/stock"
+                                "/stream/stock",
+                                "/categories",
+                                "/categories/**",
+                                "/stores/*/products/public",
+                                "/stores/*/products/search",
+                                "/stores/*/products/*",
+                                "/products/*/reviews"
                         ).permitAll()
                         .requestMatchers("/stream/private").authenticated()
                         .requestMatchers("/admin/**").hasRole("ADMIN")

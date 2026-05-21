@@ -1,14 +1,13 @@
-package com.example.flowmerceproject.StoreMangement.entity;
+package com.example.flowmerceproject.ProductManagement.entity;
 
+import com.example.flowmerceproject.StoreMangement.entity.Store;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Table(name = "categories")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @Builder
 public class Category {
 
@@ -21,6 +20,9 @@ public class Category {
     @JoinColumn(name = "store_id")
     private Store store;
 
-    @Column(name = "name", length = 100)
+    @Column(name = "name", nullable = false, length = 100)
     private String name;
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
 }

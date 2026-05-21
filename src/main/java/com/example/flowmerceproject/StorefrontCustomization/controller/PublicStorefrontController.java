@@ -42,7 +42,7 @@ public class PublicStorefrontController {
     @GetMapping("/{storeId}/products/{productId}")
     public ResponseEntity<ApiResponse<CatalogDTOs.ProductResponse>> getProduct(
             @PathVariable Integer storeId,
-            @PathVariable Long productId) {
+            @PathVariable Integer productId) {
         return ResponseEntity.ok(ApiResponse.ok(
                 storeService.getPublicProduct(storeId, productId)));
     }

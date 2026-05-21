@@ -95,42 +95,53 @@ CREATE TABLE IF NOT EXISTS store_settings (
 -- PRODUCTS & CATALOG
 -- =========================
 
+-- Categories can be global (store_id NULL) or store-scoped (store_id SET)
 CREATE TABLE IF NOT EXISTS categories (
   category_id SERIAL PRIMARY KEY,
   store_id    INT,
-  name        VARCHAR(100),
+  name        VARCHAR(100) NOT NULL,
+  description TEXT,
   FOREIGN KEY (store_id) REFERENCES stores(store_id) ON DELETE CASCADE
 );
+CREATE INDEX IF NOT EXISTS idx_categories_store ON categories(store_id);
 
 CREATE TABLE IF NOT EXISTS products (
   product_id  SERIAL PRIMARY KEY,
-  store_id    INT,
+  store_id    INT         NOT NULL,
   category_id INT,
-  name        VARCHAR(150),
+  name        VARCHAR(150) NOT NULL,
   description TEXT,
-  price       DECIMAL(10,2),
-  inventory   INT,
-  rating      FLOAT,
-  FOREIGN KEY (store_id)    REFERENCES stores(store_id),
+  base_price  DECIMAL(10,2) NOT NULL,
+  is_active   BOOLEAN       NOT NULL DEFAULT TRUE,
+  rating      FLOAT                  DEFAULT 0.0,
+  created_at  TIMESTAMP WITHOUT TIME ZONE,
+  updated_at  TIMESTAMP WITHOUT TIME ZONE,
+  FOREIGN KEY (store_id)    REFERENCES stores(store_id)        ON DELETE CASCADE,
   FOREIGN KEY (category_id) REFERENCES categories(category_id)
 );
+CREATE INDEX IF NOT EXISTS idx_products_store    ON products(store_id);
+CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
 
 CREATE TABLE IF NOT EXISTS product_media (
   media_id   SERIAL PRIMARY KEY,
-  product_id INT,
-  media_url  VARCHAR(255),
-  FOREIGN KEY (product_id) REFERENCES products(product_id)
+  product_id INT          NOT NULL,
+  media_url  VARCHAR(255) NOT NULL,
+  media_type VARCHAR(50)           DEFAULT 'IMAGE',
+  alt_text   VARCHAR(255),
+  FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS reviews (
-  review_id  SERIAL PRIMARY KEY,
-  product_id INT,
-  user_id    INT,
-  rating     INT,
-  comment    TEXT,
-  created_at TIMESTAMP WITHOUT TIME ZONE,
-  FOREIGN KEY (product_id) REFERENCES products(product_id),
-  FOREIGN KEY (user_id)    REFERENCES users(user_id)
+  review_id   SERIAL PRIMARY KEY,
+  product_id  INT NOT NULL,
+  customer_id INT NOT NULL,
+  rating      INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  title       VARCHAR(150),
+  comment     TEXT,
+  created_at  TIMESTAMP WITHOUT TIME ZONE,
+  FOREIGN KEY (product_id)  REFERENCES products(product_id)   ON DELETE CASCADE,
+  FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE,
+  UNIQUE (product_id, customer_id)
 );
 
 -- =========================
@@ -169,20 +180,38 @@ CREATE INDEX IF NOT EXISTS idx_inv_txn_store   ON inventory_transactions(store_i
 -- CART & CHECKOUT
 -- =========================
 
-CREATE TABLE IF NOT EXISTS carts (
-  cart_id    SERIAL PRIMARY KEY,
-  user_id    INT,
-  created_at TIMESTAMP WITHOUT TIME ZONE,
-  FOREIGN KEY (user_id) REFERENCES users(user_id)
+-- One cart per customer; expires after 7 days of inactivity.
+-- CartCleanupScheduler runs at 2 AM daily to delete expired carts
+-- and release their reserved stock back to inventory.
+CREATE TABLE IF NOT EXISTS shopping_carts (
+  cart_id     SERIAL PRIMARY KEY,
+  customer_id INT NOT NULL UNIQUE,
+  created_at  TIMESTAMP WITHOUT TIME ZONE,
+  expires_at  TIMESTAMP WITHOUT TIME ZONE,
+  FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS cart_items (
   cart_item_id SERIAL PRIMARY KEY,
-  cart_id      INT,
-  product_id   INT,
-  quantity     INT,
-  FOREIGN KEY (cart_id)    REFERENCES carts(cart_id),
+  cart_id      INT NOT NULL,
+  product_id   INT NOT NULL,
+  quantity     INT NOT NULL DEFAULT 1,
+  price_at_add DECIMAL(10,2) NOT NULL,
+  added_at     TIMESTAMP WITHOUT TIME ZONE,
+  FOREIGN KEY (cart_id)    REFERENCES shopping_carts(cart_id) ON DELETE CASCADE,
   FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+CREATE INDEX IF NOT EXISTS idx_cart_items_cart ON cart_items(cart_id);
+
+-- Wishlist: one product per user enforced by UNIQUE
+CREATE TABLE IF NOT EXISTS wishlists (
+  wishlist_id SERIAL PRIMARY KEY,
+  user_id     INT NOT NULL,
+  product_id  INT NOT NULL,
+  created_at  TIMESTAMP WITHOUT TIME ZONE,
+  UNIQUE (user_id, product_id),
+  FOREIGN KEY (user_id)    REFERENCES users(user_id)       ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
 );
 
 -- =========================
