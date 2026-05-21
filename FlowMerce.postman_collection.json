@@ -6,11 +6,20 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl",      "value": "http://localhost:8080/api/v1" },
-    { "key": "accessToken",  "value": "" },
-    { "key": "refreshToken", "value": "" },
-    { "key": "storeId",      "value": "1" },
-    { "key": "storeUrl",     "value": "my-store" }
+    { "key": "baseUrl",               "value": "http://localhost:8080/api/v1" },
+    { "key": "accessToken",           "value": "" },
+    { "key": "refreshToken",          "value": "" },
+    { "key": "customerToken",         "value": "" },
+    { "key": "customerRefreshToken",  "value": "" },
+    { "key": "storeId",               "value": "1" },
+    { "key": "storeUrl",              "value": "my-store" },
+    { "key": "productId",             "value": "1" },
+    { "key": "categoryId",            "value": "1" },
+    { "key": "pageId",                "value": "1" },
+    { "key": "componentId",           "value": "1" },
+    { "key": "decoratorId",           "value": "1" },
+    { "key": "cartItemId",            "value": "1" },
+    { "key": "mediaId",               "value": "1" }
   ],
   "item": [
 
@@ -45,6 +54,7 @@
         },
         {
           "name": "Refresh Token",
+          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.data) {", "  pm.collectionVariables.set('accessToken', json.data.accessToken);", "}"], "type": "text/javascript" } }],
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -84,6 +94,90 @@
             "method": "POST",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
             "url": { "raw": "{{baseUrl}}/auth/merchant/logout", "host": ["{{baseUrl}}"], "path": ["auth","merchant","logout"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Auth — Customer",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/customer/register", "host": ["{{baseUrl}}"], "path": ["auth","customer","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"Password123!\",\n  \"fullName\": \"Sara Ahmed\",\n  \"phone\": \"01098765432\"\n}" }
+          }
+        },
+        {
+          "name": "Activate Account",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/auth/customer/activate?token=REPLACE_WITH_TOKEN", "host": ["{{baseUrl}}"], "path": ["auth","customer","activate"], "query": [{ "key": "token", "value": "REPLACE_WITH_TOKEN" }] }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.data) {", "  pm.collectionVariables.set('customerToken', json.data.accessToken);", "  pm.collectionVariables.set('customerRefreshToken', json.data.refreshToken);", "}"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/customer/login", "host": ["{{baseUrl}}"], "path": ["auth","customer","login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"Password123!\"\n}" }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.data) {", "  pm.collectionVariables.set('customerToken', json.data.accessToken);", "}"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/customer/refresh", "host": ["{{baseUrl}}"], "path": ["auth","customer","refresh"] },
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{customerRefreshToken}}\"\n}" }
+          }
+        },
+        {
+          "name": "Get Current Customer (Me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/customer/me", "host": ["{{baseUrl}}"], "path": ["auth","customer","me"] }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/customer/forgot-password", "host": ["{{baseUrl}}"], "path": ["auth","customer","forgot-password"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"customer@example.com\"\n}" }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/customer/reset-password", "host": ["{{baseUrl}}"], "path": ["auth","customer","reset-password"] },
+            "body": { "mode": "raw", "raw": "{\n  \"token\": \"REPLACE_WITH_TOKEN\",\n  \"newPassword\": \"NewPassword123!\",\n  \"confirmNewPassword\": \"NewPassword123!\"\n}" }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/customer/logout", "host": ["{{baseUrl}}"], "path": ["auth","customer","logout"] }
+          }
+        },
+        {
+          "name": "Delete Customer Account",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/customer/me", "host": ["{{baseUrl}}"], "path": ["auth","customer","me"] }
           }
         }
       ]
@@ -161,6 +255,60 @@
     },
 
     {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "List All Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/users", "host": ["{{baseUrl}}"], "path": ["admin","users"] }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/users/1", "host": ["{{baseUrl}}"], "path": ["admin","users","1"] }
+          }
+        },
+        {
+          "name": "List All Merchants",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/merchants", "host": ["{{baseUrl}}"], "path": ["admin","merchants"] }
+          }
+        },
+        {
+          "name": "Verify Merchant",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/merchants/1/verify", "host": ["{{baseUrl}}"], "path": ["admin","merchants","1","verify"] }
+          }
+        },
+        {
+          "name": "Delete Merchant (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/merchants/1", "host": ["{{baseUrl}}"], "path": ["admin","merchants","1"] }
+          }
+        },
+        {
+          "name": "List All Stores (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/stores", "host": ["{{baseUrl}}"], "path": ["admin","stores"] }
+          }
+        }
+      ]
+    },
+
+    {
       "name": "Store Management",
       "item": [
         {
@@ -193,7 +341,6 @@
           "name": "Get Store by Slug",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
             "url": { "raw": "{{baseUrl}}/stores/slug/cairo-boutique", "host": ["{{baseUrl}}"], "path": ["stores","slug","cairo-boutique"] }
           }
         },
@@ -278,7 +425,370 @@
     },
 
     {
-      "name": "Storefront — Design & Pages",
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List All Categories",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/categories", "host": ["{{baseUrl}}"], "path": ["categories"] }
+          }
+        },
+        {
+          "name": "List Categories by Store",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/categories?storeId={{storeId}}", "host": ["{{baseUrl}}"], "path": ["categories"], "query": [{ "key": "storeId", "value": "{{storeId}}" }] }
+          }
+        },
+        {
+          "name": "Get Category by ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/categories/{{categoryId}}", "host": ["{{baseUrl}}"], "path": ["categories","{{categoryId}}"] }
+          }
+        },
+        {
+          "name": "Create Category",
+          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.data) pm.collectionVariables.set('categoryId', json.data.categoryId);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/categories", "host": ["{{baseUrl}}"], "path": ["categories"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Women's Fashion\",\n  \"description\": \"Clothing and accessories for women\",\n  \"storeId\": {{storeId}}\n}" }
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/categories/{{categoryId}}", "host": ["{{baseUrl}}"], "path": ["categories","{{categoryId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Women's Fashion Updated\",\n  \"description\": \"Updated description\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/categories/{{categoryId}}", "host": ["{{baseUrl}}"], "path": ["categories","{{categoryId}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Create Product",
+          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.data) pm.collectionVariables.set('productId', json.data.productId);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/products", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","products"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Premium Cotton T-Shirt\",\n  \"description\": \"High-quality Egyptian cotton t-shirt\",\n  \"price\": 299.99,\n  \"categoryId\": {{categoryId}},\n  \"initialQuantity\": 50,\n  \"lowStockThreshold\": 10,\n  \"sku\": \"TSHIRT-001\"\n}" }
+          }
+        },
+        {
+          "name": "Get Store Products",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/products", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","products"] }
+          }
+        },
+        {
+          "name": "Get Active Products (Public)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/products/public", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","products","public"] }
+          }
+        },
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/products/search?q=cotton&categoryId={{categoryId}}", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","products","search"], "query": [{ "key": "q", "value": "cotton" }, { "key": "categoryId", "value": "{{categoryId}}" }] }
+          }
+        },
+        {
+          "name": "Get Product by ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","products","{{productId}}"] }
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","products","{{productId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Premium Cotton T-Shirt V2\",\n  \"price\": 349.99,\n  \"description\": \"Updated description\"\n}" }
+          }
+        },
+        {
+          "name": "Toggle Product Status (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/products/{{productId}}/status", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","products","{{productId}}","status"] }
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","products","{{productId}}"] }
+          }
+        },
+        {
+          "name": "Add Product Media",
+          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.data) pm.collectionVariables.set('mediaId', json.data.mediaId);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/products/{{productId}}/media", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","products","{{productId}}","media"] },
+            "body": { "mode": "raw", "raw": "{\n  \"url\": \"https://cdn.example.com/tshirt-front.jpg\",\n  \"altText\": \"T-Shirt Front View\",\n  \"sortOrder\": 0\n}" }
+          }
+        },
+        {
+          "name": "Delete Product Media",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/products/{{productId}}/media/{{mediaId}}", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","products","{{productId}}","media","{{mediaId}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Get Product Reviews",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/products/{{productId}}/reviews", "host": ["{{baseUrl}}"], "path": ["products","{{productId}}","reviews"] }
+          }
+        },
+        {
+          "name": "Submit Review",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/products/{{productId}}/reviews", "host": ["{{baseUrl}}"], "path": ["products","{{productId}}","reviews"] },
+            "body": { "mode": "raw", "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Excellent quality, very comfortable fabric!\"\n}" }
+          }
+        },
+        {
+          "name": "Edit Review",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/products/{{productId}}/reviews", "host": ["{{baseUrl}}"], "path": ["products","{{productId}}","reviews"] },
+            "body": { "mode": "raw", "raw": "{\n  \"rating\": 4,\n  \"comment\": \"Great quality, slightly smaller than expected.\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Review",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/products/{{productId}}/reviews/1", "host": ["{{baseUrl}}"], "path": ["products","{{productId}}","reviews","1"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Inventory",
+      "item": [
+        {
+          "name": "Update Stock (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/products/{{productId}}/stock", "host": ["{{baseUrl}}"], "path": ["products","{{productId}}","stock"] },
+            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 50,\n  \"note\": \"Initial stock loading\"\n}" }
+          }
+        },
+        {
+          "name": "List Store Inventory",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/inventory", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","inventory"] }
+          }
+        },
+        {
+          "name": "Restock Product",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/inventory/{{productId}}/restock", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","inventory","{{productId}}","restock"] },
+            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 100,\n  \"note\": \"Supplier delivery received\"\n}" }
+          }
+        },
+        {
+          "name": "Get Stock History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/inventory/{{productId}}/history", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","inventory","{{productId}}","history"] }
+          }
+        },
+        {
+          "name": "Get Inventory Details (legacy)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/inventory/{{productId}}", "host": ["{{baseUrl}}"], "path": ["inventory","{{productId}}"] }
+          }
+        },
+        {
+          "name": "Check Availability (legacy)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": { "raw": "{{baseUrl}}/inventory/{{productId}}/check?qty=5", "host": ["{{baseUrl}}"], "path": ["inventory","{{productId}}","check"], "query": [{ "key": "qty", "value": "5" }] }
+          }
+        },
+        {
+          "name": "Adjust Stock (legacy)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/inventory/adjust", "host": ["{{baseUrl}}"], "path": ["inventory","adjust"] },
+            "body": { "mode": "raw", "raw": "{\n  \"productId\": {{productId}},\n  \"quantity\": 10,\n  \"strategyType\": \"NORMAL\"\n}" }
+          }
+        },
+        {
+          "name": "Reserve Stock (legacy)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/inventory/reserve", "host": ["{{baseUrl}}"], "path": ["inventory","reserve"] },
+            "body": { "mode": "raw", "raw": "{\n  \"productId\": {{productId}},\n  \"quantity\": 2\n}" }
+          }
+        },
+        {
+          "name": "Release Stock (legacy)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/inventory/release", "host": ["{{baseUrl}}"], "path": ["inventory","release"] },
+            "body": { "mode": "raw", "raw": "{\n  \"productId\": {{productId}},\n  \"quantity\": 2\n}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Get Cart",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/cart", "host": ["{{baseUrl}}"], "path": ["cart"] }
+          }
+        },
+        {
+          "name": "Add Item to Cart",
+          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.data && json.data.items && json.data.items.length > 0) {", "  pm.collectionVariables.set('cartItemId', json.data.items[0].cartItemId);", "}"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/cart/items", "host": ["{{baseUrl}}"], "path": ["cart","items"] },
+            "body": { "mode": "raw", "raw": "{\n  \"productId\": {{productId}},\n  \"quantity\": 2\n}" }
+          }
+        },
+        {
+          "name": "Update Item Quantity",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/cart/items/{{cartItemId}}", "host": ["{{baseUrl}}"], "path": ["cart","items","{{cartItemId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 3\n}" }
+          }
+        },
+        {
+          "name": "Remove Item from Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/cart/items/{{cartItemId}}", "host": ["{{baseUrl}}"], "path": ["cart","items","{{cartItemId}}"] }
+          }
+        },
+        {
+          "name": "Clear Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/cart", "host": ["{{baseUrl}}"], "path": ["cart"] }
+          }
+        },
+        {
+          "name": "Checkout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/cart/checkout", "host": ["{{baseUrl}}"], "path": ["cart","checkout"] },
+            "body": { "mode": "raw", "raw": "{\n  \"shippingAddress\": \"123 Tahrir Square, Cairo\",\n  \"paymentMethod\": \"cod\",\n  \"notes\": \"Please ring the bell\"\n}" }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Wishlist",
+      "item": [
+        {
+          "name": "Get Wishlist",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/wishlist", "host": ["{{baseUrl}}"], "path": ["wishlist"] }
+          }
+        },
+        {
+          "name": "Add to Wishlist",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/wishlist", "host": ["{{baseUrl}}"], "path": ["wishlist"] },
+            "body": { "mode": "raw", "raw": "{\n  \"productId\": {{productId}}\n}" }
+          }
+        },
+        {
+          "name": "Move Wishlist Item to Cart",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/wishlist/{{productId}}/move-to-cart", "host": ["{{baseUrl}}"], "path": ["wishlist","{{productId}}","move-to-cart"] }
+          }
+        },
+        {
+          "name": "Remove from Wishlist",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/wishlist/{{productId}}", "host": ["{{baseUrl}}"], "path": ["wishlist","{{productId}}"] }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Storefront — Design",
       "item": [
         {
           "name": "Initialize Storefront",
@@ -322,7 +832,7 @@
           }
         },
         {
-          "name": "Save Design (PUT)",
+          "name": "Save Design",
           "request": {
             "method": "PUT",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
@@ -363,6 +873,7 @@
         },
         {
           "name": "Create Page",
+          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.data) pm.collectionVariables.set('pageId', json.data.pageId);"], "type": "text/javascript" } }],
           "request": {
             "method": "POST",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
@@ -375,7 +886,7 @@
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/pages/1", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","pages","1"] }
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/pages/{{pageId}}", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","pages","{{pageId}}"] }
           }
         },
         {
@@ -383,7 +894,7 @@
           "request": {
             "method": "PUT",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/pages/1", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","pages","1"] },
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/pages/{{pageId}}", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","pages","{{pageId}}"] },
             "body": { "mode": "raw", "raw": "{\n  \"title\": \"About Us — Updated\",\n  \"isPublished\": true\n}" }
           }
         },
@@ -392,7 +903,7 @@
           "request": {
             "method": "DELETE",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/pages/1", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","pages","1"] }
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/pages/{{pageId}}", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","pages","{{pageId}}"] }
           }
         }
       ]
@@ -406,15 +917,16 @@
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/pages/1/components", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","pages","1","components"] }
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/pages/{{pageId}}/components", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","pages","{{pageId}}","components"] }
           }
         },
         {
           "name": "Add Component",
+          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.data) pm.collectionVariables.set('componentId', json.data.componentId);"], "type": "text/javascript" } }],
           "request": {
             "method": "POST",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/pages/1/components", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","pages","1","components"] },
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/pages/{{pageId}}/components", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","pages","{{pageId}}","components"] },
             "body": { "mode": "raw", "raw": "{\n  \"componentType\": \"HERO_BANNER\",\n  \"name\": \"Main Hero\",\n  \"sortOrder\": 0,\n  \"isVisible\": true,\n  \"content\": {\"heading\": \"Welcome to Cairo Boutique\", \"subheading\": \"Premium Egyptian Fashion\"}\n}" }
           }
         },
@@ -423,7 +935,7 @@
           "request": {
             "method": "PUT",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/pages/1/components/1", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","pages","1","components","1"] },
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/pages/{{pageId}}/components/{{componentId}}", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","pages","{{pageId}}","components","{{componentId}}"] },
             "body": { "mode": "raw", "raw": "{\n  \"name\": \"Main Hero Updated\",\n  \"isVisible\": true\n}" }
           }
         },
@@ -432,7 +944,7 @@
           "request": {
             "method": "DELETE",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/pages/1/components/1", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","pages","1","components","1"] }
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/pages/{{pageId}}/components/{{componentId}}", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","pages","{{pageId}}","components","{{componentId}}"] }
           }
         },
         {
@@ -440,7 +952,7 @@
           "request": {
             "method": "PUT",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/pages/1/components/reorder", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","pages","1","components","reorder"] },
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/pages/{{pageId}}/components/reorder", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","pages","{{pageId}}","components","reorder"] },
             "body": { "mode": "raw", "raw": "[{\"componentId\": 1, \"sortOrder\": 0}, {\"componentId\": 2, \"sortOrder\": 1}]" }
           }
         }
@@ -455,16 +967,17 @@
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/components/1/decorators", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","components","1","decorators"] }
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/components/{{componentId}}/decorators", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","components","{{componentId}}","decorators"] }
           }
         },
         {
           "name": "Add Decorator",
+          "event": [{ "listen": "test", "script": { "exec": ["var json = pm.response.json();", "if (json.data) pm.collectionVariables.set('decoratorId', json.data.decoratorId);"], "type": "text/javascript" } }],
           "request": {
             "method": "POST",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/components/1/decorators", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","components","1","decorators"] },
-            "body": { "mode": "raw", "raw": "{\n  \"type\": \"BORDER\",\n  \"priority\": 1,\n  \"isActive\": true,\n  \"properties\": {\"color\": \"#E94560\", \"width\": 2}\n}" }
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/components/{{componentId}}/decorators", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","components","{{componentId}}","decorators"] },
+            "body": { "mode": "raw", "raw": "{\n  \"priority\": 1,\n  \"data\": \"{\\\"color\\\": \\\"#E94560\\\", \\\"width\\\": 2}\"\n}" }
           }
         },
         {
@@ -472,8 +985,8 @@
           "request": {
             "method": "PUT",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/components/1/decorators/1", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","components","1","decorators","1"] },
-            "body": { "mode": "raw", "raw": "{\n  \"isActive\": false\n}" }
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/components/{{componentId}}/decorators/{{decoratorId}}", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","components","{{componentId}}","decorators","{{decoratorId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"priority\": 2,\n  \"data\": \"{\\\"color\\\": \\\"#1A1A2E\\\", \\\"width\\\": 4}\"\n}" }
           }
         },
         {
@@ -481,7 +994,7 @@
           "request": {
             "method": "DELETE",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/components/1/decorators/1", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","components","1","decorators","1"] }
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/components/{{componentId}}/decorators/{{decoratorId}}", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","components","{{componentId}}","decorators","{{decoratorId}}"] }
           }
         }
       ]
@@ -491,7 +1004,7 @@
       "name": "Storefront — Media",
       "item": [
         {
-          "name": "List Media",
+          "name": "List Storefront Media",
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
@@ -499,7 +1012,7 @@
           }
         },
         {
-          "name": "Save Media",
+          "name": "Save Storefront Media",
           "request": {
             "method": "POST",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
@@ -508,89 +1021,45 @@
           }
         },
         {
-          "name": "Delete Media",
+          "name": "Delete Storefront Media",
           "request": {
             "method": "DELETE",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/media/1", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","media","1"] }
+            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/storefront/media/{{mediaId}}", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","storefront","media","{{mediaId}}"] }
           }
         }
       ]
     },
 
     {
-      "name": "Storefront — Public (No Auth)",
+      "name": "Public Storefront (No Auth)",
       "item": [
         {
           "name": "Get Public Storefront",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/public/storefront/cairo-boutique", "host": ["{{baseUrl}}"], "path": ["public","storefront","cairo-boutique"] }
-          }
-        }
-      ]
-    },
-
-    {
-      "name": "Inventory",
-      "item": [
-        {
-          "name": "Update Stock (PATCH)",
-          "request": {
-            "method": "PATCH",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/products/1/stock", "host": ["{{baseUrl}}"], "path": ["products","1","stock"] },
-            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 50,\n  \"note\": \"Initial stock loading\"\n}" }
+            "url": { "raw": "{{baseUrl}}/public/storefront/{{storeId}}", "host": ["{{baseUrl}}"], "path": ["public","storefront","{{storeId}}"] }
           }
         },
         {
-          "name": "List Store Inventory",
+          "name": "Get Store Categories (Public)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/inventory", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","inventory"] }
+            "url": { "raw": "{{baseUrl}}/public/storefront/{{storeId}}/categories", "host": ["{{baseUrl}}"], "path": ["public","storefront","{{storeId}}","categories"] }
           }
         },
         {
-          "name": "Restock Product",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/inventory/1/restock", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","inventory","1","restock"] },
-            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 100,\n  \"note\": \"Supplier delivery received\"\n}" }
-          }
-        },
-        {
-          "name": "Get Stock History",
+          "name": "Get Store Products (Public)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/stores/{{storeId}}/inventory/1/history", "host": ["{{baseUrl}}"], "path": ["stores","{{storeId}}","inventory","1","history"] }
+            "url": { "raw": "{{baseUrl}}/public/storefront/{{storeId}}/products", "host": ["{{baseUrl}}"], "path": ["public","storefront","{{storeId}}","products"] }
           }
         },
         {
-          "name": "Get Inventory Details (legacy)",
+          "name": "Get Product Detail (Public)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/inventory/1", "host": ["{{baseUrl}}"], "path": ["inventory","1"] }
-          }
-        },
-        {
-          "name": "Check Availability (legacy)",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/inventory/1/check?qty=5", "host": ["{{baseUrl}}"], "path": ["inventory","1","check"], "query": [{ "key": "qty", "value": "5" }] }
-          }
-        },
-        {
-          "name": "Adjust Stock (legacy)",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }, { "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/inventory/adjust", "host": ["{{baseUrl}}"], "path": ["inventory","adjust"] },
-            "body": { "mode": "raw", "raw": "{\n  \"productId\": 1,\n  \"quantity\": 10,\n  \"strategyType\": \"NORMAL\"\n}" }
+            "url": { "raw": "{{baseUrl}}/public/storefront/{{storeId}}/products/{{productId}}", "host": ["{{baseUrl}}"], "path": ["public","storefront","{{storeId}}","products","{{productId}}"] }
           }
         }
       ]
@@ -612,52 +1081,6 @@
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
             "url": { "raw": "{{baseUrl}}/stream/private", "host": ["{{baseUrl}}"], "path": ["stream","private"] }
-          }
-        }
-      ]
-    },
-
-    {
-      "name": "Admin",
-      "item": [
-        {
-          "name": "List All Users",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/admin/users", "host": ["{{baseUrl}}"], "path": ["admin","users"] }
-          }
-        },
-        {
-          "name": "Delete User",
-          "request": {
-            "method": "DELETE",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/admin/users/1", "host": ["{{baseUrl}}"], "path": ["admin","users","1"] }
-          }
-        },
-        {
-          "name": "List All Merchants",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/admin/merchants", "host": ["{{baseUrl}}"], "path": ["admin","merchants"] }
-          }
-        },
-        {
-          "name": "Verify Merchant",
-          "request": {
-            "method": "PUT",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/admin/merchants/1/verify", "host": ["{{baseUrl}}"], "path": ["admin","merchants","1","verify"] }
-          }
-        },
-        {
-          "name": "List All Stores (Admin)",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-            "url": { "raw": "{{baseUrl}}/stores/admin/all", "host": ["{{baseUrl}}"], "path": ["stores","admin","all"] }
           }
         }
       ]
