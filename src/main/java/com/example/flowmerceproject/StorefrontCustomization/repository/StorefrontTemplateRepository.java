@@ -24,4 +24,9 @@ public interface StorefrontTemplateRepository extends JpaRepository<StorefrontTe
     @Query("SELECT st FROM StorefrontTemplate st LEFT JOIN FETCH st.theme LEFT JOIN FETCH st.store " +
            "WHERE st.store.storeUrl = :storeUrl AND st.status = 'PUBLISHED'")
     Optional<StorefrontTemplate> findPublishedByStoreUrl(@Param("storeUrl") String storeUrl);
+
+    /** Public lookup by storeId — only returns PUBLISHED templates. */
+    @Query("SELECT st FROM StorefrontTemplate st LEFT JOIN FETCH st.theme LEFT JOIN FETCH st.store " +
+           "WHERE st.store.storeId = :storeId AND st.status = 'PUBLISHED'")
+    Optional<StorefrontTemplate> findPublishedByStoreId(@Param("storeId") Integer storeId);
 }

@@ -1,5 +1,6 @@
 package com.example.flowmerceproject.StorefrontCustomization.controller;
 
+import com.example.flowmerceproject.StorefrontCustomization.dto.StorefrontDTOs;
 import com.example.flowmerceproject.StorefrontCustomization.dto.StorefrontDTOs.*;
 import com.example.flowmerceproject.StorefrontCustomization.service.StorefrontCustomizationService;
 import com.example.flowmerceproject.common.ApiResponse;
@@ -260,7 +261,7 @@ public class StorefrontCustomizationController {
 
     @GetMapping("/media")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<ApiResponse<List<Object>>> listMedia(
+    public ResponseEntity<ApiResponse<List<MediaResponse>>> listMedia(
             Principal principal, @PathVariable Integer storeId) {
         return ResponseEntity.ok(ApiResponse.ok(
                 service.listMedia(principal.getName(), storeId)));
@@ -268,12 +269,12 @@ public class StorefrontCustomizationController {
 
     @PostMapping("/media")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<ApiResponse<Object>> saveMedia(
+    public ResponseEntity<ApiResponse<MediaResponse>> saveMedia(
             Principal principal,
             @PathVariable Integer storeId,
             @RequestBody JsonNode data) {
-        return ResponseEntity.ok(ApiResponse.ok(
-                service.saveMedia(principal.getName(), storeId, data)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(
+                service.saveMedia(principal.getName(), storeId, data), "Media saved"));
     }
 
     @DeleteMapping("/media/{mediaId}")

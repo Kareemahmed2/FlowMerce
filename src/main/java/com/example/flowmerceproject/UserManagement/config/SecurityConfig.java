@@ -41,8 +41,14 @@ public class SecurityConfig {
                                 "/auth/merchant/forgot-password",
                                 "/auth/merchant/reset-password",
                                 "/auth/merchant/refresh",
+                                "/auth/customer/register",
+                                "/auth/customer/login",
+                                "/auth/customer/activate",
+                                "/auth/customer/forgot-password",
+                                "/auth/customer/reset-password",
+                                "/auth/customer/refresh",
                                 "/actuator/health",
-                                "/public/storefront/**",
+                                "/public/**",
                                 "/stream/stock"
                         ).permitAll()
                         .requestMatchers("/stream/private").authenticated()

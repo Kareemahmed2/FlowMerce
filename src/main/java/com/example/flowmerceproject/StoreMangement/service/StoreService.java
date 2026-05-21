@@ -1,9 +1,14 @@
 package com.example.flowmerceproject.StoreMangement.service;
 
+import com.example.flowmerceproject.StoreMangement.dto.CatalogDTOs;
 import com.example.flowmerceproject.StoreMangement.dto.StoreDTOs;
 import com.example.flowmerceproject.StoreMangement.dto.StoreSettingsDTOs;
+import com.example.flowmerceproject.StoreMangement.entity.Category;
+import com.example.flowmerceproject.StoreMangement.entity.Product;
 import com.example.flowmerceproject.StoreMangement.entity.Store;
 import com.example.flowmerceproject.StoreMangement.entity.StoreSettings;
+import com.example.flowmerceproject.StoreMangement.repository.CategoryRepository;
+import com.example.flowmerceproject.StoreMangement.repository.ProductRepository;
 import com.example.flowmerceproject.StoreMangement.repository.StoreRepository;
 import com.example.flowmerceproject.StoreMangement.repository.StoreSettingsRepository;
 import com.example.flowmerceproject.UserManagement.entity.Merchant;
@@ -27,6 +32,8 @@ public class StoreService {
     private final StoreSettingsRepository settingsRepository;
     private final MerchantRepository merchantRepository;
     private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
 
     @Transactional
     public StoreDTOs.StoreResponse createStore(String email, StoreDTOs.CreateStoreRequest request) {
@@ -171,6 +178,35 @@ public class StoreService {
         return storeRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    // ── PUBLIC CATALOG ────────────────────────────────────────────────────────
+
+    @Transactional(readOnly = true)
+    public List<CatalogDTOs.CategoryResponse> getPublicCategories(Integer storeId) {
+        return categoryRepository.findByStore_StoreId(storeId).stream()
+                .map(c -> CatalogDTOs.CategoryResponse.builder()
+                        .categoryId(c.getCategoryId())
+                        .storeId(storeId)
+                        .name(c.getName())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<CatalogDTOs.ProductResponse> getPublicProducts(Integer storeId, Integer categoryId) {
+        List<Product> products = categoryId != null
+                ? productRepository.findByStore_StoreIdAndCategory_CategoryId(storeId, categoryId)
+                : productRepository.findByStore_StoreId(storeId);
+        return products.stream().map(this::toProductResponse).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public CatalogDTOs.ProductResponse getPublicProduct(Integer storeId, Long productId) {
+        Product product = productRepository.findByProductIdAndStore_StoreId(productId, storeId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Product not found: " + productId));
+        return toProductResponse(product);
+    }
+
     // ── HELPERS ───────────────────────────────────────────────────────────────
 
     private Merchant getMerchantByEmail(String email) {
@@ -204,6 +240,20 @@ public class StoreService {
                 .currentStep(store.getCurrentStep())
                 .paymentMethods(store.getPaymentMethods())
                 .createdAt(store.getCreatedAt())
+                .build();
+    }
+
+    private CatalogDTOs.ProductResponse toProductResponse(Product p) {
+        return CatalogDTOs.ProductResponse.builder()
+                .productId(p.getProductId())
+                .storeId(p.getStore() != null ? p.getStore().getStoreId() : null)
+                .categoryId(p.getCategory() != null ? p.getCategory().getCategoryId() : null)
+                .categoryName(p.getCategory() != null ? p.getCategory().getName() : null)
+                .name(p.getName())
+                .description(p.getDescription())
+                .price(p.getPrice())
+                .inventory(p.getInventory())
+                .rating(p.getRating())
                 .build();
     }
 

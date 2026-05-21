@@ -4,6 +4,7 @@ import com.example.flowmerceproject.StoreMangement.entity.Store;
 import com.example.flowmerceproject.StoreMangement.repository.StoreRepository;
 import com.example.flowmerceproject.StorefrontCustomization.dto.StorefrontDTOs.*;
 import com.example.flowmerceproject.StorefrontCustomization.entity.*;
+import com.example.flowmerceproject.StorefrontCustomization.entity.StorefrontMedia;
 import com.example.flowmerceproject.StorefrontCustomization.repository.*;
 import com.example.flowmerceproject.UserManagement.entity.Merchant;
 import com.example.flowmerceproject.UserManagement.exception.BadRequestException;
@@ -42,6 +43,7 @@ public class StorefrontCustomizationService {
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
     private final StorefrontWriteBehindService writeBehindService;
+    private final MediaRepository mediaRepository;
 
     @Value("${storefront.cache.ttl-minutes:30}")
     private long ttlMinutes;
@@ -102,14 +104,14 @@ public class StorefrontCustomizationService {
     // ── PUBLIC (cache-aside) ──────────────────────────────────────────────────
 
     @Transactional(readOnly = true)
-    public StorefrontTemplateResponse getPublicStorefront(String storeUrl) {
-        String cacheKey = CACHE_KEY_PREFIX + storeUrl;
+    public StorefrontTemplateResponse getPublicStorefront(Integer storeId) {
+        String cacheKey = CACHE_KEY_PREFIX + storeId;
         Optional<StorefrontTemplateResponse> cached = getFromCache(cacheKey);
         if (cached.isPresent()) return cached.get();
 
-        StorefrontTemplate template = templateRepository.findPublishedByStoreUrl(storeUrl)
+        StorefrontTemplate template = templateRepository.findPublishedByStoreId(storeId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "No published storefront found for: " + storeUrl));
+                        "No published storefront found for store: " + storeId));
 
         StorefrontTemplateResponse response = toResponseWithComponents(template);
         putInCache(cacheKey, response);
@@ -148,7 +150,7 @@ public class StorefrontCustomizationService {
         if (data.has("card"))       theme.setCard(data.get("card").asText());
 
         themeRepository.save(theme);
-        evictCache(store.getStoreUrl());
+        evictCache(store.getStoreId());
         return toDesignResponse(theme);
     }
 
@@ -157,7 +159,7 @@ public class StorefrontCustomizationService {
         Store store = getStoreAndVerifyOwner(email, storeId);
         StorefrontTemplate template = requireTemplate(storeId);
 
-        String cacheKey = CACHE_KEY_PREFIX + store.getStoreUrl();
+        String cacheKey = CACHE_KEY_PREFIX + store.getStoreId();
         StorefrontTemplateResponse cached = getFromCache(cacheKey).orElseGet(() -> toResponse(template));
 
         ThemeResponse currentTheme = cached.getTheme();
@@ -173,7 +175,7 @@ public class StorefrontCustomizationService {
                 .build();
 
         // Evict instead of write-behind so next read assembles a fresh document
-        evictCache(store.getStoreUrl());
+        evictCache(store.getStoreId());
         writeBehindService.persistThemeUpdate(currentTheme.getThemeId(), req);
         return updatedTheme;
     }
@@ -189,7 +191,7 @@ public class StorefrontCustomizationService {
         template.setVersion(template.getVersion() + 1);
         templateRepository.save(template);
         StorefrontTemplateResponse response = toResponseWithComponents(template);
-        putInCache(CACHE_KEY_PREFIX + store.getStoreUrl(), response);
+        putInCache(CACHE_KEY_PREFIX + store.getStoreId(), response);
         return response;
     }
 
@@ -199,7 +201,7 @@ public class StorefrontCustomizationService {
         StorefrontTemplate template = requireTemplate(storeId);
         template.setStatus(StorefrontTemplate.StorefrontStatus.PAUSED);
         templateRepository.save(template);
-        evictCache(store.getStoreUrl());
+        evictCache(store.getStoreId());
         return toResponse(template);
     }
 
@@ -248,7 +250,7 @@ public class StorefrontCustomizationService {
                 .metaDescription(textOf(data, "metaDescription"))
                 .build();
         pageRepository.save(page);
-        evictCache(store.getStoreUrl());
+        evictCache(store.getStoreId());
         return toPageResponse(page);
     }
 
@@ -270,7 +272,7 @@ public class StorefrontCustomizationService {
         if (data.has("metaDescription")) page.setMetaDescription(data.get("metaDescription").asText());
 
         pageRepository.save(page);
-        evictCache(store.getStoreUrl());
+        evictCache(store.getStoreId());
         return toPageResponse(page);
     }
 
@@ -284,7 +286,7 @@ public class StorefrontCustomizationService {
         }
 
         pageRepository.delete(page);
-        evictCache(store.getStoreUrl());
+        evictCache(store.getStoreId());
     }
 
     // ── COMPONENTS ────────────────────────────────────────────────────────────
@@ -325,7 +327,7 @@ public class StorefrontCustomizationService {
                 .isVisible(!data.has("isVisible") || data.get("isVisible").asBoolean())
                 .build();
         componentRepository.save(component);
-        evictCache(store.getStoreUrl());
+        evictCache(store.getStoreId());
         return toComponentResponse(component);
     }
 
@@ -341,7 +343,7 @@ public class StorefrontCustomizationService {
         if (data.has("content"))   component.setContent(data.get("content").toString());
 
         componentRepository.save(component);
-        evictCache(store.getStoreUrl());
+        evictCache(store.getStoreId());
         return toComponentResponse(component);
     }
 
@@ -350,7 +352,7 @@ public class StorefrontCustomizationService {
         Store store = getStoreAndVerifyOwner(email, storeId);
         BaseComponent component = requireComponent(componentId);
         componentRepository.delete(component);
-        evictCache(store.getStoreUrl());
+        evictCache(store.getStoreId());
     }
 
     @Transactional
@@ -368,7 +370,7 @@ public class StorefrontCustomizationService {
                 });
             }
         }
-        evictCache(store.getStoreUrl());
+        evictCache(store.getStoreId());
         return componentRepository.findByPage_PageIdOrderBySortOrderAsc(pageId)
                 .stream().map(this::toComponentResponse).collect(Collectors.toList());
     }
@@ -401,20 +403,35 @@ public class StorefrontCustomizationService {
         getStoreAndVerifyOwner(email, storeId);
     }
 
-    // ── MEDIA (stub — no media entity exists) ────────────────────────────────
+    // ── MEDIA ─────────────────────────────────────────────────────────────────
 
-    public List<Object> listMedia(String email, Integer storeId) {
+    @Transactional(readOnly = true)
+    public List<StorefrontDTOs.MediaResponse> listMedia(String email, Integer storeId) {
         getStoreAndVerifyOwner(email, storeId);
-        return List.of();
+        return mediaRepository.findByStore_StoreIdOrderByUploadedAtDesc(storeId)
+                .stream().map(this::toMediaResponse).collect(Collectors.toList());
     }
 
-    public Object saveMedia(String email, Integer storeId, JsonNode data) {
-        getStoreAndVerifyOwner(email, storeId);
-        return java.util.Map.of("message", "Media persistence not yet implemented.");
+    @Transactional
+    public StorefrontDTOs.MediaResponse saveMedia(String email, Integer storeId, JsonNode data) {
+        Store store = getStoreAndVerifyOwner(email, storeId);
+        String url = textOf(data, "url");
+        if (url == null || url.isBlank()) throw new BadRequestException("url is required");
+        StorefrontMedia media = StorefrontMedia.builder()
+                .store(store)
+                .url(url)
+                .name(textOf(data, "name"))
+                .mediaType(data.has("mediaType") ? data.get("mediaType").asText() : "IMAGE")
+                .build();
+        return toMediaResponse(mediaRepository.save(media));
     }
 
+    @Transactional
     public void deleteMedia(String email, Integer storeId, Long mediaId) {
         getStoreAndVerifyOwner(email, storeId);
+        StorefrontMedia media = mediaRepository.findById(mediaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Media not found: " + mediaId));
+        mediaRepository.delete(media);
     }
 
     // ── REDIS HELPERS ─────────────────────────────────────────────────────────
@@ -439,11 +456,11 @@ public class StorefrontCustomizationService {
         }
     }
 
-    private void evictCache(String storeUrl) {
+    private void evictCache(Integer storeId) {
         try {
-            redisTemplate.delete(CACHE_KEY_PREFIX + storeUrl);
+            redisTemplate.delete(CACHE_KEY_PREFIX + storeId);
         } catch (Exception e) {
-            log.warn("Cache evict failed for store '{}': {}", storeUrl, e.getMessage());
+            log.warn("Cache evict failed for store {}: {}", storeId, e.getMessage());
         }
     }
 
@@ -595,6 +612,17 @@ public class StorefrontCustomizationService {
                 .sortOrder(c.getSortOrder())
                 .createdAt(c.getCreatedAt())
                 .updatedAt(c.getUpdatedAt())
+                .build();
+    }
+
+    private StorefrontDTOs.MediaResponse toMediaResponse(StorefrontMedia m) {
+        return StorefrontDTOs.MediaResponse.builder()
+                .mediaId(m.getMediaId())
+                .storeId(m.getStore().getStoreId())
+                .url(m.getUrl())
+                .name(m.getName())
+                .mediaType(m.getMediaType())
+                .uploadedAt(m.getUploadedAt())
                 .build();
     }
 

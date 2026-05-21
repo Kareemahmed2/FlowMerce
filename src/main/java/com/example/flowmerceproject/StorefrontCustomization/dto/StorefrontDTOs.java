@@ -3,8 +3,6 @@ package com.example.flowmerceproject.StorefrontCustomization.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
-
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -143,5 +141,25 @@ public class StorefrontDTOs {
         private String text;
         private String card;
         private LocalDateTime updatedAt;
+    }
+
+    // ── MEDIA ─────────────────────────────────────────────────────────────────
+
+    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class MediaRequest {
+        @NotBlank(message = "url is required")
+        private String url;
+        private String name;
+        private String mediaType;
+    }
+
+    @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class MediaResponse implements Serializable {
+        private Long mediaId;
+        private Integer storeId;
+        private String url;
+        private String name;
+        private String mediaType;
+        private LocalDateTime uploadedAt;
     }
 }

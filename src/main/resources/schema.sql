@@ -97,7 +97,9 @@ CREATE TABLE IF NOT EXISTS store_settings (
 
 CREATE TABLE IF NOT EXISTS categories (
   category_id SERIAL PRIMARY KEY,
-  name        VARCHAR(100)
+  store_id    INT,
+  name        VARCHAR(100),
+  FOREIGN KEY (store_id) REFERENCES stores(store_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS products (
@@ -327,6 +329,17 @@ CREATE TABLE IF NOT EXISTS base_components (
   FOREIGN KEY (store_id) REFERENCES stores(store_id)          ON DELETE CASCADE,
   FOREIGN KEY (page_id)  REFERENCES storefront_pages(page_id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS storefront_media (
+  media_id    SERIAL PRIMARY KEY,
+  store_id    INT         NOT NULL,
+  url         VARCHAR(512) NOT NULL,
+  name        VARCHAR(255),
+  media_type  VARCHAR(50)  NOT NULL DEFAULT 'IMAGE',
+  uploaded_at TIMESTAMP WITHOUT TIME ZONE,
+  FOREIGN KEY (store_id) REFERENCES stores(store_id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_sf_media_store ON storefront_media(store_id);
 
 -- =========================
 -- ANALYTICS & REPORTS

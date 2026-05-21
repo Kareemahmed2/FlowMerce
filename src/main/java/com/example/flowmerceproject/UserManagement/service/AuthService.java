@@ -6,6 +6,7 @@ import com.example.flowmerceproject.UserManagement.dto.LoginRequest;
 import com.example.flowmerceproject.UserManagement.dto.PasswordDTOs;
 import com.example.flowmerceproject.UserManagement.dto.RegisterRequest;
 import com.example.flowmerceproject.UserManagement.dto.UserResponse;
+import com.example.flowmerceproject.UserManagement.entity.Customer;
 import com.example.flowmerceproject.UserManagement.entity.Role;
 import com.example.flowmerceproject.UserManagement.entity.Session;
 import com.example.flowmerceproject.UserManagement.entity.User;
@@ -14,6 +15,7 @@ import com.example.flowmerceproject.UserManagement.exception.BadRequestException
 import com.example.flowmerceproject.UserManagement.exception.ConflictException;
 import com.example.flowmerceproject.UserManagement.exception.ResourceNotFoundException;
 import com.example.flowmerceproject.UserManagement.exception.UnauthorizedException;
+import com.example.flowmerceproject.UserManagement.repository.CustomerRepository;
 import com.example.flowmerceproject.UserManagement.repository.SessionRepository;
 import com.example.flowmerceproject.UserManagement.repository.UserRepository;
 import com.example.flowmerceproject.UserManagement.repository.VerificationTokenRepository;
@@ -31,6 +33,7 @@ import java.util.UUID;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
     private final SessionRepository sessionRepository;
     private final VerificationTokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
@@ -235,6 +238,51 @@ public class AuthService {
 
         sessionRepository.revokeAllByUserId(user.getUserId());
         return "Password reset successfully. Please log in again.";
+    }
+
+    // ── CUSTOMER REGISTER ─────────────────────────────────────────────────────
+
+    @Transactional
+    public String registerCustomer(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new ConflictException("Email is already registered: " + request.getEmail());
+        }
+
+        User user = User.builder()
+                .email(request.getEmail())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .fullName(request.getFullName())
+                .phone(request.getPhone())
+                .role(Role.BUYER)
+                .build();
+        userRepository.save(user);
+
+        customerRepository.save(Customer.builder().user(user).build());
+
+        String activationToken = UUID.randomUUID().toString();
+        tokenRepository.deleteByEmailAndType(user.getEmail(), VerificationToken.TokenType.ACTIVATION);
+        tokenRepository.save(VerificationToken.builder()
+                .token(activationToken)
+                .email(user.getEmail())
+                .type(VerificationToken.TokenType.ACTIVATION)
+                .expiresAt(LocalDateTime.now().plusHours(24))
+                .build());
+
+        emailService.sendActivationEmail(user.getEmail(), activationToken);
+        return "Registration successful. Please check your email to activate your account.";
+    }
+
+    // ── CUSTOMER DELETE ACCOUNT ───────────────────────────────────────────────
+
+    @Transactional
+    public String deleteCustomerAccount(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        customerRepository.findByUser_UserId(user.getUserId())
+                .ifPresent(customerRepository::delete);
+        sessionRepository.revokeAllByUserId(user.getUserId());
+        userRepository.delete(user);
+        return "Account deleted successfully.";
     }
 
     // ── HELPER ────────────────────────────────────────────────────────────────

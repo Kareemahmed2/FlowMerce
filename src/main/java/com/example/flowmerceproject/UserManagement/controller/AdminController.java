@@ -1,5 +1,7 @@
 package com.example.flowmerceproject.UserManagement.controller;
 
+import com.example.flowmerceproject.StoreMangement.dto.StoreDTOs;
+import com.example.flowmerceproject.StoreMangement.service.StoreService;
 import com.example.flowmerceproject.UserManagement.dto.MerchantDTOs;
 import com.example.flowmerceproject.UserManagement.dto.UserResponse;
 import com.example.flowmerceproject.UserManagement.service.MerchantService;
@@ -20,6 +22,7 @@ public class AdminController {
 
     private final MerchantService merchantService;
     private final UserService userService;
+    private final StoreService storeService;
 
     @GetMapping("/users")
     public ResponseEntity<ApiResponse<List<UserResponse>>> getAllUsers() {
@@ -46,5 +49,10 @@ public class AdminController {
     public ResponseEntity<Void> deleteMerchant(@PathVariable Integer merchantId) {
         merchantService.deleteMerchantById(merchantId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/stores")
+    public ResponseEntity<ApiResponse<List<StoreDTOs.StoreResponse>>> getAllStores() {
+        return ResponseEntity.ok(ApiResponse.ok(storeService.getAllStores()));
     }
 }

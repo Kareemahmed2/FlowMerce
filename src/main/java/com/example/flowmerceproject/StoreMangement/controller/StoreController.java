@@ -134,9 +134,4 @@ public class StoreController {
                 storeService.updateSettings(principal.getName(), storeId, request)));
     }
 
-    @GetMapping("/admin/all")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<List<StoreResponse>>> getAllStores() {
-        return ResponseEntity.ok(ApiResponse.ok(storeService.getAllStores()));
-    }
 }
