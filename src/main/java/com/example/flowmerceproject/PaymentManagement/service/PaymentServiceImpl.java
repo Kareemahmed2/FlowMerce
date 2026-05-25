@@ -17,7 +17,6 @@ import com.example.flowmerceproject.UserManagement.exception.ForbiddenException;
 import com.example.flowmerceproject.UserManagement.exception.ResourceNotFoundException;
 import com.example.flowmerceproject.UserManagement.repository.CustomerRepository;
 import com.example.flowmerceproject.UserManagement.repository.UserRepository;
-import com.example.flowmerceproject.UserManagement.service.SseService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +46,6 @@ public class PaymentServiceImpl {
     private final List<PaymentGatewayAdapter> gateways;
     private final WalletService walletService;
     private final PaymentEventPublisher eventPublisher;
-    private final SseService sseService;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
 
@@ -129,17 +127,11 @@ public class PaymentServiceImpl {
 
         String merchantEmail = order.getStore().getMerchant().getUser().getEmail();
 
-        // Publish events & SSE
+        // Publish events — consumers handle DB notifications
         if (result.getStatus() == PaymentStatus.COMPLETED) {
             eventPublisher.publishSucceeded(payment, customerEmail, merchantEmail);
-            sseService.sendAccountActivity(customerEmail,
-                    "Payment of " + request.getAmount() + " EGP completed for order #" + order.getOrderId());
-            sseService.sendAccountActivity(merchantEmail,
-                    "Payment of " + request.getAmount() + " EGP received for order #" + order.getOrderId());
         } else if (result.getStatus() == PaymentStatus.FAILED) {
             eventPublisher.publishFailed(payment, customerEmail, merchantEmail);
-            sseService.sendAccountActivity(customerEmail,
-                    "Payment failed for order #" + order.getOrderId() + ": " + result.getFailureReason());
         } else {
             eventPublisher.publishInitiated(payment, customerEmail, merchantEmail);
         }
@@ -174,8 +166,6 @@ public class PaymentServiceImpl {
 
         String customerEmail = payment.getOrder().getCustomer().getUser().getEmail();
         eventPublisher.publishSucceeded(payment, customerEmail, merchantEmail);
-        sseService.sendAccountActivity(customerEmail,
-                "Your payment for order #" + payment.getOrder().getOrderId() + " has been confirmed.");
 
         log.info("Payment confirmed: paymentId={}", paymentId);
         return toResponse(payment);
@@ -221,9 +211,6 @@ public class PaymentServiceImpl {
         String customerEmail = payment.getOrder().getCustomer().getUser().getEmail();
         String merchantEmail = payment.getOrder().getStore().getMerchant().getUser().getEmail();
         eventPublisher.publishRefunded(payment, customerEmail, merchantEmail);
-        sseService.sendAccountActivity(customerEmail,
-                "Refund of " + request.getAmount() + " EGP processed for order #"
-                        + payment.getOrder().getOrderId());
 
         log.info("Payment refunded: paymentId={}, amount={}", paymentId, request.getAmount());
         return toResponse(payment);
