@@ -4,6 +4,9 @@ import com.example.flowmerceproject.CartManagement.dto.CartDTOs;
 import com.example.flowmerceproject.CartManagement.service.CheckoutService;
 import com.example.flowmerceproject.OrderManagement.dto.OrderDTOs;
 import com.example.flowmerceproject.OrderManagement.service.OrderService;
+import com.example.flowmerceproject.PaymentManagement.dto.PaymentDTOs;
+import com.example.flowmerceproject.PaymentManagement.service.PaymentServiceImpl;
+import com.example.flowmerceproject.common.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,21 +28,41 @@ public class OrderController {
 
     private final OrderService orderService;
     private final CheckoutService checkoutService;
+    private final PaymentServiceImpl paymentService;
 
     // ── BUYER ENDPOINTS ───────────────────────────────────────────────────────
 
     // POST /api/orders/place
     @PostMapping("/place")
     @PreAuthorize("hasRole('BUYER')")
-    public ResponseEntity<OrderDTOs.OrderResponse> placeOrder(
+    public ResponseEntity<ApiResponse<PaymentDTOs.OrderPlaceResponse>> placeOrder(
             Principal principal,
             @Valid @RequestBody CartDTOs.CheckoutRequest request) {
 
         CheckoutService.CheckoutSummary summary =
                 checkoutService.processCheckout(principal.getName(), request);
 
+        OrderDTOs.OrderResponse order =
+                orderService.createOrder(principal.getName(), summary);
+
+        PaymentDTOs.InitiatePaymentRequest paymentRequest =
+                PaymentDTOs.InitiatePaymentRequest.builder()
+                        .orderId(order.getOrderId())
+                        .amount(order.getTotal())
+                        .paymentMethod(request.getPaymentMethod())
+                        .idempotencyKey(request.getIdempotencyKey())
+                        .build();
+
+        PaymentDTOs.PaymentResponse payment =
+                paymentService.initiatePayment(paymentRequest, principal.getName());
+
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(orderService.createOrder(principal.getName(), summary));
+                .body(ApiResponse.ok(
+                        PaymentDTOs.OrderPlaceResponse.builder()
+                                .order(order)
+                                .payment(payment)
+                                .build(),
+                        "Order placed successfully"));
     }
 
     // GET /api/orders/me
