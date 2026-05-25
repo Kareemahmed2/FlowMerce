@@ -9,6 +9,8 @@ import com.example.flowmerceproject.InventoryManagement.service.InventoryService
 import com.example.flowmerceproject.ProductManagement.entity.Product;
 import com.example.flowmerceproject.ProductManagement.entity.ProductMedia;
 import com.example.flowmerceproject.ProductManagement.repository.ProductRepository;
+import com.example.flowmerceproject.StoreMangement.entity.Store;
+import com.example.flowmerceproject.StoreMangement.repository.StoreRepository;
 import com.example.flowmerceproject.UserManagement.entity.Customer;
 import com.example.flowmerceproject.UserManagement.entity.User;
 import com.example.flowmerceproject.UserManagement.exception.BadRequestException;
@@ -33,21 +35,23 @@ public class CartService {
     private final ShoppingCartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
+    private final StoreRepository storeRepository;
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
     private final InventoryService inventoryService;
 
     @Transactional
-    public CartDTOs.CartResponse getMyCart(String email) {
+    public CartDTOs.CartResponse getMyCart(String email, Integer storeId) {
         Customer customer = getCustomerByEmail(email);
-        ShoppingCart cart = getOrCreateCart(customer);
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Store not found: " + storeId));
+        ShoppingCart cart = getOrCreateCart(customer, store);
         return toResponse(cart);
     }
 
     @Transactional
     public CartDTOs.CartResponse addItem(String email, CartDTOs.AddToCartRequest request) {
         Customer customer = getCustomerByEmail(email);
-        ShoppingCart cart = getOrCreateCart(customer);
 
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -56,6 +60,10 @@ public class CartService {
         if (!product.getIsActive()) {
             throw new BadRequestException("Product is not available: " + product.getName());
         }
+
+        // Cart is scoped to the product's store — no cross-store mixing
+        Store store = product.getStore();
+        ShoppingCart cart = getOrCreateCart(customer, store);
 
         boolean available = inventoryService.checkAvailability(
                 product.getProductId().longValue(), request.getQuantity());
@@ -101,13 +109,12 @@ public class CartService {
     public CartDTOs.CartResponse updateItemQuantity(String email, Integer cartItemId,
                                                     CartDTOs.UpdateQuantityRequest request) {
         Customer customer = getCustomerByEmail(email);
-        ShoppingCart cart = getOrCreateCart(customer);
 
         CartItem item = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Cart item not found: " + cartItemId));
 
-        if (!item.getCart().getCartId().equals(cart.getCartId())) {
+        if (!item.getCart().getCustomer().getCustomerId().equals(customer.getCustomerId())) {
             throw new BadRequestException("This item does not belong to your cart.");
         }
 
@@ -123,35 +130,38 @@ public class CartService {
         item.setQuantity(request.getQuantity());
         cartItemRepository.save(item);
 
-        cart = cartRepository.findById(cart.getCartId()).orElseThrow();
+        ShoppingCart cart = cartRepository.findById(item.getCart().getCartId()).orElseThrow();
         return toResponse(cart);
     }
 
     @Transactional
     public CartDTOs.CartResponse removeItem(String email, Integer cartItemId) {
         Customer customer = getCustomerByEmail(email);
-        ShoppingCart cart = getOrCreateCart(customer);
 
         CartItem item = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Cart item not found: " + cartItemId));
 
-        if (!item.getCart().getCartId().equals(cart.getCartId())) {
+        if (!item.getCart().getCustomer().getCustomerId().equals(customer.getCustomerId())) {
             throw new BadRequestException("This item does not belong to your cart.");
         }
 
+        Integer cartId = item.getCart().getCartId();
         cartItemRepository.delete(item);
 
-        cart = cartRepository.findById(cart.getCartId()).orElseThrow();
+        ShoppingCart cart = cartRepository.findById(cartId).orElseThrow();
         return toResponse(cart);
     }
 
     @Transactional
-    public String clearCart(String email) {
+    public String clearCart(String email, Integer storeId) {
         Customer customer = getCustomerByEmail(email);
-        ShoppingCart cart = getOrCreateCart(customer);
-        cart.getItems().clear();
-        cartRepository.save(cart);
+        cartRepository.findByCustomer_CustomerIdAndStore_StoreId(
+                        customer.getCustomerId(), storeId)
+                .ifPresent(cart -> {
+                    cart.getItems().clear();
+                    cartRepository.save(cart);
+                });
         return "Cart cleared successfully.";
     }
 
@@ -170,11 +180,13 @@ public class CartService {
                         "Only customers can access the cart."));
     }
 
-    public ShoppingCart getOrCreateCart(Customer customer) {
-        return cartRepository.findByCustomer_CustomerId(customer.getCustomerId())
+    public ShoppingCart getOrCreateCart(Customer customer, Store store) {
+        return cartRepository.findByCustomer_CustomerIdAndStore_StoreId(
+                        customer.getCustomerId(), store.getStoreId())
                 .orElseGet(() -> {
                     ShoppingCart newCart = ShoppingCart.builder()
                             .customer(customer)
+                            .store(store)
                             .expiresAt(LocalDateTime.now().plusDays(7))
                             .build();
                     return cartRepository.save(newCart);
@@ -221,6 +233,7 @@ public class CartService {
         return CartDTOs.CartResponse.builder()
                 .cartId(cart.getCartId())
                 .customerId(cart.getCustomer().getCustomerId())
+                .storeId(cart.getStore().getStoreId())
                 .items(itemResponses)
                 .totalItems(itemResponses.stream()
                         .mapToInt(CartDTOs.CartItemResponse::getQuantity).sum())

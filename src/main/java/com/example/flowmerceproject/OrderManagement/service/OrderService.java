@@ -22,6 +22,8 @@ import com.example.flowmerceproject.UserManagement.repository.UserRepository;
 import com.example.flowmerceproject.UserManagement.service.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,24 +48,22 @@ public class OrderService {
     private final CheckoutService checkoutService;
     private final SseService sseService;
 
-    // CREATE ORDER
-    // Called after checkout is processed
-    // Receives CheckoutSummary from CheckoutService
-
+    // ── CREATE ORDER ────────────────────────────────────────────────────────────
+    // Called after checkout reserves stock. Stock is confirmed (permanently
+    // deducted) exactly once — inside checkoutService.confirmOrder().
     @Transactional
-    public OrderDTOs.OrderResponse createOrder(String email,
-                                               CheckoutSummary checkoutSummary) {
+    public OrderDTOs.OrderResponse createOrder(String email, CheckoutSummary checkoutSummary) {
         Customer customer = getCustomerByEmail(email);
 
-        // Get store from first cart item
         if (checkoutSummary.getItems().isEmpty()) {
             throw new BadRequestException("Cannot create order with empty cart.");
         }
 
-        Store store = checkoutSummary.getItems().get(0)
-                .getProduct().getStore();
+        // Store comes from the CheckoutSummary (guaranteed single-store by cart scoping)
+        Store store = storeRepository.findById(checkoutSummary.getStoreId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Store not found: " + checkoutSummary.getStoreId()));
 
-        // Build order
         Order order = Order.builder()
                 .customer(customer)
                 .store(store)
@@ -79,7 +79,6 @@ public class OrderService {
 
         orderRepository.save(order);
 
-        // Build order items from cart items
         List<OrderItem> orderItems = checkoutSummary.getItems().stream()
                 .map(cartItem -> OrderItem.builder()
                         .order(order)
@@ -94,61 +93,47 @@ public class OrderService {
         order.setItems(orderItems);
         orderRepository.save(order);
 
-        // Generate invoice automatically
         Invoice invoice = generateInvoice(order);
 
-        // Confirm stock permanently in inventory
-        checkoutSummary.getItems().forEach(cartItem ->
-                inventoryService.confirmOrder(
-                        cartItem.getProduct().getProductId().longValue(),
-                        cartItem.getQuantity()
-                )
-        );
-
-        // Clear the cart after successful order
+        // Confirm stock permanently and clear cart — single call, no duplication
         checkoutService.confirmOrder(checkoutSummary.getCartId());
 
-        // Notify customer via SSE
-        sseService.sendOrderUpdate(
-                email,
-                order.getOrderId(),
-                order.getStatus().name()
-        );
+        sseService.sendOrderUpdate(email, order.getOrderId(), order.getStatus().name());
 
-        log.info("Order created: orderId={}, customer={}, total={}",
-                order.getOrderId(), customer.getCustomerId(), order.getTotal());
+        log.info("Order created: orderId={}, customer={}, store={}, total={}",
+                order.getOrderId(), customer.getCustomerId(),
+                store.getStoreId(), order.getTotal());
 
         return toResponse(order, invoice);
     }
 
-    // GET MY ORDERS — customer views their orders
+    // ── CUSTOMER: MY ORDERS ─────────────────────────────────────────────────────
+    @Transactional(readOnly = true)
     public List<OrderDTOs.OrderSummary> getMyOrders(String email) {
         Customer customer = getCustomerByEmail(email);
         return orderRepository
-                .findByCustomer_CustomerIdOrderByOrderDateDesc(
-                        customer.getCustomerId())
+                .findByCustomer_CustomerIdOrderByOrderDateDesc(customer.getCustomerId())
                 .stream()
                 .map(this::toSummary)
                 .collect(Collectors.toList());
     }
 
-    // GET ORDER DETAILS — customer views one order
+    // ── CUSTOMER: ORDER DETAILS ─────────────────────────────────────────────────
+    @Transactional(readOnly = true)
     public OrderDTOs.OrderResponse getOrderById(String email, Integer orderId) {
         Customer customer = getCustomerByEmail(email);
         Order order = findOrderOrThrow(orderId);
 
-        if (!order.getCustomer().getCustomerId()
-                .equals(customer.getCustomerId())) {
+        if (!order.getCustomer().getCustomerId().equals(customer.getCustomerId())) {
             throw new ForbiddenException("You do not have access to this order.");
         }
 
-        Invoice invoice = invoiceRepository.findByOrder_OrderId(orderId)
-                .orElse(null);
+        Invoice invoice = invoiceRepository.findByOrder_OrderId(orderId).orElse(null);
         return toResponse(order, invoice);
     }
 
-
-    // GET STORE ORDERS — merchant views their store orders
+    // ── MERCHANT: STORE ORDER LIST ──────────────────────────────────────────────
+    @Transactional(readOnly = true)
     public List<OrderDTOs.OrderSummary> getStoreOrders(String email, Integer storeId) {
         verifyMerchantOwnsStore(email, storeId);
         return orderRepository
@@ -158,8 +143,22 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    // UPDATE ORDER STATUS — merchant updates status
-    // PENDING → CONFIRMED → SHIPPED → DELIVERED
+    // ── MERCHANT: STORE ORDER DETAILS ───────────────────────────────────────────
+    @Transactional(readOnly = true)
+    public OrderDTOs.OrderResponse getOrderDetails(String email, Integer storeId, Integer orderId) {
+        verifyMerchantOwnsStore(email, storeId);
+        Order order = findOrderOrThrow(orderId);
+
+        if (!order.getStore().getStoreId().equals(storeId)) {
+            throw new ForbiddenException("Order does not belong to your store.");
+        }
+
+        Invoice invoice = invoiceRepository.findByOrder_OrderId(orderId).orElse(null);
+        return toResponse(order, invoice);
+    }
+
+    // ── MERCHANT: UPDATE STATUS ─────────────────────────────────────────────────
+    // Full status control: PENDING → CONFIRMED → SHIPPED → DELIVERED | CANCELLED
     @Transactional
     public OrderDTOs.OrderResponse updateStatus(String email, Integer orderId,
                                                 OrderDTOs.UpdateStatusRequest request) {
@@ -171,77 +170,58 @@ public class OrderService {
         order.setStatus(request.getStatus());
         orderRepository.save(order);
 
-        // Notify customer about status change via SSE
         sseService.sendOrderUpdate(
                 order.getCustomer().getUser().getEmail(),
                 order.getOrderId(),
-                order.getStatus().name()
-        );
+                order.getStatus().name());
 
-        log.info("Order status updated: orderId={}, newStatus={}",
-                orderId, request.getStatus());
+        log.info("Order status updated: orderId={}, newStatus={}", orderId, request.getStatus());
 
         Invoice invoice = invoiceRepository.findByOrder_OrderId(orderId).orElse(null);
         return toResponse(order, invoice);
     }
 
-    // CANCEL ORDER — customer cancels their order
-    // Only allowed when status is PENDING
+    // ── CUSTOMER: CANCEL ORDER ──────────────────────────────────────────────────
+    // Only allowed when PENDING. Stock is NOT auto-restored — the merchant
+    // inspects the returned goods and restocks manually via the inventory API.
     @Transactional
     public OrderDTOs.OrderResponse cancelOrder(String email, Integer orderId) {
         Customer customer = getCustomerByEmail(email);
         Order order = findOrderOrThrow(orderId);
 
-        if (!order.getCustomer().getCustomerId()
-                .equals(customer.getCustomerId())) {
+        if (!order.getCustomer().getCustomerId().equals(customer.getCustomerId())) {
             throw new ForbiddenException("You do not have access to this order.");
         }
 
         if (order.getStatus() != Order.OrderStatus.PENDING) {
             throw new BadRequestException(
-                    "Order cannot be cancelled. Current status: "
-                            + order.getStatus());
+                    "Order cannot be cancelled. Current status: " + order.getStatus());
         }
-
-        // Release reserved stock back to inventory
-        order.getItems().forEach(item ->
-                inventoryService.releaseStock(
-                        item.getProduct().getProductId().longValue(),
-                        item.getQuantity()
-                )
-        );
 
         order.setStatus(Order.OrderStatus.CANCELLED);
         orderRepository.save(order);
 
-        // Notify customer
         sseService.sendOrderUpdate(email, orderId, "CANCELLED");
 
-        log.info("Order cancelled: orderId={}, customer={}",
+        log.info("Order cancelled: orderId={}, customer={}. " +
+                        "Merchant should verify items and restock manually via inventory API.",
                 orderId, customer.getCustomerId());
 
         Invoice invoice = invoiceRepository.findByOrder_OrderId(orderId).orElse(null);
         return toResponse(order, invoice);
     }
 
-
-    // ADMIN: GET ALL ORDERS
-    public List<OrderDTOs.OrderSummary> getAllOrders() {
-        return orderRepository.findAll()
-                .stream()
-                .map(this::toSummary)
-                .collect(Collectors.toList());
+    // ── ADMIN: ALL ORDERS (PAGINATED) ───────────────────────────────────────────
+    @Transactional(readOnly = true)
+    public Page<OrderDTOs.OrderSummary> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable).map(this::toSummary);
     }
 
-
-    // GENERATE INVOICE
-    // Auto-generated when order is created
-    // Format: INV-2026-00001
+    // ── INVOICE GENERATION ──────────────────────────────────────────────────────
+    // Format: INV-2026-0000001 (7 digits; supports up to 9.9 M orders per year)
     private Invoice generateInvoice(Order order) {
-        String year = LocalDateTime.now()
-                .format(DateTimeFormatter.ofPattern("yyyy"));
-        String invoiceNumber = "INV-" + year + "-"
-                + String.format("%05d", order.getOrderId());
+        String year = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy"));
+        String invoiceNumber = "INV-" + year + "-" + String.format("%07d", order.getOrderId());
 
         Invoice invoice = Invoice.builder()
                 .order(order)
@@ -250,31 +230,30 @@ public class OrderService {
 
         invoiceRepository.save(invoice);
 
-        log.info("Invoice generated: {} for orderId={}",
-                invoiceNumber, order.getOrderId());
+        log.info("Invoice generated: {} for orderId={}", invoiceNumber, order.getOrderId());
         return invoice;
     }
 
-    // VALIDATE STATUS TRANSITION
-    // Prevents invalid status jumps e.g. PENDING → DELIVERED
-    private void validateStatusTransition(Order.OrderStatus current,
-                                          Order.OrderStatus next) {
+    // ── STATUS MACHINE ──────────────────────────────────────────────────────────
+    // Merchants have full control. Both customer cancel (PENDING→CANCELLED) and
+    // merchant cancel are valid paths.
+    private void validateStatusTransition(Order.OrderStatus current, Order.OrderStatus next) {
         boolean valid = switch (current) {
             case PENDING   -> next == Order.OrderStatus.CONFIRMED
-                    || next == Order.OrderStatus.CANCELLED;
-            case CONFIRMED -> next == Order.OrderStatus.SHIPPED;
+                           || next == Order.OrderStatus.CANCELLED;
+            case CONFIRMED -> next == Order.OrderStatus.SHIPPED
+                           || next == Order.OrderStatus.CANCELLED;
             case SHIPPED   -> next == Order.OrderStatus.DELIVERED;
             default        -> false;
         };
 
         if (!valid) {
             throw new BadRequestException(
-                    "Invalid status transition: "
-                            + current + " → " + next);
+                    "Invalid status transition: " + current + " → " + next);
         }
     }
 
-    // HELPERS
+    // ── HELPERS ─────────────────────────────────────────────────────────────────
     private Customer getCustomerByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -298,25 +277,30 @@ public class OrderService {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Store not found: " + storeId));
-        if (!store.getMerchant().getMerchantId()
-                .equals(merchant.getMerchantId())) {
+        if (!store.getMerchant().getMerchantId().equals(merchant.getMerchantId())) {
             throw new ForbiddenException("You do not own this store.");
         }
     }
 
+    // ── MAPPERS ─────────────────────────────────────────────────────────────────
     public OrderDTOs.OrderResponse toResponse(Order order, Invoice invoice) {
         List<OrderDTOs.OrderItemResponse> items = order.getItems().stream()
-                .map(item -> OrderDTOs.OrderItemResponse.builder()
-                        .orderItemId(item.getOrderItemId())
-                        .productId(item.getProduct().getProductId())
-                        .productName(item.getProduct().getName())
-                        .quantity(item.getQuantity())
-                        .price(item.getPrice())
-                        .discount(item.getDiscount())
-                        .tax(item.getTax())
-                        .subtotal(item.getPrice()
-                                .multiply(BigDecimal.valueOf(item.getQuantity())))
-                        .build())
+                .map(item -> {
+                    // Subtotal respects line-level discount: (price − discount) × qty
+                    BigDecimal lineSubtotal = item.getPrice()
+                            .subtract(item.getDiscount())
+                            .multiply(BigDecimal.valueOf(item.getQuantity()));
+                    return OrderDTOs.OrderItemResponse.builder()
+                            .orderItemId(item.getOrderItemId())
+                            .productId(item.getProduct().getProductId())
+                            .productName(item.getProduct().getName())
+                            .quantity(item.getQuantity())
+                            .price(item.getPrice())
+                            .discount(item.getDiscount())
+                            .tax(item.getTax())
+                            .subtotal(lineSubtotal)
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return OrderDTOs.OrderResponse.builder()

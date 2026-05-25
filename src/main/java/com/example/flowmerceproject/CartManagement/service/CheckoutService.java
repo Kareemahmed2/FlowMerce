@@ -5,6 +5,8 @@ import com.example.flowmerceproject.CartManagement.entity.CartItem;
 import com.example.flowmerceproject.CartManagement.entity.ShoppingCart;
 import com.example.flowmerceproject.CartManagement.repository.ShoppingCartRepository;
 import com.example.flowmerceproject.InventoryManagement.service.InventoryService;
+import com.example.flowmerceproject.StoreMangement.entity.Store;
+import com.example.flowmerceproject.StoreMangement.repository.StoreRepository;
 import com.example.flowmerceproject.UserManagement.entity.Customer;
 import com.example.flowmerceproject.UserManagement.entity.User;
 import com.example.flowmerceproject.UserManagement.exception.BadRequestException;
@@ -29,6 +31,7 @@ public class CheckoutService {
     private final ShoppingCartRepository cartRepository;
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
+    private final StoreRepository storeRepository;
     private final CartService cartService;
     private final InventoryService inventoryService;
 
@@ -41,10 +44,15 @@ public class CheckoutService {
     @Transactional
     public CheckoutSummary processCheckout(String email, CartDTOs.CheckoutRequest request) {
         Customer customer = getCustomerByEmail(email);
-        ShoppingCart cart = cartRepository.findByCustomer_CustomerId(
-                        customer.getCustomerId())
+
+        Store store = storeRepository.findById(request.getStoreId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Store not found: " + request.getStoreId()));
+
+        ShoppingCart cart = cartRepository.findByCustomer_CustomerIdAndStore_StoreId(
+                        customer.getCustomerId(), store.getStoreId())
                 .orElseThrow(() -> new BadRequestException(
-                        "Your cart is empty. Add items before checkout."));
+                        "Your cart for this store is empty. Add items before checkout."));
 
         if (cart.getItems().isEmpty()) {
             throw new BadRequestException("Your cart is empty. Add items before checkout.");
@@ -93,11 +101,13 @@ public class CheckoutService {
         BigDecimal shippingCost = shippingFlatRate;
         BigDecimal total        = subtotal.add(tax).add(shippingCost);
 
-        log.info("Checkout processed for customer={}, total={}", customer.getCustomerId(), total);
+        log.info("Checkout processed for customer={}, store={}, total={}",
+                customer.getCustomerId(), store.getStoreId(), total);
 
         return CheckoutSummary.builder()
                 .cartId(cart.getCartId())
                 .customerId(customer.getCustomerId())
+                .storeId(store.getStoreId())
                 .items(cart.getItems())
                 .subtotal(subtotal)
                 .tax(tax)
@@ -110,13 +120,14 @@ public class CheckoutService {
                 .build();
     }
 
+    // Called by OrderService after the order is persisted.
+    // Confirms stock (deducts from inventory.quantity) and clears the cart.
     @Transactional
     public void confirmOrder(Integer cartId) {
         ShoppingCart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Cart not found: " + cartId));
 
-        // Debit committed stock from inventory.quantity for every item
         for (CartItem item : cart.getItems()) {
             inventoryService.confirmOrder(
                     item.getProduct().getProductId().longValue(),
@@ -150,6 +161,7 @@ public class CheckoutService {
     public static class CheckoutSummary {
         private Integer cartId;
         private Integer customerId;
+        private Integer storeId;
         private List<CartItem> items;
         private BigDecimal subtotal;
         private BigDecimal tax;

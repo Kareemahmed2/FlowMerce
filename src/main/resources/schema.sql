@@ -184,15 +184,18 @@ CREATE INDEX IF NOT EXISTS idx_inv_txn_store   ON inventory_transactions(store_i
 -- CART & CHECKOUT
 -- =========================
 
--- One cart per customer; expires after 7 days of inactivity.
+-- One cart per (customer, store) pair; expires after 7 days of inactivity.
 -- CartCleanupScheduler runs at 2 AM daily to delete expired carts
 -- and release their reserved stock back to inventory.
 CREATE TABLE IF NOT EXISTS shopping_carts (
                                               cart_id     SERIAL PRIMARY KEY,
-                                              customer_id INT NOT NULL UNIQUE,
+                                              customer_id INT NOT NULL,
+                                              store_id    INT NOT NULL,
                                               created_at  TIMESTAMP WITHOUT TIME ZONE,
                                               expires_at  TIMESTAMP WITHOUT TIME ZONE,
-                                              FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE
+                                              UNIQUE (customer_id, store_id),
+                                              FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE,
+                                              FOREIGN KEY (store_id)    REFERENCES stores(store_id) ON DELETE CASCADE
     );
 
 CREATE TABLE IF NOT EXISTS cart_items (

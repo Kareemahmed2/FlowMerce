@@ -6,6 +6,10 @@ import com.example.flowmerceproject.OrderManagement.dto.OrderDTOs;
 import com.example.flowmerceproject.OrderManagement.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,33 +26,30 @@ public class OrderController {
     private final OrderService orderService;
     private final CheckoutService checkoutService;
 
+    // ── BUYER ENDPOINTS ───────────────────────────────────────────────────────
+
     // POST /api/orders/place
-    // Step 1: Process checkout (reserve stock)
-    // Step 2: Create order from CheckoutSummary
     @PostMapping("/place")
     @PreAuthorize("hasRole('BUYER')")
     public ResponseEntity<OrderDTOs.OrderResponse> placeOrder(
             Principal principal,
             @Valid @RequestBody CartDTOs.CheckoutRequest request) {
 
-        // Step 1 — checkout: validate + reserve stock
         CheckoutService.CheckoutSummary summary =
                 checkoutService.processCheckout(principal.getName(), request);
 
-        // Step 2 — create order from checkout summary
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(orderService.createOrder(principal.getName(), summary));
     }
 
-    // GET /api/orders/me — customer views their orders
+    // GET /api/orders/me
     @GetMapping("/me")
     @PreAuthorize("hasRole('BUYER')")
-    public ResponseEntity<List<OrderDTOs.OrderSummary>> getMyOrders(
-            Principal principal) {
+    public ResponseEntity<List<OrderDTOs.OrderSummary>> getMyOrders(Principal principal) {
         return ResponseEntity.ok(orderService.getMyOrders(principal.getName()));
     }
 
-    // GET /api/orders/{orderId} — customer views order details
+    // GET /api/orders/{orderId}
     @GetMapping("/{orderId}")
     @PreAuthorize("hasRole('BUYER')")
     public ResponseEntity<OrderDTOs.OrderResponse> getOrder(
@@ -58,8 +59,8 @@ public class OrderController {
                 orderService.getOrderById(principal.getName(), orderId));
     }
 
-    // DELETE /api/orders/{orderId}/cancel — customer cancels order
-    @DeleteMapping("/{orderId}/cancel")
+    // POST /api/orders/{orderId}/cancel  (state change — not a deletion)
+    @PostMapping("/{orderId}/cancel")
     @PreAuthorize("hasRole('BUYER')")
     public ResponseEntity<OrderDTOs.OrderResponse> cancelOrder(
             Principal principal,
@@ -68,9 +69,9 @@ public class OrderController {
                 orderService.cancelOrder(principal.getName(), orderId));
     }
 
-    // ── MERCHANT ENDPOINTS ────────────────────────
+    // ── MERCHANT ENDPOINTS ────────────────────────────────────────────────────
 
-    // GET /api/orders/store/{storeId} — merchant views store orders
+    // GET /api/orders/store/{storeId}
     @GetMapping("/store/{storeId}")
     @PreAuthorize("hasRole('MERCHANT')")
     public ResponseEntity<List<OrderDTOs.OrderSummary>> getStoreOrders(
@@ -80,7 +81,18 @@ public class OrderController {
                 orderService.getStoreOrders(principal.getName(), storeId));
     }
 
-    // PUT /api/orders/{orderId}/status — merchant updates order status
+    // GET /api/orders/store/{storeId}/{orderId} — full order detail for merchant
+    @GetMapping("/store/{storeId}/{orderId}")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<OrderDTOs.OrderResponse> getOrderDetails(
+            Principal principal,
+            @PathVariable Integer storeId,
+            @PathVariable Integer orderId) {
+        return ResponseEntity.ok(
+                orderService.getOrderDetails(principal.getName(), storeId, orderId));
+    }
+
+    // PUT /api/orders/{orderId}/status
     @PutMapping("/{orderId}/status")
     @PreAuthorize("hasRole('MERCHANT')")
     public ResponseEntity<OrderDTOs.OrderResponse> updateStatus(
@@ -91,12 +103,14 @@ public class OrderController {
                 orderService.updateStatus(principal.getName(), orderId, request));
     }
 
-    // ── ADMIN ENDPOINTS ───────────────────────────
+    // ── ADMIN ENDPOINTS ───────────────────────────────────────────────────────
 
-    // GET /api/orders/admin/all
+    // GET /api/orders/admin/all?page=0&size=20&sort=orderDate,desc
     @GetMapping("/admin/all")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<OrderDTOs.OrderSummary>> getAllOrders() {
-        return ResponseEntity.ok(orderService.getAllOrders());
+    public ResponseEntity<Page<OrderDTOs.OrderSummary>> getAllOrders(
+            @PageableDefault(size = 20, sort = "orderDate",
+                             direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(orderService.getAllOrders(pageable));
     }
 }
