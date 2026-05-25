@@ -20,12 +20,17 @@ public class CartController {
     private final CartService cartService;
     private final CheckoutService checkoutService;
 
-    @GetMapping
+    // GET /cart/{storeId} — view cart for a specific store
+    @GetMapping("/{storeId}")
     @PreAuthorize("hasRole('BUYER')")
-    public ResponseEntity<ApiResponse<CartDTOs.CartResponse>> getCart(Principal principal) {
-        return ResponseEntity.ok(ApiResponse.ok(cartService.getMyCart(principal.getName())));
+    public ResponseEntity<ApiResponse<CartDTOs.CartResponse>> getCart(
+            Principal principal,
+            @PathVariable Integer storeId) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                cartService.getMyCart(principal.getName(), storeId)));
     }
 
+    // POST /cart/items — store is derived from the product
     @PostMapping("/items")
     @PreAuthorize("hasRole('BUYER')")
     public ResponseEntity<ApiResponse<CartDTOs.CartResponse>> addItem(
@@ -54,13 +59,17 @@ public class CartController {
                 cartService.removeItem(principal.getName(), cartItemId)));
     }
 
-    @DeleteMapping
+    // DELETE /cart/{storeId} — clear cart for a specific store
+    @DeleteMapping("/{storeId}")
     @PreAuthorize("hasRole('BUYER')")
-    public ResponseEntity<ApiResponse<String>> clearCart(Principal principal) {
+    public ResponseEntity<ApiResponse<String>> clearCart(
+            Principal principal,
+            @PathVariable Integer storeId) {
         return ResponseEntity.ok(ApiResponse.ok(
-                cartService.clearCart(principal.getName())));
+                cartService.clearCart(principal.getName(), storeId)));
     }
 
+    // POST /cart/checkout — storeId comes from CheckoutRequest body
     @PostMapping("/checkout")
     @PreAuthorize("hasRole('BUYER')")
     public ResponseEntity<ApiResponse<CheckoutService.CheckoutSummary>> checkout(

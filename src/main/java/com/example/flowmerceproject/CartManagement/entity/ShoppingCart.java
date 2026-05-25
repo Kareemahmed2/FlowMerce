@@ -1,5 +1,6 @@
 package com.example.flowmerceproject.CartManagement.entity;
 
+import com.example.flowmerceproject.StoreMangement.entity.Store;
 import com.example.flowmerceproject.UserManagement.entity.Customer;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,9 +22,13 @@ public class ShoppingCart {
     @Column(name = "cart_id")
     private Integer cartId;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", nullable = false)
+    private Store store;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

@@ -30,6 +30,9 @@ public class CartDTOs {
 
     @Data
     public static class CheckoutRequest {
+        @NotNull(message = "Store ID is required")
+        private Integer storeId;
+
         @NotNull(message = "Shipping address is required")
         private String shippingAddress;
 
@@ -58,6 +61,7 @@ public class CartDTOs {
     public static class CartResponse {
         private Integer cartId;
         private Integer customerId;
+        private Integer storeId;
         private List<CartItemResponse> items;
         private int totalItems;
         private BigDecimal subtotal;
