@@ -87,9 +87,11 @@ public class PaymentServiceImpl {
             throw new ForbiddenException("This order does not belong to you.");
         }
 
-        // Check order hasn't already been paid
+        // Check order hasn't already been paid (or refunded — can't re-pay)
         paymentRepository.findByOrder_OrderId(order.getOrderId()).ifPresent(p -> {
-            if (p.getPaymentStatus() == PaymentStatus.COMPLETED) {
+            if (p.getPaymentStatus() == PaymentStatus.COMPLETED
+                    || p.getPaymentStatus() == PaymentStatus.PARTIALLY_REFUNDED
+                    || p.getPaymentStatus() == PaymentStatus.REFUNDED) {
                 throw new BadRequestException("Order #" + order.getOrderId() + " is already paid.");
             }
         });
@@ -179,7 +181,8 @@ public class PaymentServiceImpl {
                                                      String callerEmail) {
         Payment payment = findOrThrow(paymentId);
 
-        if (payment.getPaymentStatus() != PaymentStatus.COMPLETED) {
+        if (payment.getPaymentStatus() != PaymentStatus.COMPLETED
+                && payment.getPaymentStatus() != PaymentStatus.PARTIALLY_REFUNDED) {
             throw new BadRequestException(
                     "Only completed payments can be refunded. Status: " + payment.getPaymentStatus());
         }

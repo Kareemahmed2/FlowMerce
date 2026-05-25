@@ -2,8 +2,10 @@ package com.example.flowmerceproject.OrderManagement.event;
 
 import com.example.flowmerceproject.NotificationManagement.config.NotificationRabbitMQConfig;
 import com.example.flowmerceproject.OrderManagement.entity.Order;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -18,8 +20,7 @@ public class OrderEventPublisher {
 
     private final RabbitTemplate rabbitTemplate;
 
-    @Data
-    @Builder
+    @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class OrderEvent {
         private Integer orderId;
         private String customerEmail;

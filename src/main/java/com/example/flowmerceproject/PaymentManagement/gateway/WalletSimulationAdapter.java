@@ -5,7 +5,6 @@ import com.example.flowmerceproject.OrderManagement.repository.OrderRepository;
 import com.example.flowmerceproject.PaymentManagement.entity.Payment.PaymentStatus;
 import com.example.flowmerceproject.PaymentManagement.entity.WalletTransaction.ReferenceType;
 import com.example.flowmerceproject.PaymentManagement.service.WalletService;
-import com.example.flowmerceproject.UserManagement.exception.BadRequestException;
 import com.example.flowmerceproject.UserManagement.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -45,21 +44,22 @@ public class WalletSimulationAdapter implements PaymentGatewayAdapter {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
 
-        // Debit customer
-        try {
-            walletService.debitCustomer(
-                    order.getCustomer(), amount,
-                    "Payment for order #" + orderId, orderId);
-        } catch (BadRequestException e) {
+        // Pre-check balance to avoid polluting the outer transaction on failure
+        BigDecimal available = walletService.getOrCreateCustomerWallet(order.getCustomer()).getBalance();
+        if (available.compareTo(amount) < 0) {
             return GatewayResult.builder()
                     .success(false)
                     .status(PaymentStatus.FAILED)
-                    .failureReason(e.getMessage())
-                    .gatewayResponse("{\"error\":\"" + e.getMessage() + "\"}")
+                    .failureReason("Insufficient wallet balance. Available: " + available + " EGP, Required: " + amount + " EGP")
+                    .gatewayResponse("{\"error\":\"insufficient_balance\"}")
                     .build();
         }
 
-        // Credit merchant
+        // Debit customer then credit merchant
+        walletService.debitCustomer(
+                order.getCustomer(), amount,
+                "Payment for order #" + orderId, orderId);
+
         walletService.creditMerchant(
                 order.getStore().getMerchant(), amount,
                 "Payment received for order #" + orderId, orderId);

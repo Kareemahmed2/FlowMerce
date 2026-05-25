@@ -68,28 +68,29 @@ public class OrderController {
     // GET /api/orders/me
     @GetMapping("/me")
     @PreAuthorize("hasRole('BUYER')")
-    public ResponseEntity<List<OrderDTOs.OrderSummary>> getMyOrders(Principal principal) {
-        return ResponseEntity.ok(orderService.getMyOrders(principal.getName()));
+    public ResponseEntity<ApiResponse<List<OrderDTOs.OrderSummary>>> getMyOrders(Principal principal) {
+        return ResponseEntity.ok(ApiResponse.ok(orderService.getMyOrders(principal.getName())));
     }
 
     // GET /api/orders/{orderId}
     @GetMapping("/{orderId}")
     @PreAuthorize("hasRole('BUYER')")
-    public ResponseEntity<OrderDTOs.OrderResponse> getOrder(
+    public ResponseEntity<ApiResponse<OrderDTOs.OrderResponse>> getOrder(
             Principal principal,
             @PathVariable Integer orderId) {
-        return ResponseEntity.ok(
-                orderService.getOrderById(principal.getName(), orderId));
+        return ResponseEntity.ok(ApiResponse.ok(
+                orderService.getOrderById(principal.getName(), orderId)));
     }
 
     // POST /api/orders/{orderId}/cancel  (state change — not a deletion)
     @PostMapping("/{orderId}/cancel")
     @PreAuthorize("hasRole('BUYER')")
-    public ResponseEntity<OrderDTOs.OrderResponse> cancelOrder(
+    public ResponseEntity<ApiResponse<OrderDTOs.OrderResponse>> cancelOrder(
             Principal principal,
             @PathVariable Integer orderId) {
-        return ResponseEntity.ok(
-                orderService.cancelOrder(principal.getName(), orderId));
+        return ResponseEntity.ok(ApiResponse.ok(
+                orderService.cancelOrder(principal.getName(), orderId),
+                "Order cancelled successfully"));
     }
 
     // ── MERCHANT ENDPOINTS ────────────────────────────────────────────────────
@@ -97,33 +98,34 @@ public class OrderController {
     // GET /api/orders/store/{storeId}
     @GetMapping("/store/{storeId}")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<List<OrderDTOs.OrderSummary>> getStoreOrders(
+    public ResponseEntity<ApiResponse<List<OrderDTOs.OrderSummary>>> getStoreOrders(
             Principal principal,
             @PathVariable Integer storeId) {
-        return ResponseEntity.ok(
-                orderService.getStoreOrders(principal.getName(), storeId));
+        return ResponseEntity.ok(ApiResponse.ok(
+                orderService.getStoreOrders(principal.getName(), storeId)));
     }
 
     // GET /api/orders/store/{storeId}/{orderId} — full order detail for merchant
     @GetMapping("/store/{storeId}/{orderId}")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<OrderDTOs.OrderResponse> getOrderDetails(
+    public ResponseEntity<ApiResponse<OrderDTOs.OrderResponse>> getOrderDetails(
             Principal principal,
             @PathVariable Integer storeId,
             @PathVariable Integer orderId) {
-        return ResponseEntity.ok(
-                orderService.getOrderDetails(principal.getName(), storeId, orderId));
+        return ResponseEntity.ok(ApiResponse.ok(
+                orderService.getOrderDetails(principal.getName(), storeId, orderId)));
     }
 
     // PUT /api/orders/{orderId}/status
     @PutMapping("/{orderId}/status")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<OrderDTOs.OrderResponse> updateStatus(
+    public ResponseEntity<ApiResponse<OrderDTOs.OrderResponse>> updateStatus(
             Principal principal,
             @PathVariable Integer orderId,
             @Valid @RequestBody OrderDTOs.UpdateStatusRequest request) {
-        return ResponseEntity.ok(
-                orderService.updateStatus(principal.getName(), orderId, request));
+        return ResponseEntity.ok(ApiResponse.ok(
+                orderService.updateStatus(principal.getName(), orderId, request),
+                "Order status updated"));
     }
 
     // ── ADMIN ENDPOINTS ───────────────────────────────────────────────────────
