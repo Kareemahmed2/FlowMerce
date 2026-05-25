@@ -5,6 +5,7 @@ import com.example.flowmerceproject.StorefrontCustomization.dto.StorefrontDTOs.*
 import com.example.flowmerceproject.StorefrontCustomization.service.StorefrontCustomizationService;
 import com.example.flowmerceproject.common.ApiResponse;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/stores/{storeId}/storefront")
@@ -21,6 +23,7 @@ import java.util.List;
 public class StorefrontCustomizationController {
 
     private final StorefrontCustomizationService service;
+    private final ObjectMapper objectMapper;
 
     // ── LIFECYCLE ─────────────────────────────────────────────────────────────
 
@@ -76,7 +79,8 @@ public class StorefrontCustomizationController {
     public ResponseEntity<ApiResponse<DesignResponse>> saveDesign(
             Principal principal,
             @PathVariable Integer storeId,
-            @RequestBody JsonNode data) {
+            @RequestBody Map<String, Object> rawData) {
+        JsonNode data = objectMapper.valueToTree(rawData);
         return ResponseEntity.ok(ApiResponse.ok(
                 service.saveDesign(principal.getName(), storeId, data)));
     }
@@ -114,7 +118,8 @@ public class StorefrontCustomizationController {
     public ResponseEntity<ApiResponse<PageResponse>> createPage(
             Principal principal,
             @PathVariable Integer storeId,
-            @RequestBody JsonNode data) {
+            @RequestBody Map<String, Object> rawData) {
+        JsonNode data = objectMapper.valueToTree(rawData);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(
                         service.createPage(principal.getName(), storeId, data),
@@ -137,7 +142,8 @@ public class StorefrontCustomizationController {
             Principal principal,
             @PathVariable Integer storeId,
             @PathVariable Long pageId,
-            @RequestBody JsonNode data) {
+            @RequestBody Map<String, Object> rawData) {
+        JsonNode data = objectMapper.valueToTree(rawData);
         return ResponseEntity.ok(ApiResponse.ok(
                 service.updatePage(principal.getName(), storeId, pageId, data)));
     }
@@ -170,7 +176,8 @@ public class StorefrontCustomizationController {
             Principal principal,
             @PathVariable Integer storeId,
             @PathVariable Long pageId,
-            @RequestBody JsonNode data) {
+            @RequestBody Map<String, Object> rawData) {
+        JsonNode data = objectMapper.valueToTree(rawData);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(
                         service.addComponent(principal.getName(), storeId, pageId, data),
@@ -184,7 +191,8 @@ public class StorefrontCustomizationController {
             @PathVariable Integer storeId,
             @PathVariable Long pageId,
             @PathVariable Long componentId,
-            @RequestBody JsonNode data) {
+            @RequestBody Map<String, Object> rawData) {
+        JsonNode data = objectMapper.valueToTree(rawData);
         return ResponseEntity.ok(ApiResponse.ok(
                 service.updateComponent(principal.getName(), storeId, pageId, componentId, data)));
     }
@@ -206,7 +214,8 @@ public class StorefrontCustomizationController {
             Principal principal,
             @PathVariable Integer storeId,
             @PathVariable Long pageId,
-            @RequestBody JsonNode data) {
+            @RequestBody List<Map<String, Object>> rawData) {
+        JsonNode data = objectMapper.valueToTree(rawData);
         return ResponseEntity.ok(ApiResponse.ok(
                 service.reorderComponents(principal.getName(), storeId, pageId, data)));
     }
@@ -229,7 +238,8 @@ public class StorefrontCustomizationController {
             Principal principal,
             @PathVariable Integer storeId,
             @PathVariable Long componentId,
-            @RequestBody JsonNode data) {
+            @RequestBody Map<String, Object> rawData) {
+        JsonNode data = objectMapper.valueToTree(rawData);
         return ResponseEntity.ok(ApiResponse.ok(
                 service.addDecorator(principal.getName(), storeId, componentId, data)));
     }
@@ -241,7 +251,8 @@ public class StorefrontCustomizationController {
             @PathVariable Integer storeId,
             @PathVariable Long componentId,
             @PathVariable Long decoratorId,
-            @RequestBody JsonNode data) {
+            @RequestBody Map<String, Object> rawData) {
+        JsonNode data = objectMapper.valueToTree(rawData);
         return ResponseEntity.ok(ApiResponse.ok(
                 service.updateDecorator(principal.getName(), storeId, componentId, decoratorId, data)));
     }
@@ -261,7 +272,7 @@ public class StorefrontCustomizationController {
 
     @GetMapping("/media")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<ApiResponse<List<MediaResponse>>> listMedia(
+    public ResponseEntity<ApiResponse<List<StorefrontDTOs.MediaResponse>>> listMedia(
             Principal principal, @PathVariable Integer storeId) {
         return ResponseEntity.ok(ApiResponse.ok(
                 service.listMedia(principal.getName(), storeId)));
@@ -269,10 +280,11 @@ public class StorefrontCustomizationController {
 
     @PostMapping("/media")
     @PreAuthorize("hasRole('MERCHANT')")
-    public ResponseEntity<ApiResponse<MediaResponse>> saveMedia(
+    public ResponseEntity<ApiResponse<StorefrontDTOs.MediaResponse>> saveMedia(
             Principal principal,
             @PathVariable Integer storeId,
-            @RequestBody JsonNode data) {
+            @RequestBody Map<String, Object> rawData) {
+        JsonNode data = objectMapper.valueToTree(rawData);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(
                 service.saveMedia(principal.getName(), storeId, data), "Media saved"));
     }

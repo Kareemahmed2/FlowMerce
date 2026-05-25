@@ -22,6 +22,8 @@ public class RegisterRequest {
 
     private String phone;
 
+    private String businessName;
+
     // Optional: if not provided, defaults to BUYER
     private Role role;  // Changed to enum for type-safety
 }

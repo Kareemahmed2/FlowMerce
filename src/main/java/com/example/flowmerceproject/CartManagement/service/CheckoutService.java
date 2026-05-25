@@ -108,7 +108,7 @@ public class CheckoutService {
                 .cartId(cart.getCartId())
                 .customerId(customer.getCustomerId())
                 .storeId(store.getStoreId())
-                .items(cart.getItems())
+                .items(cartService.toResponse(cart).getItems())
                 .subtotal(subtotal)
                 .tax(tax)
                 .shippingCost(shippingCost)
@@ -162,7 +162,7 @@ public class CheckoutService {
         private Integer cartId;
         private Integer customerId;
         private Integer storeId;
-        private List<CartItem> items;
+        private List<CartDTOs.CartItemResponse> items;
         private BigDecimal subtotal;
         private BigDecimal tax;
         private BigDecimal shippingCost;

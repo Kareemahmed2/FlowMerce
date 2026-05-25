@@ -9,6 +9,8 @@ import com.example.flowmerceproject.OrderManagement.entity.Order;
 import com.example.flowmerceproject.OrderManagement.entity.OrderItem;
 import com.example.flowmerceproject.OrderManagement.repository.InvoiceRepository;
 import com.example.flowmerceproject.OrderManagement.repository.OrderRepository;
+import com.example.flowmerceproject.ProductManagement.entity.Product;
+import com.example.flowmerceproject.ProductManagement.repository.ProductRepository;
 import com.example.flowmerceproject.StoreMangement.entity.Store;
 import com.example.flowmerceproject.StoreMangement.repository.StoreRepository;
 import com.example.flowmerceproject.UserManagement.entity.Customer;
@@ -40,6 +42,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final InvoiceRepository invoiceRepository;
+    private final ProductRepository productRepository;
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
@@ -80,14 +83,19 @@ public class OrderService {
         orderRepository.save(order);
 
         List<OrderItem> orderItems = checkoutSummary.getItems().stream()
-                .map(cartItem -> OrderItem.builder()
-                        .order(order)
-                        .product(cartItem.getProduct())
-                        .quantity(cartItem.getQuantity())
-                        .price(cartItem.getPriceAtAdd())
-                        .discount(BigDecimal.ZERO)
-                        .tax(BigDecimal.ZERO)
-                        .build())
+                .map(cartItem -> {
+                    Product product = productRepository.findById(cartItem.getProductId())
+                            .orElseThrow(() -> new ResourceNotFoundException(
+                                    "Product not found: " + cartItem.getProductId()));
+                    return OrderItem.builder()
+                            .order(order)
+                            .product(product)
+                            .quantity(cartItem.getQuantity())
+                            .price(cartItem.getPriceAtAdd())
+                            .discount(BigDecimal.ZERO)
+                            .tax(BigDecimal.ZERO)
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         order.setItems(orderItems);

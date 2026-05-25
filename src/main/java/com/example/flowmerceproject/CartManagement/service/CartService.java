@@ -64,6 +64,7 @@ public class CartService {
         // Cart is scoped to the product's store — no cross-store mixing
         Store store = product.getStore();
         ShoppingCart cart = getOrCreateCart(customer, store);
+        cartRepository.flush();
 
         boolean available = inventoryService.checkAvailability(
                 product.getProductId().longValue(), request.getQuantity());
@@ -99,9 +100,9 @@ public class CartService {
                     .priceAtAdd(product.getBasePrice())
                     .build();
             cartItemRepository.save(newItem);
+            cart.getItems().add(newItem);
         }
 
-        cart = cartRepository.findById(cart.getCartId()).orElseThrow();
         return toResponse(cart);
     }
 
@@ -130,7 +131,7 @@ public class CartService {
         item.setQuantity(request.getQuantity());
         cartItemRepository.save(item);
 
-        ShoppingCart cart = cartRepository.findById(item.getCart().getCartId()).orElseThrow();
+        ShoppingCart cart = cartRepository.findWithItemsById(item.getCart().getCartId()).orElseThrow();
         return toResponse(cart);
     }
 
@@ -148,8 +149,9 @@ public class CartService {
 
         Integer cartId = item.getCart().getCartId();
         cartItemRepository.delete(item);
+        cartItemRepository.flush();
 
-        ShoppingCart cart = cartRepository.findById(cartId).orElseThrow();
+        ShoppingCart cart = cartRepository.findWithItemsById(cartId).orElseThrow();
         return toResponse(cart);
     }
 

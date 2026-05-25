@@ -7,6 +7,7 @@ import com.example.flowmerceproject.UserManagement.dto.PasswordDTOs;
 import com.example.flowmerceproject.UserManagement.dto.RegisterRequest;
 import com.example.flowmerceproject.UserManagement.dto.UserResponse;
 import com.example.flowmerceproject.UserManagement.entity.Customer;
+import com.example.flowmerceproject.UserManagement.entity.Merchant;
 import com.example.flowmerceproject.UserManagement.entity.Role;
 import com.example.flowmerceproject.UserManagement.entity.Session;
 import com.example.flowmerceproject.UserManagement.entity.User;
@@ -16,6 +17,7 @@ import com.example.flowmerceproject.UserManagement.exception.ConflictException;
 import com.example.flowmerceproject.UserManagement.exception.ResourceNotFoundException;
 import com.example.flowmerceproject.UserManagement.exception.UnauthorizedException;
 import com.example.flowmerceproject.UserManagement.repository.CustomerRepository;
+import com.example.flowmerceproject.UserManagement.repository.MerchantRepository;
 import com.example.flowmerceproject.UserManagement.repository.SessionRepository;
 import com.example.flowmerceproject.UserManagement.repository.UserRepository;
 import com.example.flowmerceproject.UserManagement.repository.VerificationTokenRepository;
@@ -34,6 +36,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
+    private final MerchantRepository merchantRepository;
     private final SessionRepository sessionRepository;
     private final VerificationTokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
@@ -63,6 +66,11 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
+
+        merchantRepository.save(Merchant.builder()
+                .user(user)
+                .businessName(request.getBusinessName())
+                .build());
 
         String activationToken = UUID.randomUUID().toString();
         tokenRepository.deleteByEmailAndType(user.getEmail(), VerificationToken.TokenType.ACTIVATION);
