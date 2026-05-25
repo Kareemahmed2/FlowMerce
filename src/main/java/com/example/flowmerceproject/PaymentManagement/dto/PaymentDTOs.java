@@ -7,8 +7,10 @@ import com.example.flowmerceproject.PaymentManagement.entity.WalletTransaction.T
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -17,7 +19,7 @@ public class PaymentDTOs {
 
     // ── REQUEST DTOs ──────────────────────────────────────────────────────────
 
-    @Data @Builder
+    @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class InitiatePaymentRequest {
         @NotNull(message = "Order ID is required")
         private Integer orderId;

@@ -129,14 +129,14 @@ public class WalletService {
 
     // ── QUERY ─────────────────────────────────────────────────────────────────
 
-    @Transactional(readOnly = true)
+    @Transactional
     public PaymentDTOs.WalletResponse getCustomerWallet(String email) {
         Customer customer = resolveCustomer(email);
         Wallet wallet = getOrCreateCustomerWallet(customer);
         return toResponse(wallet);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public PaymentDTOs.WalletResponse getMerchantWallet(String email, Integer storeId) {
         Merchant merchant = resolveMerchantForStore(email, storeId);
         Wallet wallet = getOrCreateMerchantWallet(merchant);
@@ -154,7 +154,7 @@ public class WalletService {
         return toResponse(wallet);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<PaymentDTOs.WalletTransactionResponse> getCustomerTransactions(String email) {
         Customer customer = resolveCustomer(email);
         Wallet wallet = getOrCreateCustomerWallet(customer);
@@ -162,7 +162,7 @@ public class WalletService {
                 .stream().map(this::toTxResponse).collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<PaymentDTOs.WalletTransactionResponse> getMerchantTransactions(String email,
                                                                                 Integer storeId) {
         Merchant merchant = resolveMerchantForStore(email, storeId);

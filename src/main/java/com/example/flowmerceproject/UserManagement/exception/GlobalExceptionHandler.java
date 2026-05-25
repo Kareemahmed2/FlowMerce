@@ -84,7 +84,7 @@ public class GlobalExceptionHandler {
             Exception ex, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.of(500, "Internal Server Error",
-                        "An unexpected error occurred. Please try again later.",
+                        ex.getClass().getSimpleName() + ": " + ex.getMessage(),
                         "INTERNAL_ERROR", request.getRequestURI()));
     }
 }

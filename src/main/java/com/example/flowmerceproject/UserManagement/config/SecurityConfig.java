@@ -47,6 +47,8 @@ public class SecurityConfig {
                                 "/auth/customer/forgot-password",
                                 "/auth/customer/reset-password",
                                 "/auth/customer/refresh",
+                                "/auth/activate",
+                                "/auth/reset-password",
                                 "/actuator/health",
                                 "/public/**",
                                 "/stream/stock",

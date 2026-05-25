@@ -24,7 +24,7 @@ public class EmailService {
     private String fromEmail;
 
     public void sendActivationEmail(String toEmail, String token) {
-        String activationLink = baseUrl + "/api/auth/activate?token=" + token;
+        String activationLink = baseUrl + "/api/v1/auth/activate?token=" + token;
         String subject = "Activate your FlowMerce account";
         String body = """
                 <h2>Welcome to FlowMerce!</h2>
@@ -37,7 +37,7 @@ public class EmailService {
     }
 
     public void sendPasswordResetEmail(String toEmail, String token) {
-        String resetLink = baseUrl + "/api/auth/reset-password?token=" + token;
+        String resetLink = baseUrl + "/api/v1/auth/reset-password?token=" + token;
         String subject = "Reset your FlowMerce password";
         String body = """
                 <h2>Password Reset Request</h2>

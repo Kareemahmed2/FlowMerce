@@ -21,6 +21,7 @@ import com.example.flowmerceproject.UserManagement.exception.ResourceNotFoundExc
 import com.example.flowmerceproject.UserManagement.repository.CustomerRepository;
 import com.example.flowmerceproject.UserManagement.repository.MerchantRepository;
 import com.example.flowmerceproject.UserManagement.repository.UserRepository;
+import com.example.flowmerceproject.OrderManagement.event.OrderEventPublisher;
 import com.example.flowmerceproject.UserManagement.service.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +51,7 @@ public class OrderService {
     private final InventoryService inventoryService;
     private final CheckoutService checkoutService;
     private final SseService sseService;
+    private final OrderEventPublisher orderEventPublisher;
 
     // ── CREATE ORDER ────────────────────────────────────────────────────────────
     // Called after checkout reserves stock. Stock is confirmed (permanently
@@ -173,15 +175,17 @@ public class OrderService {
         Order order = findOrderOrThrow(orderId);
         verifyMerchantOwnsStore(email, order.getStore().getStoreId());
 
+        String oldStatus = order.getStatus().name();
         validateStatusTransition(order.getStatus(), request.getStatus());
 
         order.setStatus(request.getStatus());
         orderRepository.save(order);
 
-        sseService.sendOrderUpdate(
-                order.getCustomer().getUser().getEmail(),
-                order.getOrderId(),
-                order.getStatus().name());
+        String customerEmail = order.getCustomer().getUser().getEmail();
+        String merchantEmail = order.getStore().getMerchant().getUser().getEmail();
+
+        sseService.sendOrderUpdate(customerEmail, order.getOrderId(), order.getStatus().name());
+        orderEventPublisher.publishStatusChanged(order, oldStatus, customerEmail, merchantEmail);
 
         log.info("Order status updated: orderId={}, newStatus={}", orderId, request.getStatus());
 
@@ -209,7 +213,9 @@ public class OrderService {
         order.setStatus(Order.OrderStatus.CANCELLED);
         orderRepository.save(order);
 
+        String merchantEmail = order.getStore().getMerchant().getUser().getEmail();
         sseService.sendOrderUpdate(email, orderId, "CANCELLED");
+        orderEventPublisher.publishStatusChanged(order, "PENDING", email, merchantEmail);
 
         log.info("Order cancelled: orderId={}, customer={}. " +
                         "Merchant should verify items and restock manually via inventory API.",
