@@ -73,6 +73,10 @@
     {
       "key": "adminToken",
       "value": ""
+    },
+    {
+      "key": "notificationId",
+      "value": ""
     }
   ],
   "item": [
@@ -570,6 +574,59 @@
                 "customer",
                 "me"
               ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth — Unified (shared)",
+      "item": [
+        {
+          "name": "Activate Account (shared link)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/auth/activate?token=REPLACE_WITH_TOKEN",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "activate"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "REPLACE_WITH_TOKEN"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reset Password (shared)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/reset-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "reset-password"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"REPLACE_WITH_TOKEN\",\n  \"newPassword\": \"NewPassword123!\",\n  \"confirmNewPassword\": \"NewPassword123!\"\n}"
             }
           }
         }
@@ -1505,7 +1562,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/stores/{{storeId}}/products/search?q=cotton&categoryId={{categoryId}}",
+              "raw": "{{baseUrl}}/stores/{{storeId}}/products/search?keyword=cotton&categoryId={{categoryId}}",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -1517,7 +1574,7 @@
               ],
               "query": [
                 {
-                  "key": "q",
+                  "key": "keyword",
                   "value": "cotton"
                 },
                 {
@@ -2086,12 +2143,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/cart",
+              "raw": "{{baseUrl}}/cart/{{storeId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "cart"
+                "cart",
+                "{{storeId}}"
               ]
             }
           }
@@ -2205,12 +2263,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/cart",
+              "raw": "{{baseUrl}}/cart/{{storeId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "cart"
+                "cart",
+                "{{storeId}}"
               ]
             }
           }
@@ -3273,12 +3332,11 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/orders/place",
+              "raw": "{{baseUrl}}/orders/place",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "api",
                 "orders",
                 "place"
               ]
@@ -3301,12 +3359,11 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/orders/me",
+              "raw": "{{baseUrl}}/orders/me",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "api",
                 "orders",
                 "me"
               ]
@@ -3324,12 +3381,11 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/orders/{{orderId}}",
+              "raw": "{{baseUrl}}/orders/{{orderId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "api",
                 "orders",
                 "{{orderId}}"
               ]
@@ -3351,12 +3407,11 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/orders/{{orderId}}/cancel",
+              "raw": "{{baseUrl}}/orders/{{orderId}}/cancel",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "api",
                 "orders",
                 "{{orderId}}",
                 "cancel"
@@ -3375,16 +3430,15 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{merchantToken}}"
+                "value": "Bearer {{accessToken}}"
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/orders/store/{{storeId}}",
+              "raw": "{{baseUrl}}/orders/store/{{storeId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "api",
                 "orders",
                 "store",
                 "{{storeId}}"
@@ -3399,16 +3453,15 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{merchantToken}}"
+                "value": "Bearer {{accessToken}}"
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/orders/store/{{storeId}}/{{orderId}}",
+              "raw": "{{baseUrl}}/orders/store/{{storeId}}/{{orderId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "api",
                 "orders",
                 "store",
                 "{{storeId}}",
@@ -3424,7 +3477,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{merchantToken}}"
+                "value": "Bearer {{accessToken}}"
               },
               {
                 "key": "Content-Type",
@@ -3432,12 +3485,11 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/orders/{{orderId}}/status",
+              "raw": "{{baseUrl}}/orders/{{orderId}}/status",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "api",
                 "orders",
                 "{{orderId}}",
                 "status"
@@ -3461,12 +3513,11 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/orders/admin/all",
+              "raw": "{{baseUrl}}/orders/admin/all",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "api",
                 "orders",
                 "admin",
                 "all"
@@ -3574,7 +3625,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{merchantToken}}"
+                "value": "Bearer {{accessToken}}"
               },
               {
                 "key": "Content-Type",
@@ -3606,7 +3657,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{merchantToken}}"
+                "value": "Bearer {{accessToken}}"
               },
               {
                 "key": "Content-Type",
@@ -3720,7 +3771,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{merchantToken}}"
+                "value": "Bearer {{accessToken}}"
               }
             ],
             "url": {
@@ -3743,7 +3794,7 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{merchantToken}}"
+                "value": "Bearer {{accessToken}}"
               }
             ],
             "url": {
@@ -3756,6 +3807,99 @@
                 "store",
                 "{{storeId}}",
                 "transactions"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get My Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Unread Count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/unread-count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications",
+                "unread-count"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/{{notificationId}}/read",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications",
+                "{{notificationId}}",
+                "read"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark All Notifications as Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/read-all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications",
+                "read-all"
               ]
             }
           }
