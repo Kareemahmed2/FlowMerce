@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TechNova Store - Premium Merchant Experience</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .bento-item {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .bento-item:hover {
+            transform: translateY(-4px);
+        }
+        .glass-header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "error": "#ba1a1a",
+                      "surface-container": "#eceef0",
+                      "outline": "#75777d",
+                      "secondary-container": "#645efb",
+                      "surface-variant": "#e0e3e5",
+                      "surface": "#f7f9fb",
+                      "surface-dim": "#d8dadc",
+                      "surface-container-high": "#e6e8ea",
+                      "tertiary": "#00190e",
+                      "secondary-fixed-dim": "#c3c0ff",
+                      "on-secondary": "#ffffff",
+                      "primary-fixed-dim": "#bcc7de",
+                      "on-error-container": "#93000a",
+                      "primary-container": "#1e293b",
+                      "tertiary-container": "#00301e",
+                      "primary-fixed": "#d8e3fb",
+                      "inverse-surface": "#2d3133",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed": "#e2dfff",
+                      "on-primary-container": "#8590a6",
+                      "on-background": "#191c1e",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "tertiary-fixed": "#6ffbbe",
+                      "on-primary-fixed": "#111c2d",
+                      "inverse-on-surface": "#eff1f3",
+                      "on-secondary-container": "#fffbff",
+                      "primary": "#091426",
+                      "on-secondary-fixed": "#0f0069",
+                      "inverse-primary": "#bcc7de",
+                      "surface-bright": "#f7f9fb",
+                      "on-primary-fixed-variant": "#3c475a",
+                      "on-secondary-fixed-variant": "#3323cc",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "outline-variant": "#c5c6cd",
+                      "on-surface-variant": "#45474c",
+                      "surface-container-low": "#f2f4f6",
+                      "surface-container-highest": "#e0e3e5",
+                      "on-tertiary-fixed": "#002113",
+                      "surface-tint": "#545f73",
+                      "secondary": "#4b41e1",
+                      "on-surface": "#191c1e",
+                      "background": "#f7f9fb",
+                      "on-error": "#ffffff",
+                      "on-primary": "#ffffff",
+                      "on-tertiary-container": "#00a472",
+                      "error-container": "#ffdad6",
+                      "surface-container-lowest": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "md": "24px",
+                      "margin-mobile": "16px",
+                      "xl": "48px",
+                      "lg": "32px",
+                      "sm": "16px",
+                      "xs": "8px",
+                      "base": "4px",
+                      "margin-desktop": "32px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "body-md": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "label-md": ["Inter"],
+                      "label-sm": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                      "label-sm": ["12px", {"lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "500"}]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-surface">
+<!-- Top Navigation Bar -->
+<nav class="flex justify-between items-center w-full px-margin-desktop h-20 fixed top-0 z-40 bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline-variant">
+<div class="flex items-center gap-xl">
+<span class="font-headline-md text-headline-md font-black text-primary">FlowMerce</span>
+<div class="hidden md:flex relative group">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="bg-surface-container-low border-none rounded-full pl-10 pr-md py-2 w-[300px] font-body-sm focus:ring-2 focus:ring-secondary/20 transition-all outline-none" placeholder="Search products..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-lg">
+<div class="hidden lg:flex gap-md">
+<a class="font-label-md text-primary border-b-2 border-primary pb-1" href="#">Home</a>
+<a class="font-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Shop</a>
+<a class="font-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Categories</a>
+</div>
+<div class="flex items-center gap-md">
+<button class="relative p-2 hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="favorite">favorite</span>
+</button>
+<button class="relative p-2 hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="shopping_cart">shopping_cart</span>
+<span class="absolute top-1 right-1 bg-secondary text-on-secondary text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">3</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant"></div>
+<div class="flex items-center gap-xs cursor-pointer group">
+<img alt="User Profile" class="w-10 h-10 rounded-full object-cover border-2 border-transparent group-hover:border-secondary transition-all" data-alt="A professional and clean studio headshot of a person with a friendly expression, set against a neutral, brightly lit background. The lighting is soft and even, characteristic of high-end corporate photography, maintaining a modern and trustworthy light-mode aesthetic that fits a premium merchant platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA19IFirNgYDGI-OgK02xA3k00RYuSyy_nXQu9RNWLKpbso744zIEmAptmtouvDe6Lbah85KE7Uhbg_KupbRJwlVixsLeYsoiVTe3N7i43hdCCkNfKbJs25F4VrjAGMNg7Cj_pWfhlR3Y5zaymAw1RU5oml1VEAQE2cvhvg_lqgXv37MzX5YEfRtwHXX1ajYTaWKgUJN2I_4jgc1WPaUV7QHMan7xVOx83E8205tOcKy0rJ0kHdL2dzpY9Jd-xGGI5fZejqb9Ol4Gk"/>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="pt-20">
+<!-- Hero Section: TechNova Branded -->
+<section class="relative h-[600px] w-full overflow-hidden bg-primary flex items-center">
+<div class="absolute inset-0 z-0">
+<img alt="Tech Experience" class="w-full h-full object-cover opacity-40" data-alt="A futuristic, high-tech workspace featuring sleek, modern electronics like a slim laptop and tablet on a clean, white minimalist desk. The scene is bathed in a cool, atmospheric light with subtle blue and indigo neon accents reflecting off glass surfaces. The overall mood is sophisticated and cutting-edge, emphasizing innovation and professional scalability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDz0ovuO8sK2L5XET4ubJbedJp4OPcWYByA_442otWwdKM8boFGsw-2DBjVuF3C-wz5aQIpON0o_c97-Y7M9SnleoFhOQ4R2DtS7S0mzdvhlbF3SdUb5F5CWPwhxI-RGGNUfvibcdH59gzWx2jG2Ff7usQrfyYFiJTuC25E2EeSaut5QEaccJp7EgcqHq1WLDFuEXrAd0cWZqf5-MvvcBFb2Jm0y7OqW5-K1mVmnrdnvXpjbSA1ZaU3mba0ADmD3vuNP22LUcpIN_Q"/>
+</div>
+<div class="relative z-10 max-w-[1440px] mx-auto px-margin-desktop w-full text-on-primary">
+<div class="max-w-2xl space-y-md">
+<span class="font-label-md tracking-[0.2em] uppercase text-secondary-fixed">Next Generation Tech</span>
+<h1 class="font-display-lg text-display-lg">TechNova Studio Pro</h1>
+<p class="font-body-lg text-body-lg text-on-primary-container max-w-lg">Experience the future of productivity with our new 2024 lineup. Precision engineered for professionals who demand excellence.</p>
+<div class="flex gap-md pt-md">
+<button class="bg-secondary hover:bg-secondary/90 text-on-secondary px-xl py-md rounded-lg font-label-md transition-all flex items-center gap-sm">
+                            Shop Now
+                            <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+<button class="border border-on-primary/30 hover:bg-on-primary/10 text-on-primary px-xl py-md rounded-lg font-label-md transition-all">
+                            View Specs
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Featured Categories: Bento Layout -->
+<section class="max-w-[1440px] mx-auto px-margin-desktop py-xl">
+<div class="flex justify-between items-end mb-lg">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary">Browse Categories</h2>
+<p class="font-body-md text-on-surface-variant">Find the perfect tool for your workflow</p>
+</div>
+<a class="text-secondary font-label-md flex items-center gap-xs hover:underline" href="#">
+                    View All Categories <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter h-auto md:h-[450px]">
+<!-- Laptops -->
+<div class="md:col-span-2 bento-item bg-white rounded-xl shadow-sm p-lg flex flex-col justify-between group overflow-hidden relative cursor-pointer border border-outline-variant/30">
+<div class="relative z-10">
+<span class="material-symbols-outlined text-secondary text-4xl mb-md" data-icon="laptop_mac">laptop_mac</span>
+<h3 class="font-headline-md text-headline-md text-primary">Pro Laptops</h3>
+<p class="font-body-sm text-on-surface-variant">High-performance workstations</p>
+</div>
+<img alt="Laptops" class="absolute -bottom-8 -right-8 w-64 h-64 object-contain group-hover:scale-110 transition-transform duration-500" data-alt="A collection of ultra-slim, premium metallic laptops arranged artistically in a bright, modern studio. The lighting is crisp and clean, highlighting the sleek textures and premium build quality of the hardware. The setting is minimalist and professional, perfectly aligned with a high-end corporate merchant aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCauMPR4fvFT9KV4Mhe5PHKObXD02pUxJoJ0WjzEmL98a0kazdUHNTO__jUBhIyMtDbcJgNJRrKUnyq1LR44u-dXTw57Af4bK2-vOBjCqFcyCNTV9GxrkCvPYEfkFat6uusA0cFKpJaJ9ydL8C1vpY0WJuxVnZbcFALVuxfye8BMlObwFvBkFQwET2Y_us5Al5cezKRwtiszhsJe9fG34ToYt7kYZYbadmj86EsPCSMf-nnkbhM06nW34rbJnXKcd03u-WUqorQh-s"/>
+</div>
+<!-- Phones -->
+<div class="bento-item bg-surface-container-high rounded-xl p-lg flex flex-col justify-between group cursor-pointer border border-outline-variant/30 overflow-hidden relative">
+<div class="z-10">
+<span class="material-symbols-outlined text-primary text-3xl mb-sm" data-icon="smartphone">smartphone</span>
+<h3 class="font-headline-sm text-headline-sm">Mobile</h3>
+</div>
+<img alt="Phones" class="absolute -bottom-4 -right-4 w-40 h-40 object-contain group-hover:rotate-12 transition-transform" data-alt="Close-up of a high-end smartphone with a vibrant OLED screen reflecting soft studio lights. The device is placed on a clean, white surface with a slight reflection. The colors are crisp and saturated, emphasizing modern mobile technology in a professional, light-mode environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJ4on7d-qVI_sR0t33fIlI-fyt5YtOIT0DW-RHZobd3BmJwO_tdcqMviYueCBRP9dL4I697fqNyuiFcTSzlFIVklL8xaj2v3qqrNwYPsuhZzhjsQ2WYZo5F54NLBxrxoToGs50ha3UY3iJC7z_vRrRIs2TdYRJ6e_QKQmKVFsHnclGjK6Uj57PMI7kSmTC3WnGTNznCa9uJS49S1ygSRlf5k7zWrXGrLAxBZDKbLxqBc-GeCAz_coCRLkEQeqWHuR7mgG50TvtRnE"/>
+</div>
+<!-- Accessories -->
+<div class="bento-item bg-white rounded-xl shadow-sm p-lg flex flex-col justify-between group cursor-pointer border border-outline-variant/30">
+<div>
+<span class="material-symbols-outlined text-primary text-3xl mb-sm" data-icon="headphones">headphones</span>
+<h3 class="font-headline-sm text-headline-sm">Audio</h3>
+</div>
+<div class="flex-1 flex items-center justify-center mt-md">
+<span class="text-on-surface-variant font-label-md">240+ Products</span>
+</div>
+</div>
+<!-- Components -->
+<div class="bento-item bg-secondary-container rounded-xl p-lg text-on-secondary flex flex-col justify-between group cursor-pointer">
+<div>
+<span class="material-symbols-outlined text-3xl mb-sm" data-icon="memory">memory</span>
+<h3 class="font-headline-sm text-headline-sm">Hardware</h3>
+</div>
+<div class="font-label-sm opacity-80">Custom builds available</div>
+</div>
+</div>
+</section>
+<!-- Featured Products: Clean Grid -->
+<section class="bg-surface-container-low py-xl">
+<div class="max-w-[1440px] mx-auto px-margin-desktop">
+<div class="flex items-center justify-between mb-lg">
+<h2 class="font-headline-lg text-headline-lg text-primary">New Arrivals</h2>
+<div class="flex gap-xs">
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-white transition-all"><span class="material-symbols-outlined">chevron_left</span></button>
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-white transition-all"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Product Card 1 -->
+<div class="group bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 border border-transparent hover:border-outline-variant">
+<div class="aspect-square relative overflow-hidden bg-surface-container">
+<img alt="Product 1" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Minimalist overhead shot of high-end studio headphones resting on a pristine, matte white surface. The composition is clean and focused, with soft natural light creating subtle shadows. The aesthetic is extremely premium and modern, showcasing technical precision and clean industrial design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwGzR2jPhkGOQ8iW9HblZ7fn0MPSocbtUIlpJYFR8WpmuwbnZZ2W5by5CPE29UixykAaP_7g-pijJ-FV8qXl_ajncZIKDd9NCFtuazZeM6S7a7zBb_UuCuIq0FwxqP4VCsYKHN8BwqV9Ud1xcuPkA8jJxIToQcetLaaHERdwCiPHE2uSelFxAev7GTQPHvgRaPBHwlwfoYi0MD7wBwfsQiNlJfErp4219H5_GQLugdbCsxqMJHsmF6cHHMvhnoLGMuUCh8aVo30vE"/>
+<div class="absolute top-4 left-4">
+<span class="bg-secondary text-on-secondary text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">New</span>
+</div>
+<div class="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="bg-white p-2 rounded-full shadow-sm text-primary hover:text-secondary"><span class="material-symbols-outlined text-[20px]" data-icon="favorite">favorite</span></button>
+<button class="bg-white p-2 rounded-full shadow-sm text-primary hover:text-secondary"><span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span></button>
+</div>
+</div>
+<div class="p-md space-y-xs">
+<div class="flex justify-between items-start">
+<h4 class="font-label-md text-primary truncate pr-2">SonicMaster Wireless Pro</h4>
+<span class="font-label-md text-primary">$299.00</span>
+</div>
+<p class="font-body-sm text-on-surface-variant">Audio Enthusiast Grade</p>
+<button class="w-full mt-md py-3 border border-primary text-primary font-label-sm rounded-lg hover:bg-primary hover:text-on-primary transition-all flex items-center justify-center gap-sm group/btn">
+<span class="material-symbols-outlined text-[18px]">shopping_cart</span>
+                                Add to Cart
+                            </button>
+</div>
+</div>
+<!-- Product Card 2 -->
+<div class="group bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 border border-transparent hover:border-outline-variant">
+<div class="aspect-square relative overflow-hidden bg-surface-container">
+<img alt="Product 2" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A high-end minimalist white smartwatch with a crisp digital display, positioned centrally on a smooth, grey stone surface. The lighting is bright and diffuse, highlighting the sleek curves of the device. The mood is calm and sophisticated, reflecting a clean corporate-tech aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcvCec0ReD_R6XEYBgY6vaiLfKe-CtqOgbOu3G20Sb8dHBaD814bn41fyCSIPxWmskZC3EU0uRG8rMJHdghYdnQkaWjX4F_Tf0izCVDN_J3N1iOE5r0JN3X2vmdorAtAzy9PoE_vGQy1KffMqUt54GolkxGEY7RqkBjVzIBFSjUoFRlpoGL1QfWniUIFPFCtPddi_GSP3aihw2ROh4FVsUsYylJEqx87KzLyZoxfuh-5CFnWnHTrxX8W7J2EydO30R5ftoUEz79ZY"/>
+<div class="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="bg-white p-2 rounded-full shadow-sm text-primary hover:text-secondary"><span class="material-symbols-outlined text-[20px]" data-icon="favorite">favorite</span></button>
+<button class="bg-white p-2 rounded-full shadow-sm text-primary hover:text-secondary"><span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span></button>
+</div>
+</div>
+<div class="p-md space-y-xs">
+<div class="flex justify-between items-start">
+<h4 class="font-label-md text-primary truncate pr-2">Nova Watch Series 5</h4>
+<span class="font-label-md text-primary">$449.00</span>
+</div>
+<p class="font-body-sm text-on-surface-variant">Smart Life Assistant</p>
+<button class="w-full mt-md py-3 border border-primary text-primary font-label-sm rounded-lg hover:bg-primary hover:text-on-primary transition-all flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[18px]">shopping_cart</span>
+                                Add to Cart
+                            </button>
+</div>
+</div>
+<!-- Product Card 3 -->
+<div class="group bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 border border-transparent hover:border-outline-variant">
+<div class="aspect-square relative overflow-hidden bg-surface-container">
+<img alt="Product 3" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A professional mechanical keyboard with backlighting, captured in a dark, moody environment with focused light hitting the keycaps. The design is sleek and modern, emphasizing precision engineering. The shot is low-angle, adding a sense of scale and importance to the product." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJBBXt4D9dFZj-4cT500tcpQQrB0Jqk2vZ6heONLITApGL5gNybOmTZE6X8QjUYwmLb4CbEvWHJP_F-sQs6nIaUJYw9fi70xFUk66BDWo-t2xHK_WiKR6-zlW3PHuRMohiRoDnDLUxL7wWLhluHydiIMfikExbFV3e25owA8mV_KWSdNCm5Te0rJdVhcnw_vZ2FlV3GHIEk-ktOpQwySgdvrDUy6yONn8t3yqIAf0VAB96N-Fnv1Tn2BeBM9FmN0kND3BEHRbGFq8"/>
+<div class="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="bg-white p-2 rounded-full shadow-sm text-primary hover:text-secondary"><span class="material-symbols-outlined text-[20px]" data-icon="favorite">favorite</span></button>
+<button class="bg-white p-2 rounded-full shadow-sm text-primary hover:text-secondary"><span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span></button>
+</div>
+</div>
+<div class="p-md space-y-xs">
+<div class="flex justify-between items-start">
+<h4 class="font-label-md text-primary truncate pr-2">MechBoard Alpha</h4>
+<span class="font-label-md text-primary">$189.00</span>
+</div>
+<p class="font-body-sm text-on-surface-variant">Professional Typing Tool</p>
+<button class="w-full mt-md py-3 border border-primary text-primary font-label-sm rounded-lg hover:bg-primary hover:text-on-primary transition-all flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[18px]">shopping_cart</span>
+                                Add to Cart
+                            </button>
+</div>
+</div>
+<!-- Product Card 4 -->
+<div class="group bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 border border-transparent hover:border-outline-variant">
+<div class="aspect-square relative overflow-hidden bg-surface-container">
+<img alt="Product 4" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A high-resolution tablet with a sleek metallic finish displayed in a bright, modern studio. The screen shows a vibrant, professional graphic design interface. The lighting is soft and even, highlighting the slim profile and premium materials. The scene is clean and sophisticated, suitable for a professional technology merchant." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdioS_1hLA2dxZ3s133wGFrgnny-1oZbOl7kegfSxzwgKP-SWedYVw8CyjGth1a5FkhcDLo_51VzrJqhGt6ktoTZKzNHAewybnzx7eh5ZfyvWsU42Ciww9oPRlZ2He5FFW9Xl4k5HxP7VMrqJ8E7i4MoJTUg4iXbRqdFf2PlwNqukcZbV7DAk8D56jcCQKRhgnsgVIW1qIhYuI5LI1-smeG0vmqPHJa01xwtgUlkxWJFU85b--sib4t0_59GHnrZ4FYmvYGIylhLI"/>
+<div class="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="bg-white p-2 rounded-full shadow-sm text-primary hover:text-secondary"><span class="material-symbols-outlined text-[20px]" data-icon="favorite">favorite</span></button>
+<button class="bg-white p-2 rounded-full shadow-sm text-primary hover:text-secondary"><span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span></button>
+</div>
+</div>
+<div class="p-md space-y-xs">
+<div class="flex justify-between items-start">
+<h4 class="font-label-md text-primary truncate pr-2">TabNova X-Pro</h4>
+<span class="font-label-md text-primary">$799.00</span>
+</div>
+<p class="font-body-sm text-on-surface-variant">Creative Canvas</p>
+<button class="w-full mt-md py-3 border border-primary text-primary font-label-sm rounded-lg hover:bg-primary hover:text-on-primary transition-all flex items-center justify-center gap-sm">
+<span class="material-symbols-outlined text-[18px]">shopping_cart</span>
+                                Add to Cart
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Banner -->
+<section class="max-w-[1440px] mx-auto px-margin-desktop py-xl">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg border-t border-outline-variant pt-xl">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">local_shipping</span>
+</div>
+<div>
+<h4 class="font-label-md text-primary">Global Shipping</h4>
+<p class="font-body-sm text-on-surface-variant">Next-day delivery available</p>
+</div>
+</div>
+<div class="flex items-center gap-md border-x border-outline-variant px-lg">
+<div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">verified_user</span>
+</div>
+<div>
+<h4 class="font-label-md text-primary">2 Year Warranty</h4>
+<p class="font-body-sm text-on-surface-variant">Comprehensive protection plan</p>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">support_agent</span>
+</div>
+<div>
+<h4 class="font-label-md text-primary">Expert Support</h4>
+<p class="font-body-sm text-on-surface-variant">24/7 priority assistance</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-primary text-on-primary-container py-xl mt-xl">
+<div class="max-w-[1440px] mx-auto px-margin-desktop">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-xl">
+<div class="col-span-1 md:col-span-1 space-y-md">
+<span class="font-headline-sm text-headline-sm font-black text-on-primary">FlowMerce</span>
+<p class="font-body-sm text-on-primary-container">Empowering the next generation of digital merchants with seamless, premium infrastructure. Building trust through every transaction.</p>
+<div class="flex gap-md">
+<a class="text-on-primary-container hover:text-on-primary transition-colors" href="#"><span class="material-symbols-outlined">public</span></a>
+<a class="text-on-primary-container hover:text-on-primary transition-colors" href="#"><span class="material-symbols-outlined">alternate_email</span></a>
+<a class="text-on-primary-container hover:text-on-primary transition-colors" href="#"><span class="material-symbols-outlined">contact_support</span></a>
+</div>
+</div>
+<div>
+<h5 class="font-label-md text-on-primary mb-md">Shop</h5>
+<ul class="space-y-sm font-body-sm">
+<li><a class="hover:text-on-primary transition-colors" href="#">Laptops</a></li>
+<li><a class="hover:text-on-primary transition-colors" href="#">Smartphones</a></li>
+<li><a class="hover:text-on-primary transition-colors" href="#">Audio Equipment</a></li>
+<li><a class="hover:text-on-primary transition-colors" href="#">Accessories</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-md text-on-primary mb-md">Support</h5>
+<ul class="space-y-sm font-body-sm">
+<li><a class="hover:text-on-primary transition-colors" href="#">Order Tracking</a></li>
+<li><a class="hover:text-on-primary transition-colors" href="#">Returns &amp; Refunds</a></li>
+<li><a class="hover:text-on-primary transition-colors" href="#">Privacy Policy</a></li>
+<li><a class="hover:text-on-primary transition-colors" href="#">Help Center</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-label-md text-on-primary mb-md">Newsletter</h5>
+<p class="font-body-sm mb-md">Join 50k+ subscribers for exclusive tech releases.</p>
+<div class="flex gap-xs">
+<input class="bg-primary-container border-none rounded-lg px-md py-2 w-full text-on-primary focus:ring-1 focus:ring-secondary outline-none" placeholder="Your email" type="email"/>
+<button class="bg-secondary text-on-secondary px-md py-2 rounded-lg font-label-sm">Join</button>
+</div>
+</div>
+</div>
+<div class="mt-xl pt-lg border-t border-on-primary/10 flex flex-col md:flex-row justify-between items-center gap-md font-label-sm">
+<p>© 2024 TechNova x FlowMerce. All rights reserved.</p>
+<div class="flex gap-lg">
+<a class="hover:text-on-primary transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-on-primary transition-colors" href="#">Cookie Policy</a>
+</div>
+</div>
+</div>
+</footer>
+<script>
+        // Simple interactivity for the wishlist buttons
+        document.querySelectorAll('[data-icon="favorite"]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const isFilled = this.style.fontVariationSettings.includes("'FILL' 1");
+                this.style.fontVariationSettings = isFilled ? "'FILL' 0" : "'FILL' 1";
+                this.classList.toggle('text-error', !isFilled);
+            });
+        });
+
+        // Search bar focus interaction
+        const searchInput = document.querySelector('input[placeholder="Search products..."]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.classList.add('w-[400px]');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.classList.remove('w-[400px]');
+        });
+    </script>
+</body></html>

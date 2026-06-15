@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MerchantCore Design Studio - AI Assistant</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .ai-glow {
+            box-shadow: 0 0 20px rgba(99, 94, 251, 0.15);
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#f7f9fb",
+                        "on-tertiary-container": "#00a472",
+                        "on-secondary-container": "#fffbff",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-container-low": "#f2f4f6",
+                        "on-secondary-fixed": "#0f0069",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "background": "#f7f9fb",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-primary-container": "#8590a6",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#545f73",
+                        "tertiary": "#00190e",
+                        "surface-bright": "#f7f9fb",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#eff1f3",
+                        "inverse-primary": "#bcc7de",
+                        "secondary-container": "#645efb",
+                        "primary-fixed": "#d8e3fb",
+                        "primary-fixed-dim": "#bcc7de",
+                        "secondary": "#4b41e1",
+                        "on-primary-fixed-variant": "#3c475a",
+                        "surface-variant": "#e0e3e5",
+                        "on-surface-variant": "#45474c",
+                        "surface-container-high": "#e6e8ea",
+                        "primary": "#091426",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#d8dadc",
+                        "outline-variant": "#c5c6cd",
+                        "inverse-surface": "#2d3133",
+                        "on-background": "#191c1e",
+                        "on-secondary-fixed-variant": "#3323cc",
+                        "outline": "#75777d",
+                        "secondary-fixed-dim": "#c3c0ff",
+                        "on-tertiary-fixed": "#002113",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#111c2d",
+                        "tertiary-container": "#00301e",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-surface": "#191c1e",
+                        "surface-container": "#eceef0",
+                        "primary-container": "#1e293b",
+                        "secondary-fixed": "#e2dfff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "48px",
+                        "lg": "32px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "base": "4px",
+                        "xs": "8px",
+                        "md": "24px",
+                        "sm": "16px",
+                        "margin-desktop": "32px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", {"lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface h-screen overflow-hidden flex">
+<!-- Left Side Navigation (SideNavBar Anchor) -->
+<aside class="flex flex-col h-screen py-lg px-sm border-r border-outline-variant bg-surface w-64 shrink-0 z-50">
+<div class="px-sm mb-xl">
+<h1 class="font-headline-md text-headline-md text-primary">Global Merchant</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Enterprise Tier</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-sm text-on-surface-variant px-sm py-xs hover:bg-surface-container-high rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-sm text-on-surface-variant px-sm py-xs hover:bg-surface-container-high rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-label-md text-label-md">Products</span>
+</a>
+<a class="flex items-center gap-sm text-on-surface-variant px-sm py-xs hover:bg-surface-container-high rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+<span class="font-label-md text-label-md">Orders</span>
+</a>
+<a class="flex items-center gap-sm text-on-surface-variant px-sm py-xs hover:bg-surface-container-high rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<!-- Active Navigation for Design Studio -->
+<a class="flex items-center gap-sm bg-secondary-container text-on-secondary-container rounded-lg px-sm py-xs hover:translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="edit_square" style="font-variation-settings: 'FILL' 1;">edit_square</span>
+<span class="font-label-md text-label-md">Design Studio</span>
+</a>
+<a class="flex items-center gap-sm text-on-surface-variant px-sm py-xs hover:bg-surface-container-high rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-md text-label-md">Wallet</span>
+</a>
+</nav>
+<div class="mt-auto space-y-1">
+<a class="flex items-center gap-sm text-on-surface-variant px-sm py-xs hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+<a class="flex items-center gap-sm text-on-surface-variant px-sm py-xs hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Sign Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col min-w-0 bg-surface">
+<!-- Top Navigation Bar (TopNavBar Anchor) -->
+<header class="flex justify-between items-center w-full px-margin-desktop h-16 z-40 bg-surface-container-lowest shadow-sm">
+<div class="flex items-center gap-md">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">MerchantCore</span>
+<div class="h-8 w-px bg-outline-variant"></div>
+<div class="flex items-center gap-sm bg-surface-container px-sm py-1.5 rounded-full min-w-[240px]">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-label-md w-full" placeholder="Search templates..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="ml-2 w-8 h-8 rounded-full bg-secondary-container overflow-hidden">
+<img alt="Merchant Profile Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPxVrEarfCEGNzsMYbQKZjtk998Tc2rULLQA8tz5LM8QyQyYtszrg-kRNWXgnGpTzSIwxgKtfM4jvgv4Vk-A_iWawXDq2jmv83V-XMNNJlji1iVrFX-CICAA_BoK_1WFSDKZ61gJpug1M6_H2QgRTXng-SkHKhvAb3Ve1lV7fbqgbb5nJ4f7JHBZWuhjvIcIVsLuhlUIODlsib8feglQN_9uK0zQbCqhAVvRWMO7T-wxGmtaxHMwbh707oORqiXEs2dl2VP7fEFaM"/>
+</div>
+</div>
+</header>
+<!-- Editing Canvas -->
+<div class="flex-1 overflow-auto p-lg relative group">
+<div class="max-w-5xl mx-auto space-y-lg pb-xl">
+<!-- Tool Bar -->
+<div class="flex justify-center mb-md">
+<div class="bg-surface-container-lowest px-md py-xs rounded-xl shadow-sm border border-outline-variant flex items-center gap-sm">
+<button class="p-2 rounded hover:bg-surface-container"><span class="material-symbols-outlined" data-icon="devices">devices</span></button>
+<div class="h-6 w-px bg-outline-variant"></div>
+<button class="p-2 rounded hover:bg-surface-container"><span class="material-symbols-outlined" data-icon="undo">undo</span></button>
+<button class="p-2 rounded hover:bg-surface-container"><span class="material-symbols-outlined" data-icon="redo">redo</span></button>
+<div class="h-6 w-px bg-outline-variant"></div>
+<button class="flex items-center gap-xs px-sm py-1.5 bg-primary text-on-primary rounded-lg font-label-md">
+<span class="material-symbols-outlined text-[18px]" data-icon="publish">publish</span>
+                            Publish
+                        </button>
+</div>
+</div>
+<!-- Canvas: Hero Section (with AI markers) -->
+<section class="relative rounded-xl overflow-hidden border-2 border-transparent hover:border-secondary transition-all bg-white shadow-sm group/canvas">
+<!-- AI Refine Hover Action -->
+<div class="absolute top-4 right-4 z-10 opacity-0 group-hover/canvas:opacity-100 transition-opacity">
+<button class="flex items-center gap-xs px-sm py-1.5 bg-secondary-container text-on-secondary-container shadow-lg rounded-full font-label-md ai-glow transition-transform hover:scale-105">
+<span class="material-symbols-outlined text-[18px]" data-icon="auto_awesome">auto_awesome</span>
+                            AI Refine
+                        </button>
+</div>
+<div class="h-[400px] relative">
+<img class="w-full h-full object-cover" data-alt="A luxury crimson leather running shoe centered in a professional studio setting with dramatic high-contrast lighting. The background is a gradient of deep indigo and soft gray, reflecting a premium corporate SaaS aesthetic. Soft atmospheric particles catch the light, suggesting motion and high-end performance technology." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCb0-pMlNLddlGv5Ewz46uVa6bAV_W_fNFOK5D4mVL1F7WXf8M0CiXSppxedBkMwl5RTZ6DWQcSyUh6jACatTUk9c1pC_S6pgiD-xH8o1Cjs3ibUWXYaC9cVCs4Wfc_lIztMxrKEag4joBcNXlJW-TRyYK507QatKuNJJf_V3dA4CgiAkPKNsMSU092lMNaWrM8KR38TuVhJn9Co-sg5QOLWc5stPnzgQhSptAdT1UFWYRk1w3--NMNqvoOXiACICQgtDm5mjiS2lk"/>
+<div class="absolute inset-0 bg-gradient-to-r from-primary/80 to-transparent flex flex-col justify-center px-xl text-on-primary">
+<h2 class="font-display-lg text-display-lg max-w-lg mb-sm">Elite Performance Reimagined</h2>
+<p class="font-body-lg text-body-lg max-w-md mb-lg">Discover the collection that blends enterprise-grade durability with startup-speed agility.</p>
+<button class="w-fit px-lg py-sm bg-secondary text-on-secondary rounded-lg font-label-md">Shop New Arrivals</button>
+</div>
+</div>
+</section>
+<!-- Canvas: Product Grid (with AI markers) -->
+<div class="grid grid-cols-3 gap-md">
+<div class="relative group/card bg-white p-md rounded-xl shadow-sm border border-outline-variant hover:border-secondary transition-all">
+<div class="absolute top-2 right-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+<button class="p-1.5 bg-white shadow-md rounded-full text-secondary hover:bg-secondary hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="magic_button">magic_button</span>
+</button>
+</div>
+<div class="aspect-square bg-surface-container rounded-lg mb-sm overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A minimalist designer wristwatch displayed on a textured white pedestal in a bright, modern studio. The lighting is diffused and clean, using a soft white and light-blue palette to emphasize institutional stability and modern luxury. The focus is sharp on the watch face, showcasing precision craftsmanship." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFXco6AkFItaF8N_qwz5Vm8Y56BGXPZ0uRudeWPwnKRZ65Yx32v3LXSZZH-XfvZPVfh8Z8bsGooQEni-2pI_FT7Iux86apySiIlsHAY1SsPYO8YjDJfwMx_i_GHXOnkkxz3qux0utlRP0VDuYsfRnq3T_LUBc_KCFuON8e_6D3sI3FypwwK3CgG6JoHguD1F-j39Hhq27ZHgCDHehGelTym07SltLfHgbWk1QnpWkimydNxV4b68CWNiIl599g7UiAoVzr9ON2kPU"/>
+</div>
+<h3 class="font-label-md text-label-md mb-1">Chronos Minimalist</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">$249.00</p>
+</div>
+<div class="relative group/card bg-white p-md rounded-xl shadow-sm border border-outline-variant hover:border-secondary transition-all">
+<div class="absolute top-2 right-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+<button class="p-1.5 bg-white shadow-md rounded-full text-secondary hover:bg-secondary hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="magic_button">magic_button</span>
+</button>
+</div>
+<div class="aspect-square bg-surface-container rounded-lg mb-sm overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Premium over-ear wireless headphones in matte black against a clean, technical background of brushed aluminum and indigo accents. The image uses a high-key lighting style to project professional grade hardware quality and modern corporate elegance. Sharp details highlight the plush ear cushions and sleek industrial design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMrT5ghR1VbEWRrwv9EnKfCBww0gTLxutmBw5SyGY_jy6PjfV4H7GkF75bjsVk5dzUkl2kWsJpfrig0X3ar6c8rgS4pUJsRgMZZCvJQCul4JI-S27QomtzyWeZ-ypdP_CnQvoxW1ow80DrpA0pRE_p0ilJxQDGF7Lu-hy35fBC3xPCcoHecWWhHDyL6ARcKLl7FmaZBSMneQxnIcu796i_2CoijSlGemQTH_1Be4JWB1MQKC4VxnDZyusDtY5L9hVRNPAi71_uLtg"/>
+</div>
+<h3 class="font-label-md text-label-md mb-1">Aura Audio Pro</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">$399.00</p>
+</div>
+<div class="relative group/card bg-white p-md rounded-xl shadow-sm border border-outline-variant hover:border-secondary transition-all">
+<div class="absolute top-2 right-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+<button class="p-1.5 bg-white shadow-md rounded-full text-secondary hover:bg-secondary hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="magic_button">magic_button</span>
+</button>
+</div>
+<div class="aspect-square bg-surface-container rounded-lg mb-sm overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Sleek modern sunglasses with gradient lenses resting on a minimalist geometric block. The aesthetic is extremely clean and high-end, utilizing a palette of soft teals and stark whites to create a fresh, summer-inspired mood. Professional architectural lighting creates soft, elongated shadows on the surface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgxyDI2Mt8Y14qyK7D5kiOBiIKf_yZkHpBAAxOpV_0oKpxmV7bG4TD_KDbvAphZPGSAo0ugz13FFcm6vzL2jdZoXR7c8j4QIbqJeDadsbJlVfBKMvxke3M4NcdxulQ8erjG0F0I2_Ehak3a_ge5qx0Na4oKDmoMY3wirCPXMyI6VpztzPN6tdDVhSs2ytlNvaCWh6duE_5DIe4FMQFfo2gR8lh-PIMAZT6S-SvUkVaLSyo7x7hrVffOipAOX3V_Yo6gjR_y_We5a8"/>
+</div>
+<h3 class="font-label-md text-label-md mb-1">Vector Shades</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">$180.00</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- AI Assistant Sidebar -->
+<aside class="w-96 h-screen glass-panel border-l border-outline-variant flex flex-col shrink-0 z-50 overflow-hidden shadow-2xl">
+<!-- AI Header -->
+<div class="p-sm flex items-center justify-between border-b border-outline-variant bg-surface-container-low">
+<div class="flex items-center gap-sm">
+<div class="bg-secondary p-1.5 rounded-lg text-on-secondary shadow-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<div>
+<h2 class="font-label-md text-label-md text-primary">AI Assistant</h2>
+<p class="text-[10px] text-on-tertiary-container uppercase tracking-wider font-bold">Powered by MerchantCore AI</p>
+</div>
+</div>
+<button class="p-1.5 hover:bg-surface-container rounded-full text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]" data-icon="close">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-md space-y-lg">
+<!-- Generate Prompt Box -->
+<section class="space-y-sm">
+<label class="font-label-md text-label-md text-primary flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]" data-icon="chat_bubble">chat_bubble</span>
+                    Generate with AI
+                </label>
+<div class="relative">
+<textarea class="w-full h-32 p-sm bg-white border border-outline-variant rounded-xl text-body-sm focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all resize-none shadow-sm" placeholder="Type a request like 'Create a summer sale hero section'..."></textarea>
+<button class="absolute bottom-3 right-3 p-2 bg-secondary text-on-secondary rounded-lg shadow-md hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined" data-icon="send">send</span>
+</button>
+</div>
+</section>
+<!-- AI Suggestions Chips -->
+<section class="space-y-sm">
+<label class="font-label-md text-label-md text-primary flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]" data-icon="lightbulb">lightbulb</span>
+                    AI Suggestions
+                </label>
+<div class="flex flex-wrap gap-xs">
+<button class="px-sm py-2 bg-surface-container-high border border-outline-variant rounded-full text-label-sm hover:bg-secondary-container hover:text-on-secondary-container transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]" data-icon="translate">translate</span>
+                        Rewrite for Tone
+                    </button>
+<button class="px-sm py-2 bg-surface-container-high border border-outline-variant rounded-full text-label-sm hover:bg-secondary-container hover:text-on-secondary-container transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]" data-icon="image">image</span>
+                        Generate Image
+                    </button>
+<button class="px-sm py-2 bg-surface-container-high border border-outline-variant rounded-full text-label-sm hover:bg-secondary-container hover:text-on-secondary-container transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]" data-icon="palette">palette</span>
+                        Suggest Colors
+                    </button>
+<button class="px-sm py-2 bg-surface-container-high border border-outline-variant rounded-full text-label-sm hover:bg-secondary-container hover:text-on-secondary-container transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]" data-icon="grid_view">grid_view</span>
+                        Optimize Layout
+                    </button>
+</div>
+</section>
+<!-- Generated Results Area -->
+<section class="space-y-sm">
+<div class="flex items-center justify-between">
+<label class="font-label-md text-label-md text-primary flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px]" data-icon="history">history</span>
+                        Generated Results
+                    </label>
+<button class="text-label-sm text-secondary hover:underline">Clear all</button>
+</div>
+<div class="space-y-md">
+<!-- Result Card: Text -->
+<div class="bg-white border border-outline-variant rounded-xl p-sm shadow-sm hover:shadow-md transition-shadow group/result">
+<div class="flex items-center justify-between mb-xs">
+<span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">Text Snippet • 2m ago</span>
+<div class="flex gap-1 opacity-0 group-hover/result:opacity-100 transition-opacity">
+<button class="p-1 hover:bg-surface-container rounded"><span class="material-symbols-outlined text-[16px]" data-icon="content_copy">content_copy</span></button>
+<button class="p-1 hover:bg-surface-container rounded"><span class="material-symbols-outlined text-[16px]" data-icon="delete">delete</span></button>
+</div>
+</div>
+<p class="font-body-sm text-body-sm mb-sm leading-relaxed">"Experience ultimate comfort with our new breathable ergonomic mesh design. Perfect for long work sessions."</p>
+<button class="w-full py-1.5 bg-secondary-container text-on-secondary-container rounded-lg font-label-md text-label-sm hover:brightness-95 transition-all">Apply to Hero Description</button>
+</div>
+<!-- Result Card: Layout Variation -->
+<div class="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group/result">
+<div class="p-sm border-b border-outline-variant bg-surface-container-low flex justify-between items-center">
+<span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">Layout Variation • 15m ago</span>
+</div>
+<div class="p-sm space-y-sm">
+<div class="aspect-video bg-surface-container rounded-lg border-2 border-dashed border-outline-variant flex items-center justify-center">
+<div class="flex flex-col items-center gap-xs text-outline">
+<span class="material-symbols-outlined text-[32px]" data-icon="view_compact">view_compact</span>
+<span class="text-label-sm">Asymmetric Grid V2</span>
+</div>
+</div>
+<button class="w-full py-1.5 bg-primary text-on-primary rounded-lg font-label-md text-label-sm hover:brightness-110 transition-all">Apply Layout</button>
+</div>
+</div>
+<!-- Result Card: Color Palette -->
+<div class="bg-white border border-outline-variant rounded-xl p-sm shadow-sm">
+<span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider block mb-sm">Palette: Midnight Neon</span>
+<div class="flex h-12 w-full rounded-lg overflow-hidden mb-sm">
+<div class="flex-1 bg-primary"></div>
+<div class="flex-1 bg-secondary"></div>
+<div class="flex-1 bg-tertiary-fixed"></div>
+<div class="flex-1 bg-surface-container-highest"></div>
+</div>
+<button class="w-full py-1.5 border border-secondary text-secondary rounded-lg font-label-md text-label-sm hover:bg-secondary/5 transition-all">Update Site Theme</button>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer Help -->
+<div class="p-sm bg-surface-container-low border-t border-outline-variant">
+<div class="flex items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]" data-icon="info">info</span>
+<span class="text-[11px]">AI results are generated based on your store's context.</span>
+</div>
+</div>
+</aside>
+<script>
+        // Micro-interaction for the "Send" button glow
+        const sendBtn = document.querySelector('button .material-symbols-outlined[data-icon="send"]')?.parentElement;
+        if (sendBtn) {
+            sendBtn.addEventListener('mousedown', () => {
+                sendBtn.classList.add('scale-90');
+            });
+            sendBtn.addEventListener('mouseup', () => {
+                sendBtn.classList.remove('scale-90');
+            });
+        }
+
+        // Simulating the "AI Refine" action appearing
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvasItems = document.querySelectorAll('.group\\/canvas, .group\\/card');
+            canvasItems.forEach(item => {
+                item.addEventListener('mouseenter', () => {
+                    // Visual feedback for entering edit mode
+                });
+            });
+        });
+    </script>
+</body></html>

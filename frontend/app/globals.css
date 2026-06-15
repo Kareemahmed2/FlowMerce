@@ -1,0 +1,177 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  FlowMerce design system — "SaaS Commerce Modern" (extracted from Stitch).
+  Single source of truth for shadcn/Tailwind consumers. Inline-style consumers
+  read the same palette from lib/design/tokens.ts. Keep the two in sync.
+
+  Palette: primary = Dynamic Indigo #4F46E5 (CTAs/active), foreground/navy = #1E293B
+  (structure/headings), success = Emerald #10B981, surface = Cool Gray #F7F9FB.
+*/
+
+@layer base {
+  :root {
+    /* Surfaces & text */
+    --background: 210 40% 98%;        /* #F7F9FB cool-gray app background */
+    --foreground: 200 18% 11%;        /* #191C1E near-black navy text     */
+    --card: 0 0% 100%;                /* #FFFFFF                          */
+    --card-foreground: 200 18% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 200 18% 11%;
+
+    /* Primary = action indigo (filled buttons, active states) */
+    --primary: 243 75% 59%;           /* #4F46E5 */
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary = light neutral (secondary buttons / chips) */
+    --secondary: 210 17% 93%;         /* #ECEEF0 */
+    --secondary-foreground: 217 33% 17%;
+
+    /* Muted = subtle surface + low-emphasis text */
+    --muted: 210 20% 96%;             /* #F2F4F6 */
+    --muted-foreground: 215 8% 38%;   /* #45474C */
+
+    /* Accent = indigo tint for hovers */
+    --accent: 226 100% 97%;           /* #EEF2FF */
+    --accent-foreground: 243 75% 45%;
+
+    --destructive: 0 72% 51%;         /* #DC2626 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;            /* #E2E8F0 hairline */
+    --input: 214 32% 91%;
+    --ring: 243 75% 59%;              /* indigo focus ring */
+
+    /* Brand extras (consumed via Tailwind aliases) */
+    --navy: 217 33% 17%;              /* #1E293B structural navy */
+    --success: 160 84% 39%;           /* #10B981 emerald */
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;            /* #F59E0B amber */
+    --warning-foreground: 0 0% 100%;
+    --info: 217 91% 60%;              /* #3B82F6 blue */
+    --info-foreground: 0 0% 100%;
+
+    /* Charts */
+    --chart-1: 243 75% 59%;           /* indigo  */
+    --chart-2: 160 84% 39%;           /* emerald */
+    --chart-3: 217 33% 27%;           /* navy    */
+    --chart-4: 38 92% 50%;            /* amber   */
+    --chart-5: 199 89% 48%;           /* sky     */
+
+    --radius: 0.75rem;                /* 12px cards; buttons derive smaller */
+
+    /* Sidebar (shadcn sidebar component) — light navy-on-white */
+    --sidebar-background: 210 40% 98%;
+    --sidebar-foreground: 215 16% 35%;
+    --sidebar-primary: 243 75% 59%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 16% 93%;
+    --sidebar-accent-foreground: 217 33% 17%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 243 75% 59%;
+  }
+
+  .dark {
+    --background: 217 33% 9%;         /* deep navy-black */
+    --foreground: 210 40% 98%;
+    --card: 217 33% 12%;
+    --card-foreground: 210 40% 98%;
+    --popover: 217 33% 12%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 243 75% 66%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217 24% 20%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 24% 18%;
+    --muted-foreground: 215 16% 65%;
+    --accent: 243 40% 24%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 217 20% 22%;
+    --input: 217 20% 22%;
+    --ring: 243 75% 66%;
+
+    --navy: 210 40% 98%;
+    --success: 160 70% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 55%;
+    --warning-foreground: 0 0% 100%;
+    --info: 217 91% 65%;
+    --info-foreground: 0 0% 100%;
+
+    --chart-1: 243 75% 66%;
+    --chart-2: 160 70% 45%;
+    --chart-3: 210 40% 80%;
+    --chart-4: 38 92% 55%;
+    --chart-5: 199 89% 55%;
+
+    --sidebar-background: 217 33% 11%;
+    --sidebar-foreground: 215 16% 70%;
+    --sidebar-primary: 243 75% 66%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 24% 18%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 20% 22%;
+    --sidebar-ring: 243 75% 66%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  }
+  /* Arabic / RTL: keep Inter (covers Latin) but let the browser fall back for Arabic glyphs */
+  [dir='rtl'] body {
+    font-family: 'Inter', 'Segoe UI', 'Tahoma', sans-serif;
+  }
+  h1, h2, h3, h4 {
+    color: hsl(var(--navy));
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Material Symbols icon helper */
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  /* Stitch elevation tokens */
+  .shadow-card {
+    box-shadow: 0 1px 3px rgba(30, 41, 59, 0.05), 0 1px 2px rgba(30, 41, 59, 0.03);
+  }
+  .shadow-pop {
+    box-shadow: 0 10px 15px -3px rgba(30, 41, 59, 0.1), 0 4px 6px -2px rgba(30, 41, 59, 0.05);
+  }
+}
+
+/* Subtle scrollbars to match the premium aesthetic */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
