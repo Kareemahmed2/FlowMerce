@@ -1,0 +1,4 @@
+-- Role is stored as a VARCHAR in users.role (no roles table).
+-- The ADMIN account is seeded in Java by AdminSeeder (CommandLineRunner) with a
+-- proper BCrypt password hash and configurable credentials (app.admin.email /
+-- app.admin.password). No SQL seed is needed here.

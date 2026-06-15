@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FlowMerce Design Studio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .canvas-container::-webkit-scrollbar { width: 6px; }
+        .canvas-container::-webkit-scrollbar-track { background: transparent; }
+        .canvas-container::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .active-element-border { outline: 2px solid #4F46E5; outline-offset: -2px; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#3323cc",
+                        "on-surface-variant": "#45474c",
+                        "on-surface": "#191c1e",
+                        "on-primary-fixed-variant": "#3c475a",
+                        "inverse-surface": "#2d3133",
+                        "tertiary": "#00190e",
+                        "surface": "#f7f9fb",
+                        "surface-bright": "#f7f9fb",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#002113",
+                        "error": "#ba1a1a",
+                        "background": "#f7f9fb",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-dim": "#d8dadc",
+                        "on-primary-container": "#8590a6",
+                        "on-secondary-fixed": "#0f0069",
+                        "on-background": "#191c1e",
+                        "secondary-container": "#645efb",
+                        "outline": "#75777d",
+                        "on-tertiary-container": "#00a472",
+                        "primary-fixed-dim": "#bcc7de",
+                        "primary-container": "#1e293b",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-secondary-container": "#fffbff",
+                        "tertiary-fixed": "#6ffbbe",
+                        "tertiary-container": "#00301e",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-container": "#eceef0",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f2f4f6",
+                        "primary": "#091426",
+                        "on-error": "#ffffff",
+                        "secondary": "#4b41e1",
+                        "secondary-fixed-dim": "#c3c0ff",
+                        "on-primary-fixed": "#111c2d",
+                        "surface-variant": "#e0e3e5",
+                        "surface-tint": "#545f73",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#d8e3fb",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed": "#e2dfff",
+                        "inverse-primary": "#bcc7de",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "outline-variant": "#c5c6cd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "32px",
+                        "sm": "16px",
+                        "md": "24px",
+                        "xl": "48px",
+                        "margin-desktop": "32px",
+                        "base": "4px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "xs": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface overflow-hidden h-screen flex flex-col">
+<!-- Top Navigation Bar (Shared Component Context) -->
+<header class="flex justify-between items-center w-full px-lg h-16 bg-surface-container-lowest border-b border-outline-variant z-50">
+<div class="flex items-center gap-md">
+<div class="font-headline-md text-headline-md font-black text-primary">FlowMerce</div>
+<div class="h-6 w-[1px] bg-outline-variant"></div>
+<nav class="flex items-center gap-xs font-label-md text-label-md text-on-surface-variant">
+<span class="hover:text-primary cursor-pointer">Design Studio</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-primary font-bold">Home Page</span>
+</nav>
+</div>
+<div class="flex items-center bg-surface-container-high rounded-lg p-1">
+<button class="p-1.5 rounded-md bg-surface-container-lowest shadow-sm text-primary">
+<span class="material-symbols-outlined text-[20px]">desktop_windows</span>
+</button>
+<button class="p-1.5 rounded-md text-on-surface-variant hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">tablet_android</span>
+</button>
+<button class="p-1.5 rounded-md text-on-surface-variant hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">smartphone</span>
+</button>
+</div>
+<div class="flex items-center gap-sm">
+<div class="flex items-center gap-xs pr-sm border-r border-outline-variant">
+<button class="p-2 text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">undo</span></button>
+<button class="p-2 text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">redo</span></button>
+</div>
+<button class="font-label-md text-label-md text-on-surface-variant px-md py-xs hover:bg-surface-variant rounded-lg transition-all">Save Draft</button>
+<button class="font-label-md text-label-md bg-secondary text-on-secondary px-lg py-xs rounded-lg shadow-md hover:opacity-90 active:scale-95 transition-all">Publish Changes</button>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- Left Sidebar: Component Selection -->
+<aside class="w-64 bg-surface-container-lowest border-r border-outline-variant flex flex-col h-full">
+<div class="p-md">
+<h2 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-sm">Components</h2>
+<div class="space-y-xs">
+<div class="flex items-center gap-sm p-sm rounded-xl hover:bg-surface-container-high cursor-grab transition-colors border border-transparent hover:border-outline-variant group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">view_quilt</span>
+<span class="font-body-md text-body-md text-on-surface">Hero Banner</span>
+</div>
+<div class="flex items-center gap-sm p-sm rounded-xl hover:bg-surface-container-high cursor-grab transition-colors border border-transparent hover:border-outline-variant group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">grid_view</span>
+<span class="font-body-md text-body-md text-on-surface">Product Grid</span>
+</div>
+<div class="flex items-center gap-sm p-sm rounded-xl hover:bg-surface-container-high cursor-grab transition-colors border border-transparent hover:border-outline-variant group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">category</span>
+<span class="font-body-md text-body-md text-on-surface">Categories</span>
+</div>
+<div class="flex items-center gap-sm p-sm rounded-xl hover:bg-surface-container-high cursor-grab transition-colors border border-transparent hover:border-outline-variant group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">subject</span>
+<span class="font-body-md text-body-md text-on-surface">Text Block</span>
+</div>
+<div class="flex items-center gap-sm p-sm rounded-xl hover:bg-surface-container-high cursor-grab transition-colors border border-transparent hover:border-outline-variant group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">smart_button</span>
+<span class="font-body-md text-body-md text-on-surface">CTA Button</span>
+</div>
+<div class="flex items-center gap-sm p-sm rounded-xl hover:bg-surface-container-high cursor-grab transition-colors border border-transparent hover:border-outline-variant group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">horizontal_rule</span>
+<span class="font-body-md text-body-md text-on-surface">Divider</span>
+</div>
+</div>
+</div>
+<div class="mt-auto p-md border-t border-outline-variant">
+<div class="flex items-center gap-sm p-sm rounded-lg hover:bg-surface-variant cursor-pointer transition-colors">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Page Settings</span>
+</div>
+</div>
+</aside>
+<!-- Main Canvas Area -->
+<main class="flex-1 bg-surface-container p-lg overflow-y-auto canvas-container relative">
+<div class="max-w-[1000px] mx-auto bg-surface-container-lowest shadow-2xl rounded-sm min-h-[1200px] flex flex-col relative transition-all duration-300 overflow-hidden">
+<!-- Mock Website Header -->
+<div class="h-16 flex items-center justify-between px-md border-b border-outline-variant opacity-40 select-none">
+<div class="font-bold">StoreLogo</div>
+<div class="flex gap-md text-body-sm">
+<span>Shop</span>
+<span>About</span>
+<span>Contact</span>
+</div>
+</div>
+<!-- Hero Section Being Edited -->
+<section class="relative group active-element-border">
+<!-- Floating Toolbar -->
+<div class="absolute -top-12 left-1/2 -translate-x-1/2 flex items-center gap-base bg-primary-container text-on-primary-container p-1 rounded-lg shadow-xl z-10 border border-outline/20">
+<button class="p-1.5 hover:bg-on-primary-container/10 rounded transition-colors" title="Background">
+<span class="material-symbols-outlined text-[18px]">image</span>
+</button>
+<button class="p-1.5 hover:bg-on-primary-container/10 rounded transition-colors" title="Alignment">
+<span class="material-symbols-outlined text-[18px]">format_align_center</span>
+</button>
+<button class="p-1.5 hover:bg-on-primary-container/10 rounded transition-colors" title="Spacing">
+<span class="material-symbols-outlined text-[18px]">vertical_align_center</span>
+</button>
+<div class="w-[1px] h-4 bg-on-primary-container/30 mx-1"></div>
+<button class="p-1.5 hover:bg-on-primary-container/10 rounded transition-colors text-error" title="Delete">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+<div class="relative h-[500px] flex items-center justify-center text-center p-xl">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover brightness-[0.4]" data-alt="A cinematic, wide-angle shot of high-end consumer electronics arranged on a dark oak desk with soft ambient neon purple and blue lighting. The atmosphere is professional and sleek, reflecting a premium modern lifestyle. The image follows a high-key lighting style with deep shadows and vibrant contrast, perfectly fitting a sophisticated tech-driven merchant dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuANy0-Jif5Pm6-TceirxsizI8k3RlvShlMIUxCMh6XTAmyfITbuaZKZQSt351YFEBaghjfNUQIt_Ee1HtHkzowvoF6LNhizkXnBrEIAbBJGVyfgpFyTqmlmgAJXB1Y0XquCldHKKQ9x9C78QsLSI9ny0z8x1BdvObVOU2ZvG2Mmn0RNzFdtrCn0C82x-B-KKGWMWaJJbMWXSVY8Iym0DX3vGYz1xV5gdxQ7-nSwtEdZUQ7d3OSighUL5Ept8ocOpEvSjwvIrO7DCyg"/>
+</div>
+<div class="relative z-10 max-w-2xl">
+<h1 class="font-display-lg text-display-lg text-white mb-md" contenteditable="true">Elevate Your Lifestyle</h1>
+<p class="font-body-lg text-body-lg text-surface-container mb-lg" contenteditable="true">Discover the next generation of productivity tools designed for the modern professional.</p>
+<button class="bg-white text-primary font-label-md text-label-md px-xl py-md rounded-full shadow-lg">Shop Now</button>
+</div>
+</div>
+</section>
+<!-- Next Section Placeholder -->
+<section class="p-xl grid grid-cols-4 gap-md opacity-20 select-none">
+<div class="aspect-square bg-surface-container-high rounded-xl"></div>
+<div class="aspect-square bg-surface-container-high rounded-xl"></div>
+<div class="aspect-square bg-surface-container-high rounded-xl"></div>
+<div class="aspect-square bg-surface-container-high rounded-xl"></div>
+</section>
+<!-- Drop zone hint -->
+<div class="mx-xl my-md border-2 border-dashed border-outline-variant rounded-xl flex items-center justify-center p-lg group cursor-pointer hover:border-secondary transition-all">
+<div class="flex flex-col items-center gap-xs group-hover:text-secondary">
+<span class="material-symbols-outlined text-[32px]">add_circle</span>
+<span class="font-label-md text-label-md">Drag component here</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Right Panel: Property Inspector -->
+<aside class="w-80 bg-surface-container-lowest border-l border-outline-variant flex flex-col h-full">
+<div class="p-md border-b border-outline-variant flex justify-between items-center">
+<h2 class="font-headline-sm text-headline-sm">Hero Section</h2>
+<button class="text-on-surface-variant"><span class="material-symbols-outlined text-[20px]">help_outline</span></button>
+</div>
+<div class="flex-1 overflow-y-auto p-md space-y-lg">
+<!-- Content Settings -->
+<section><h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-md">Content</h3><div class="space-y-md"><div><label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Heading Text</label><textarea class="w-full bg-surface-container text-body-md p-sm rounded-lg border-none focus:ring-2 focus:ring-secondary h-20">Elevate Your Lifestyle</textarea></div><div><label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Subheading Text</label><textarea class="w-full bg-surface-container text-body-md p-sm rounded-lg border-none focus:ring-2 focus:ring-secondary h-24">Discover the next generation of productivity tools designed for the modern professional.</textarea></div><div><label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Primary Button Label</label><input class="w-full bg-surface-container text-body-md p-sm rounded-lg border-none focus:ring-2 focus:ring-secondary" type="text" value="Shop Now"/></div><div><label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Secondary Button Label</label><input class="w-full bg-surface-container text-body-md p-sm rounded-lg border-none focus:ring-2 focus:ring-secondary" placeholder="Optional label..." type="text"/></div></div></section>
+<!-- Media Settings -->
+<section><h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-md">Appearance</h3><div class="space-y-md"><div><label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Background Image</label><div class="border-2 border-dashed border-outline-variant rounded-xl p-md flex flex-col items-center gap-xs hover:border-secondary transition-colors cursor-pointer"><span class="material-symbols-outlined">cloud_upload</span><span class="font-label-sm text-label-sm">Change Image</span></div></div><div><label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Overlay Opacity</label><div class="flex items-center gap-md"><input class="flex-1 accent-secondary" max="100" min="0" type="range" value="60"/><span class="font-label-md text-label-md w-8">60%</span></div></div><div><label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Background Blur</label><div class="flex items-center gap-md"><input class="flex-1 accent-secondary" max="20" min="0" type="range" value="0"/><span class="font-label-md text-label-md w-8">0px</span></div></div><div><label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Content Alignment</label><div class="flex bg-surface-container p-1 rounded-lg"><button class="flex-1 py-1 text-label-sm rounded bg-surface-container-lowest shadow-sm">Left</button><button class="flex-1 py-1 text-label-sm rounded text-on-surface-variant">Center</button><button class="flex-1 py-1 text-label-sm rounded text-on-surface-variant">Right</button></div></div><div><label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Text Color</label><div class="flex items-center gap-sm"><div class="w-8 h-8 rounded border border-outline-variant bg-white cursor-pointer"></div><span class="font-body-sm text-body-sm">#FFFFFF</span></div></div><div class="flex items-center justify-between"><span class="font-label-md text-label-md">Full Height</span><div class="w-10 h-6 bg-secondary rounded-full relative cursor-pointer shadow-inner"><div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm"></div></div></div></div></section>
+<section><h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-md">Advanced</h3><div class="space-y-md"><div><label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Vertical Padding</label><div class="flex bg-surface-container p-1 rounded-lg"><button class="flex-1 py-1 text-label-sm rounded text-on-surface-variant">Sm</button><button class="flex-1 py-1 text-label-sm rounded bg-surface-container-lowest shadow-sm">Md</button><button class="flex-1 py-1 text-label-sm rounded text-on-surface-variant">Lg</button></div></div><div><label class="block font-label-md text-label-md text-on-surface-variant mb-xs">Section ID</label><input class="w-full bg-surface-container text-body-md p-sm rounded-lg border-none focus:ring-2 focus:ring-secondary" type="text" value="hero-section"/></div></div></section></div>
+<!-- Panel Footer -->
+<div class="p-md bg-surface-container-low flex items-center justify-between">
+<button class="font-label-sm text-label-sm flex items-center gap-xs text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+                    Preview Section
+                </button>
+<button class="font-label-sm text-label-sm flex items-center gap-xs text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[16px]">copy_all</span>
+                    Duplicate
+                </button>
+</div>
+</aside>
+</div>
+<!-- Micro-interaction effects -->
+<script>
+        document.querySelectorAll('[contenteditable]').forEach(el => {
+            el.addEventListener('focus', () => {
+                el.classList.add('bg-white/10', 'rounded', 'px-1');
+            });
+            el.addEventListener('blur', () => {
+                el.classList.remove('bg-white/10', 'px-1');
+            });
+        });
+
+        // Simple drag feedback simulation
+        const components = document.querySelectorAll('.cursor-grab');
+        components.forEach(comp => {
+            comp.addEventListener('mousedown', () => comp.style.transform = 'scale(0.98)');
+            comp.addEventListener('mouseup', () => comp.style.transform = 'scale(1)');
+        });
+    </script>
+</body></html>

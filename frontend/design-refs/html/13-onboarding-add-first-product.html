@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Merchant Onboarding - Add Your First Product</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for clean UI */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-fixed-variant": "#3323cc",
+                      "surface-container": "#eceef0",
+                      "tertiary-fixed": "#6ffbbe",
+                      "on-primary-fixed-variant": "#3c475a",
+                      "surface-container-high": "#e6e8ea",
+                      "outline-variant": "#c5c6cd",
+                      "surface-tint": "#545f73",
+                      "secondary-fixed-dim": "#c3c0ff",
+                      "tertiary-container": "#00301e",
+                      "outline": "#75777d",
+                      "on-surface-variant": "#45474c",
+                      "on-error": "#ffffff",
+                      "on-tertiary-fixed": "#002113",
+                      "inverse-surface": "#2d3133",
+                      "on-tertiary": "#ffffff",
+                      "surface-bright": "#f7f9fb",
+                      "surface": "#f7f9fb",
+                      "tertiary": "#00190e",
+                      "surface-variant": "#e0e3e5",
+                      "error": "#ba1a1a",
+                      "primary-fixed-dim": "#bcc7de",
+                      "on-tertiary-container": "#00a472",
+                      "secondary-container": "#645efb",
+                      "inverse-on-surface": "#eff1f3",
+                      "inverse-primary": "#bcc7de",
+                      "on-error-container": "#93000a",
+                      "background": "#f7f9fb",
+                      "on-primary-fixed": "#111c2d",
+                      "error-container": "#ffdad6",
+                      "primary": "#091426",
+                      "primary-container": "#1e293b",
+                      "surface-container-highest": "#e0e3e5",
+                      "primary-fixed": "#d8e3fb",
+                      "secondary-fixed": "#e2dfff",
+                      "on-surface": "#191c1e",
+                      "on-secondary": "#ffffff",
+                      "on-primary-container": "#8590a6",
+                      "on-background": "#191c1e",
+                      "on-primary": "#ffffff",
+                      "on-secondary-container": "#fffbff",
+                      "surface-container-low": "#f2f4f6",
+                      "surface-dim": "#d8dadc",
+                      "secondary": "#4b41e1",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "on-secondary-fixed": "#0f0069"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "8px",
+                      "margin-mobile": "16px",
+                      "gutter": "24px",
+                      "lg": "32px",
+                      "xl": "48px",
+                      "margin-desktop": "32px",
+                      "sm": "16px",
+                      "md": "24px",
+                      "base": "4px"
+              },
+              "fontFamily": {
+                      "display-lg": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "body-md": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col items-center">
+<!-- Header / Branding Navigation (Suppressed version for focused flow) -->
+<header class="w-full h-20 flex justify-between items-center px-margin-desktop bg-surface-container-lowest border-b border-outline-variant fixed top-0 z-50">
+<div class="flex items-center gap-xs">
+<span class="font-headline-md text-headline-md font-black text-primary">FlowMerce</span>
+</div>
+<div class="flex items-center gap-sm">
+<button class="flex items-center gap-xs text-on-surface-variant font-label-md text-label-md hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+<span>Get Help</span>
+</button>
+</div>
+</header>
+<main class="mt-32 mb-32 w-full max-w-4xl px-margin-mobile flex flex-col items-center">
+<!-- Progress Stepper -->
+<div class="w-full max-w-2xl mb-xl">
+<div class="flex items-center justify-between mb-sm">
+<span class="font-label-md text-label-md text-secondary font-bold uppercase tracking-wider">Step 2 of 4</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Inventory Setup</span>
+</div>
+<div class="flex gap-xs w-full">
+<div class="h-2 flex-1 rounded-full bg-secondary"></div>
+<div class="h-2 flex-1 rounded-full bg-secondary"></div>
+<div class="h-2 flex-1 rounded-full bg-surface-variant"></div>
+<div class="h-2 flex-1 rounded-full bg-surface-variant"></div>
+</div>
+</div>
+<!-- Focused Content Canvas -->
+<div class="w-full bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-lg md:p-xl">
+<div class="mb-lg">
+<h1 class="font-headline-lg text-headline-lg text-primary mb-xs">Add Your First Product</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-lg">Tell us about what you're selling. This will help us build your initial storefront layout automatically.</p>
+</div>
+<form class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Left Column: Form Details -->
+<div class="md:col-span-7 flex flex-col gap-md">
+<!-- Product Name -->
+<div class="flex flex-col gap-base">
+<label class="font-label-md text-label-md text-on-surface" for="product-name">Product Name</label>
+<input class="w-full px-sm py-xs border border-outline rounded-lg focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all font-body-md text-body-md" id="product-name" placeholder="e.g. Minimalist Ceramic Vase" type="text"/>
+</div>
+<!-- Description -->
+<div class="flex flex-col gap-base">
+<label class="font-label-md text-label-md text-on-surface" for="product-description">Description</label>
+<textarea class="w-full px-sm py-xs border border-outline rounded-lg focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all font-body-md text-body-md" id="product-description" placeholder="Describe the key features, materials, and benefits..." rows="4"></textarea>
+</div>
+<!-- Price and Stock Row -->
+<div class="grid grid-cols-2 gap-md">
+<div class="flex flex-col gap-base">
+<label class="font-label-md text-label-md text-on-surface" for="product-price">Price ($)</label>
+<input class="w-full px-sm py-xs border border-outline rounded-lg focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all font-body-md text-body-md" id="product-price" placeholder="0.00" step="0.01" type="number"/>
+</div>
+<div class="flex flex-col gap-base">
+<label class="font-label-md text-label-md text-on-surface" for="product-stock">Initial Stock</label>
+<input class="w-full px-sm py-xs border border-outline rounded-lg focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all font-body-md text-body-md" id="product-stock" placeholder="10" type="number"/>
+</div>
+</div>
+</div>
+<!-- Right Column: Image Upload Area -->
+<div class="md:col-span-5 flex flex-col gap-base">
+<label class="font-label-md text-label-md text-on-surface">Product Photo</label>
+<div class="relative group cursor-pointer flex-1 min-h-[280px] border-2 border-dashed border-outline-variant rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors flex flex-col items-center justify-center p-md text-center" id="drop-zone">
+<input accept="image/*" class="hidden" id="file-input" type="file"/>
+<div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-sm group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-secondary text-3xl">add_a_photo</span>
+</div>
+<span class="font-label-md text-label-md text-primary font-bold">Click to upload or drag and drop</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-xs">PNG, JPG, or WEBP (Max. 5MB)</span>
+<!-- Preview State (Hidden by default) -->
+<div class="absolute inset-0 bg-white rounded-xl overflow-hidden hidden flex items-center justify-center" id="preview-container">
+<img alt="Product Preview" class="w-full h-full object-cover" id="image-preview" src=""/>
+<button class="absolute top-sm right-sm p-xs bg-error text-on-error rounded-full shadow-lg" onclick="resetUpload(event)" type="button">
+<span class="material-symbols-outlined text-sm">close</span>
+</button>
+</div>
+</div>
+<!-- Decorative Placeholder Card for Storefront Context -->
+<div class="mt-md p-sm bg-surface-container-high/30 border border-outline-variant/30 rounded-lg flex items-center gap-sm">
+<div class="w-10 h-10 bg-surface-container-high rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">visibility</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">This image will appear on your storefront and in customer search results.</p>
+</div>
+</div>
+</form>
+</div>
+<!-- Sticky Bottom Navigation -->
+<div class="w-full mt-lg flex items-center justify-between">
+<button class="flex items-center gap-xs px-md py-sm rounded-lg font-label-md text-label-md text-on-surface hover:bg-surface-variant transition-all">
+<span class="material-symbols-outlined text-sm">arrow_back</span>
+<span>Back</span>
+</button>
+<div class="flex items-center gap-md">
+<button class="px-md py-sm rounded-lg font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors">
+                    Skip for now
+                </button>
+<button class="px-xl py-sm bg-secondary text-on-secondary rounded-lg font-label-md text-label-md shadow-md hover:bg-secondary-container transition-all active:scale-95" id="continue-btn">
+                    Continue to Step 3
+                </button>
+</div>
+</div>
+</main>
+<!-- Footer Meta -->
+<footer class="mt-auto w-full max-w-4xl px-margin-mobile py-xl flex flex-col md:flex-row justify-between border-t border-outline-variant items-center gap-md">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Secure Merchant Onboarding</span>
+</div>
+<div class="flex gap-lg">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary underline decoration-outline-variant underline-offset-4" href="#">Terms of Service</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary underline decoration-outline-variant underline-offset-4" href="#">Privacy Policy</a>
+</div>
+</footer>
+<script>
+        // Simple Interaction Logic for File Upload
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const previewContainer = document.getElementById('preview-container');
+        const imagePreview = document.getElementById('image-preview');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imagePreview.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function resetUpload(event) {
+            event.stopPropagation();
+            fileInput.value = '';
+            imagePreview.src = '';
+            previewContainer.classList.add('hidden');
+        }
+
+        // Drag and drop visual feedback
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.add('bg-secondary/10', 'border-secondary');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('bg-secondary/10', 'border-secondary');
+            }, false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            fileInput.files = files;
+            // Trigger change event
+            const event = new Event('change');
+            fileInput.dispatchEvent(event);
+        });
+
+        // Continue Button Micro-Interaction
+        const continueBtn = document.getElementById('continue-btn');
+        continueBtn.addEventListener('click', () => {
+            continueBtn.innerHTML = `
+                <div class="flex items-center gap-xs">
+                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <span>Saving Product...</span>
+                </div>
+            `;
+            setTimeout(() => {
+                alert('Onboarding Step 2 Complete! Navigating to Step 3...');
+                window.location.reload();
+            }, 1200);
+        });
+    </script>
+</body></html>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Merchant Onboarding - Step 4: Review &amp; Publish</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-fixed-variant": "#3323cc",
+                      "surface-container": "#eceef0",
+                      "tertiary-fixed": "#6ffbbe",
+                      "on-primary-fixed-variant": "#3c475a",
+                      "surface-container-high": "#e6e8ea",
+                      "outline-variant": "#c5c6cd",
+                      "surface-tint": "#545f73",
+                      "secondary-fixed-dim": "#c3c0ff",
+                      "tertiary-container": "#00301e",
+                      "outline": "#75777d",
+                      "on-surface-variant": "#45474c",
+                      "on-error": "#ffffff",
+                      "on-tertiary-fixed": "#002113",
+                      "inverse-surface": "#2d3133",
+                      "on-tertiary": "#ffffff",
+                      "surface-bright": "#f7f9fb",
+                      "surface": "#f7f9fb",
+                      "tertiary": "#00190e",
+                      "surface-variant": "#e0e3e5",
+                      "error": "#ba1a1a",
+                      "primary-fixed-dim": "#bcc7de",
+                      "on-tertiary-container": "#00a472",
+                      "secondary-container": "#645efb",
+                      "inverse-on-surface": "#eff1f3",
+                      "inverse-primary": "#bcc7de",
+                      "on-error-container": "#93000a",
+                      "background": "#f7f9fb",
+                      "on-primary-fixed": "#111c2d",
+                      "error-container": "#ffdad6",
+                      "primary": "#091426",
+                      "primary-container": "#1e293b",
+                      "surface-container-highest": "#e0e3e5",
+                      "primary-fixed": "#d8e3fb",
+                      "secondary-fixed": "#e2dfff",
+                      "on-surface": "#191c1e",
+                      "on-secondary": "#ffffff",
+                      "on-primary-container": "#8590a6",
+                      "on-background": "#191c1e",
+                      "on-primary": "#ffffff",
+                      "on-secondary-container": "#fffbff",
+                      "surface-container-low": "#f2f4f6",
+                      "surface-dim": "#d8dadc",
+                      "secondary": "#4b41e1",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "on-secondary-fixed": "#0f0069"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "8px",
+                      "margin-mobile": "16px",
+                      "gutter": "24px",
+                      "lg": "32px",
+                      "xl": "48px",
+                      "margin-desktop": "32px",
+                      "sm": "16px",
+                      "md": "24px",
+                      "base": "4px"
+              },
+              "fontFamily": {
+                      "display-lg": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "headline-sm": ["Inter"],
+                      "body-md": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "label-md": ["Inter"],
+                      "headline-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #f7f9fb;
+            color: #191c1e;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+        .confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+<!-- Top Navigation Bar (Admin Central style as per JSON) -->
+<header class="flex justify-between items-center w-full px-lg h-16 fixed top-0 z-50 bg-primary shadow-md">
+<div class="flex items-center gap-sm">
+<span class="font-headline-sm text-headline-sm font-bold text-on-primary">Admin Central</span>
+<div class="h-6 w-[1px] bg-on-primary-fixed-variant/30 ml-2"></div>
+<span class="font-label-md text-label-md text-on-primary-fixed-variant">Onboarding Flow</span>
+</div>
+<div class="flex items-center gap-md">
+<button class="text-on-primary-fixed-variant hover:bg-primary-container/20 p-2 rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="notifications_active">notifications_active</span>
+</button>
+<div class="flex items-center gap-xs">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden">
+<img alt="Admin" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdjSYzkmLx8j5t_ftE8y9BeyXylLg0cEMq16DB0JpMK6Hp3zPskVJ6D6MI7i4sT-qAsBTijYFI89MAgOzByqndaQAI1QMM4xIsJRA7kC-LcSNoQARGH1S2gnW8CiNLEpLG4XzYUbXzM_1C4MVSDsZQWVdvBwJaE2nZ2faWiDsXHqggX2YIpSPsjka-OX5HALERtzZ2zftNC2n4OPl_UYxk3W6CBLIbRv3R5ciGmmBj2ilaAKL76hP56O16nq_bBsDj-RGV3IwJ4vo"/>
+</div>
+<span class="font-label-md text-label-md text-on-primary">Admin</span>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-xl px-margin-desktop max-w-[1440px] mx-auto">
+<!-- Progress Stepper -->
+<div class="max-w-3xl mx-auto mb-xl">
+<div class="flex items-center justify-between relative">
+<div class="absolute top-1/2 left-0 w-full h-1 bg-surface-container-high -translate-y-1/2 -z-10"></div>
+<div class="absolute top-1/2 left-0 w-full h-1 bg-secondary -translate-y-1/2 -z-10 origin-left" style="transform: scaleX(1) translateY(-50%);"></div>
+<!-- Step 1 Done -->
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold shadow-lg">
+<span class="material-symbols-outlined text-[20px]" data-icon="check">check</span>
+</div>
+<span class="mt-2 font-label-sm text-label-sm text-on-surface-variant">Store Details</span>
+</div>
+<!-- Step 2 Done -->
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold shadow-lg">
+<span class="material-symbols-outlined text-[20px]" data-icon="check">check</span>
+</div>
+<span class="mt-2 font-label-sm text-label-sm text-on-surface-variant">Products</span>
+</div>
+<!-- Step 3 Done -->
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold shadow-lg">
+<span class="material-symbols-outlined text-[20px]" data-icon="check">check</span>
+</div>
+<span class="mt-2 font-label-sm text-label-sm text-on-surface-variant">Payments</span>
+</div>
+<!-- Step 4 Active -->
+<div class="flex flex-col items-center">
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold shadow-lg ring-4 ring-secondary/20 scale-110">
+                        4
+                    </div>
+<span class="mt-2 font-label-sm text-label-sm text-primary font-bold">Review</span>
+</div>
+</div>
+</div>
+<!-- Hero Header -->
+<div class="text-center mb-xl">
+<h1 class="font-display-lg text-display-lg text-primary mb-sm">Ready to launch?</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">
+                Review your store configuration one last time. Everything looks great! Your digital storefront is just a click away from being live.
+            </p>
+</div>
+<!-- Bento Review Layout -->
+<div class="bento-grid max-w-6xl mx-auto">
+<!-- Store Profile Card -->
+<div class="col-span-12 md:col-span-7 bg-surface-container-lowest rounded-xl p-lg shadow-sm border border-outline-variant hover:shadow-md transition-shadow duration-300">
+<div class="flex justify-between items-start mb-md">
+<div>
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Store Identity</span>
+<h2 class="font-headline-md text-headline-md text-primary mt-1">FlowMerce Premium Boutique</h2>
+</div>
+<button class="text-secondary font-label-md text-label-md flex items-center gap-1 hover:underline">
+<span class="material-symbols-outlined text-[18px]" data-icon="edit">edit</span> Edit
+                    </button>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<div class="p-md bg-surface-container-low rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Domain URL</span>
+<p class="font-body-md text-body-md text-primary font-medium mt-1">flowmerce.com/boutique</p>
+</div>
+<div class="p-md bg-surface-container-low rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Primary Category</span>
+<p class="font-body-md text-body-md text-primary font-medium mt-1">Lifestyle &amp; Apparel</p>
+</div>
+</div>
+<div class="mt-md p-md border border-dashed border-outline-variant rounded-lg flex items-center gap-md">
+<div class="w-16 h-16 rounded-lg bg-surface-variant overflow-hidden">
+<img alt="Store Logo" class="w-full h-full object-cover" data-alt="A professional and sleek corporate logo for a boutique retail brand, displayed in a clean minimalist environment. The logo features abstract geometric shapes in deep indigo and white. High-quality product photography aesthetic with soft natural lighting and a premium feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTGCESBKHzHXpnfUCcRnexvxN9VOlAGA8RPKqibHK-N0vIUgCmAUp-OwVhk4fX0tFhDnRNRYxb7qWeGeZ4Xkhst9gnKsNVVs50YqCzdC8NjaG-w80Sh-Gmwp3UPPTI_DAVoQgq3dnX1LiWCx9jCgznzsnK-hEv_63wgbH1cTxdJx5T4kkrnRRw82UGJK6Mp02PdKmeEIKth7Nw9cQYnGyeTnIChjVoOUeAx3KVlWzeOj3pX6e9MIaZtutVIM7YQ6xBYWojxFjIbjU"/>
+</div>
+<div>
+<p class="font-label-md text-label-md text-primary">Brand Logo Uploaded</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">High-resolution PNG • 512x512px</p>
+</div>
+<span class="ml-auto material-symbols-outlined text-on-tertiary-container" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Payment Methods Card -->
+<div class="col-span-12 md:col-span-5 bg-surface-container-lowest rounded-xl p-lg shadow-sm border border-outline-variant hover:shadow-md transition-shadow duration-300">
+<div class="flex justify-between items-start mb-md">
+<div>
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Payments</span>
+<h2 class="font-headline-sm text-headline-sm text-primary mt-1">Checkout Ready</h2>
+</div>
+<button class="text-secondary font-label-md text-label-md flex items-center gap-1 hover:underline">
+<span class="material-symbols-outlined text-[18px]" data-icon="settings">settings</span>
+</button>
+</div>
+<div class="space-y-sm">
+<div class="flex items-center gap-md p-sm bg-surface-container-low rounded-lg">
+<span class="material-symbols-outlined text-secondary" data-icon="credit_card">credit_card</span>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-primary">Stripe Integration</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Credit &amp; Debit Cards</p>
+</div>
+<span class="font-label-sm text-label-sm bg-tertiary-fixed text-on-tertiary-fixed px-2 py-1 rounded">Active</span>
+</div>
+<div class="flex items-center gap-md p-sm bg-surface-container-low rounded-lg">
+<span class="material-symbols-outlined text-[#003087]" data-icon="account_balance_wallet">account_balance_wallet</span>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-primary">PayPal</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Express Checkout</p>
+</div>
+<span class="font-label-sm text-label-sm bg-tertiary-fixed text-on-tertiary-fixed px-2 py-1 rounded">Active</span>
+</div>
+<div class="flex items-center gap-md p-sm bg-surface-container-low rounded-lg opacity-50">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="universal_currency">universal_currency</span>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-primary">Crypto Payments</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">BTC, ETH, USDC</p>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-variant text-on-surface-variant px-2 py-1 rounded">Disabled</span>
+</div>
+</div>
+</div>
+<!-- First Product Card -->
+<div class="col-span-12 md:col-span-8 bg-surface-container-lowest rounded-xl p-lg shadow-sm border border-outline-variant hover:shadow-md transition-shadow duration-300">
+<div class="flex justify-between items-start mb-md">
+<div>
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Inventory Highlight</span>
+<h2 class="font-headline-sm text-headline-sm text-primary mt-1">Featured Launch Product</h2>
+</div>
+<button class="text-secondary font-label-md text-label-md flex items-center gap-1 hover:underline">
+<span class="material-symbols-outlined text-[18px]" data-icon="visibility">visibility</span> Preview
+                    </button>
+</div>
+<div class="flex flex-col sm:flex-row gap-lg">
+<div class="w-full sm:w-1/3 aspect-square rounded-lg bg-surface-container overflow-hidden group">
+<img alt="Product Image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A high-end, luxury minimalist ceramic vase sitting on a sleek dark wood table. The lighting is dramatic and cinematic, coming from a single side-source to highlight the smooth texture and elegant curves of the product. The background is a clean, out-of-focus modern apartment with cool neutral tones. Premium product photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAubfuKMPRB_23JsslRVaxSosPKhj8TzP-mkJOaojIrRmMe3IaTn3TQ6J8gMzd2dQQT4TyOo78WPsnczt_Z49ojMHmtbAxEykIZBAK5govlS1SwTr8Ad4YbTyy1uOWVd-0CoGINgNYiEvMBIZqUXtAgRNB9C_HMm7G0ZjwS5qvLVnHBo-wNpkYvHdqIVEw6NXG5T9b4nM7JI2r4BMNkcDzx9BQ2-crJhVPe00OO5lboJOxJKBVjA9cZ7QnxKl0wfgGcbQuzwA2l_UA"/>
+</div>
+<div class="flex-1 space-y-md">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-primary">Artisan Minimalist Vase</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Collection: Home Decor 2024</p>
+</div>
+<div class="flex gap-xl">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Price</span>
+<p class="font-headline-sm text-headline-sm text-primary">$124.00</p>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Stock</span>
+<p class="font-headline-sm text-headline-sm text-primary">45 units</p>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">SKU</span>
+<p class="font-headline-sm text-headline-sm text-primary">AMV-001</p>
+</div>
+</div>
+<div class="flex flex-wrap gap-xs">
+<span class="px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[12px] font-bold">New Arrival</span>
+<span class="px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed text-[12px] font-bold">Eco-Friendly</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Security & Compliance Card -->
+<div class="col-span-12 md:col-span-4 bg-primary text-on-primary rounded-xl p-lg shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="absolute -right-8 -bottom-8 opacity-10">
+<span class="material-symbols-outlined text-[160px]" data-icon="verified_user">verified_user</span>
+</div>
+<div class="relative z-10">
+<div class="w-12 h-12 rounded-full bg-on-primary/10 flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-on-primary" data-icon="security">security</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mb-xs">Fully Compliant</h3>
+<p class="font-body-sm text-body-sm text-on-primary-fixed-variant">Your store meets all PCI-DSS standards and is protected by our enterprise-grade SSL encryption.</p>
+</div>
+<div class="relative z-10 pt-md mt-md border-t border-on-primary/10 space-y-xs">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px] text-tertiary-fixed-dim" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-sm text-label-sm">GDPR Ready</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px] text-tertiary-fixed-dim" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-sm text-label-sm">Fraud Protection Active</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="max-w-6xl mx-auto mt-xl flex flex-col sm:flex-row items-center justify-between gap-lg bg-surface-container-lowest p-lg rounded-2xl shadow-lg border border-secondary/10">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-on-tertiary-fixed" data-icon="rocket_launch">rocket_launch</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-primary">Almost there!</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">By publishing, you agree to the FlowMerce Merchant Terms.</p>
+</div>
+</div>
+<div class="flex items-center gap-md w-full sm:w-auto">
+<button class="px-xl py-4 rounded-xl border border-outline font-label-md text-label-md text-primary hover:bg-surface-variant transition-colors flex-1 sm:flex-none">
+                    Save Draft
+                </button>
+<button class="px-xl py-4 rounded-xl bg-secondary text-on-secondary font-headline-sm text-headline-sm shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all flex-1 sm:flex-none flex items-center justify-center gap-sm" onclick="handlePublish()">
+                    Publish My Store <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Success Modal (Hidden by default) -->
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-primary/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-500" id="successModal">
+<div class="bg-surface-container-lowest p-xl rounded-3xl shadow-2xl max-w-md w-full mx-margin-mobile text-center transform scale-95 transition-transform duration-500" id="modalContent">
+<div class="w-20 h-20 bg-tertiary-fixed rounded-full flex items-center justify-center mx-auto mb-lg">
+<span class="material-symbols-outlined text-[48px] text-on-tertiary-fixed" data-icon="celebration">celebration</span>
+</div>
+<h2 class="font-display-lg text-headline-lg text-primary mb-sm">Congratulations!</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-xl">Your store <strong>FlowMerce Premium Boutique</strong> is now live. Let's start making sales!</p>
+<div class="space-y-md">
+<button class="w-full py-4 rounded-xl bg-secondary text-on-secondary font-label-md text-label-md">Go to Dashboard</button>
+<button class="w-full py-4 rounded-xl border border-outline font-label-md text-label-md text-primary">View Storefront</button>
+</div>
+</div>
+<canvas class="confetti-canvas" id="confetti"></canvas>
+</div>
+<script>
+        function handlePublish() {
+            const modal = document.getElementById('successModal');
+            const content = document.getElementById('modalContent');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+                startConfetti();
+            }, 10);
+        }
+
+        function startConfetti() {
+            const canvas = document.getElementById('confetti');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const pieces = [];
+            const numberOfPieces = 150;
+            const colors = ['#4b41e1', '#6ffbbe', '#645efb', '#00a472'];
+
+            class Piece {
+                constructor() {
+                    this.x = canvas.width / 2;
+                    this.y = canvas.height / 2;
+                    this.s = Math.random() * 8 + 4;
+                    this.r = Math.random() * 4 + 2;
+                    this.d = Math.random() * 150 + 10;
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                    this.vx = (Math.random() - 0.5) * 20;
+                    this.vy = (Math.random() - 0.5) * 20 - 5;
+                    this.gravity = 0.5;
+                    this.rotation = Math.random() * 360;
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vy += this.gravity;
+                    this.rotation += 5;
+                }
+                draw() {
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation * Math.PI / 180);
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(-this.s / 2, -this.s / 2, this.s, this.s);
+                    ctx.restore();
+                }
+            }
+
+            for (let i = 0; i < numberOfPieces; i++) {
+                pieces.push(new Piece());
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                pieces.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+                if (pieces[0].y < canvas.height * 2) {
+                    requestAnimationFrame(animate);
+                }
+            }
+            animate();
+        }
+
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('confetti');
+            if(canvas) {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+        });
+    </script>
+</body></html>

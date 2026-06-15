@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FlowMerce - Configure Payments</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        .step-active {
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#3323cc",
+                        "surface-container": "#eceef0",
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-primary-fixed-variant": "#3c475a",
+                        "surface-container-high": "#e6e8ea",
+                        "outline-variant": "#c5c6cd",
+                        "surface-tint": "#545f73",
+                        "secondary-fixed-dim": "#c3c0ff",
+                        "tertiary-container": "#00301e",
+                        "outline": "#75777d",
+                        "on-surface-variant": "#45474c",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#002113",
+                        "inverse-surface": "#2d3133",
+                        "on-tertiary": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "surface": "#f7f9fb",
+                        "tertiary": "#00190e",
+                        "surface-variant": "#e0e3e5",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#bcc7de",
+                        "on-tertiary-container": "#00a472",
+                        "secondary-container": "#645efb",
+                        "inverse-on-surface": "#eff1f3",
+                        "inverse-primary": "#bcc7de",
+                        "on-error-container": "#93000a",
+                        "background": "#f7f9fb",
+                        "on-primary-fixed": "#111c2d",
+                        "error-container": "#ffdad6",
+                        "primary": "#091426",
+                        "primary-container": "#1e293b",
+                        "surface-container-highest": "#e0e3e5",
+                        "primary-fixed": "#d8e3fb",
+                        "secondary-fixed": "#e2dfff",
+                        "on-surface": "#191c1e",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#8590a6",
+                        "on-background": "#191c1e",
+                        "on-primary": "#ffffff",
+                        "on-secondary-container": "#fffbff",
+                        "surface-container-low": "#f2f4f6",
+                        "surface-dim": "#d8dadc",
+                        "secondary": "#4b41e1",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-secondary-fixed": "#0f0069"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "8px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px",
+                        "lg": "32px",
+                        "xl": "48px",
+                        "margin-desktop": "32px",
+                        "sm": "16px",
+                        "md": "24px",
+                        "base": "4px"
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background min-h-screen text-on-background flex flex-col">
+<!-- Top Navigation Suppression (As per task: Transactional pages suppress global nav) -->
+<header class="h-20 w-full flex items-center justify-between px-margin-desktop bg-surface-container-lowest z-50">
+<div class="flex items-center gap-sm">
+<span class="font-headline-md text-headline-md font-black text-primary">FlowMerce</span>
+<div class="h-6 w-px bg-outline-variant"></div>
+<span class="font-label-md text-label-md text-on-surface-variant">Merchant Setup</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="text-on-surface-variant font-label-sm text-label-sm">Need help?</span>
+<button class="text-secondary font-label-md text-label-md hover:underline">Contact Support</button>
+</div>
+</header>
+<main class="flex-grow flex flex-col items-center py-xl px-margin-mobile">
+<div class="max-w-[800px] w-full">
+<!-- Progress Stepper -->
+<div class="mb-xl">
+<div class="flex justify-between items-center relative">
+<!-- Connector Lines -->
+<div class="absolute top-5 left-0 w-full h-[2px] bg-surface-container-high -z-10"></div>
+<div class="absolute top-5 left-0 w-3/4 h-[2px] bg-secondary -z-10 transition-all duration-500"></div>
+<!-- Step 1: Complete -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">check</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Profile</span>
+</div>
+<!-- Step 2: Complete -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">check</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Storefront</span>
+</div>
+<!-- Step 3: Active -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center ring-4 ring-secondary/20">
+<span class="font-label-md text-label-md">3</span>
+</div>
+<span class="font-label-md text-label-md text-primary">Payments</span>
+</div>
+<!-- Step 4: Pending -->
+<div class="flex flex-col items-center gap-xs">
+<div class="w-10 h-10 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center border-2 border-surface-container-highest">
+<span class="font-label-md text-label-md">4</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Launch</span>
+</div>
+</div>
+</div>
+<!-- Content Header -->
+<div class="mb-lg text-center md:text-left">
+<h1 class="font-headline-lg text-headline-lg text-primary mb-xs">Configure Payments</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Choose how you want to receive payments from your customers. You can enable multiple methods to provide more flexibility.</p>
+</div>
+<!-- Payment Methods Grid (Bento Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md mb-xl">
+<!-- Stripe Card -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-[0px_1px_3px_rgba(30,41,59,0.05),0px_1px_2px_rgba(30,41,59,0.03)] border border-outline-variant flex flex-col justify-between group hover:border-secondary transition-colors duration-300">
+<div>
+<div class="flex justify-between items-start mb-sm">
+<div class="w-12 h-12 bg-primary flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined text-on-primary" data-icon="payments">payments</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-xs">Stripe</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-md">Accept credit cards, Apple Pay, and Google Pay instantly. High security with 2.9% + 30¢ per transaction.</p>
+</div>
+<div class="pt-sm border-t border-outline-variant flex items-center justify-between">
+<span class="text-tertiary-container bg-tertiary-fixed/30 px-xs py-[2px] rounded-full font-label-sm text-label-sm">Recommended</span>
+<button class="text-secondary font-label-md text-label-md hover:opacity-80">Settings</button>
+</div>
+</div>
+<!-- Bank Transfer Card -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-[0px_1px_3px_rgba(30,41,59,0.05),0px_1px_2px_rgba(30,41,59,0.03)] border border-outline-variant flex flex-col justify-between group hover:border-secondary transition-colors duration-300">
+<div>
+<div class="flex justify-between items-start mb-sm">
+<div class="w-12 h-12 bg-surface-container-high flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined text-primary" data-icon="account_balance">account_balance</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-xs">Bank Transfer</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-md">Manual verification of payments. Best for B2B or high-ticket items. No transaction fees from FlowMerce.</p>
+</div>
+<div class="pt-sm border-t border-outline-variant flex items-center justify-end">
+<button class="text-secondary font-label-md text-label-md hover:opacity-80">Configure</button>
+</div>
+</div>
+<!-- Cash on Delivery Card -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-[0px_1px_3px_rgba(30,41,59,0.05),0px_1px_2px_rgba(30,41,59,0.03)] border border-outline-variant flex flex-col justify-between group hover:border-secondary transition-colors duration-300">
+<div>
+<div class="flex justify-between items-start mb-sm">
+<div class="w-12 h-12 bg-surface-container-high flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined text-primary" data-icon="local_shipping">local_shipping</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-xs">COD</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-md">Receive cash when the product is delivered. Great for local delivery but carries higher risk of returns.</p>
+</div>
+<div class="pt-sm border-t border-outline-variant flex items-center justify-end">
+<button class="text-secondary font-label-md text-label-md hover:opacity-80">Setup</button>
+</div>
+</div>
+<!-- InstaPay Card -->
+<div class="bg-surface-container-lowest p-md rounded-xl shadow-[0px_1px_3px_rgba(30,41,59,0.05),0px_1px_2px_rgba(30,41,59,0.03)] border border-outline-variant flex flex-col justify-between group hover:border-secondary transition-colors duration-300">
+<div>
+<div class="flex justify-between items-start mb-sm">
+<div class="w-12 h-12 bg-surface-container-high flex items-center justify-center rounded-lg">
+<span class="material-symbols-outlined text-primary" data-icon="bolt">bolt</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-xs">InstaPay</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-md">Real-time payment processing for regional markets. Settles directly into your account within minutes.</p>
+</div>
+<div class="pt-sm border-t border-outline-variant flex items-center justify-between">
+<span class="text-on-secondary-container bg-secondary-container/20 px-xs py-[2px] rounded-full font-label-sm text-label-sm">Fastest Payout</span>
+<button class="text-secondary font-label-md text-label-md hover:opacity-80">Settings</button>
+</div>
+</div>
+</div>
+<!-- Info Box -->
+<div class="bg-primary-container/10 p-md rounded-xl border border-primary-container/20 flex gap-md mb-xl">
+<span class="material-symbols-outlined text-secondary" data-icon="info">info</span>
+<div>
+<h4 class="font-label-md text-label-md text-primary mb-1">Security &amp; Compliance</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">All card information is encrypted using industry-standard SSL technology. FlowMerce is PCI-DSS Level 1 compliant, ensuring your customers' data is always safe.</p>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="flex items-center justify-between pt-lg border-t border-outline-variant">
+<button class="flex items-center gap-xs px-md py-sm rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant transition-all" onclick="window.history.back()">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    Back
+                </button>
+<button class="px-xl py-sm bg-secondary text-on-secondary rounded-lg font-label-md text-label-md hover:brightness-110 active:scale-[0.98] transition-all shadow-md">
+                    Continue to Launch
+                </button>
+</div>
+</div>
+</main>
+<!-- Visual Decoration (Atmospheric) -->
+<div class="fixed bottom-0 right-0 -z-10 p-xl opacity-10 hidden lg:block">
+<div class="relative w-64 h-64">
+<div class="absolute inset-0 bg-secondary blur-3xl rounded-full opacity-20 animate-pulse"></div>
+<img class="w-full h-full object-cover rounded-3xl mix-blend-multiply" data-alt="A professional close-up of a modern white credit card terminal in a clean, minimalist retail environment. The lighting is bright and airy, characteristic of a high-end light-mode UI design. The color palette is dominated by soft grays and crisp whites with subtle indigo accents from the corporate branding. The atmosphere is sophisticated and trustworthy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAzI3KW5GEFsPbs-lGX_5qYvwQIOAXMjWfEh_tH7dun79gtXEeVKxO4brbpfzQaBZnsXdaQZM0rA8Y264GViI-cLTjasZls3bxx_U6gXqgE6jeRFwailtLEvhQYoB3U0N4KBYT2X_MHkKBVD9s6hVPycL4rKWj23qkZteRKMdGW-RfJH8gProde_hke86jG3eH5KlTqpykbQffzcbJ2_znSdhjsWHTMPZdY-IWoaEBiEQ25P_Xvs_FEncet5BkfgGiZ5uKoZR911-Y"/>
+</div>
+</div>
+<script>
+        // Micro-interaction for toggle switches
+        const toggles = document.querySelectorAll('input[type="checkbox"]');
+        toggles.forEach(toggle => {
+            toggle.addEventListener('change', (e) => {
+                const card = e.target.closest('.rounded-xl');
+                if (e.target.checked) {
+                    card.style.borderColor = '#4b41e1';
+                } else {
+                    card.style.borderColor = '#c5c6cd';
+                }
+            });
+        });
+
+        // Atmospheric floating effect
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            const decor = document.querySelector('.fixed.bottom-0');
+            if (decor) {
+                decor.style.transform = `translate(${x * 10}px, ${y * 10}px)`;
+            }
+        });
+    </script>
+</body></html>
