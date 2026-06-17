@@ -52,6 +52,15 @@ public class RateLimitFilter extends OncePerRequestFilter {
     );
 
     @Override
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
+        // CORS preflight carries no credentials/payload and SecurityConfig already
+        // permits it unconditionally — it shouldn't depend on Redis being healthy
+        // or count against anyone's rate limit. A slow Redis call here was stalling
+        // preflight responses, which made even "permitAll" endpoints look hung.
+        return "OPTIONS".equalsIgnoreCase(request.getMethod());
+    }
+
+    @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
