@@ -3,8 +3,10 @@ package com.example.flowmerceproject.UserManagement.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import jakarta.mail.MessagingException;
@@ -23,6 +25,11 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String fromEmail;
 
+    // @Async: SMTP can be slow (Gmail handshake/throttling). Sending inline blocked
+    // the HTTP request thread *and* the caller's DB transaction (register() holds
+    // the row lock on the unique email column), which stalled unrelated requests
+    // and made retried registrations race with the still-open transaction.
+    @Async
     public void sendActivationEmail(String toEmail, String token) {
         String activationLink = frontendUrl + "/activate?token=" + token;
         String subject = "Activate your FlowMerce account";
@@ -36,6 +43,11 @@ public class EmailService {
         sendHtmlEmail(toEmail, subject, body);
     }
 
+    /**
+     * Customer-specific activation email — links to the store-branded page
+     * /store/{storeSlug}/activate so the customer stays within the store context.
+     */
+    @Async
     public void sendCustomerActivationEmail(String toEmail, String token, String storeSlug) {
         String activationLink = frontendUrl + "/activate?token=" + token + "&type=customer&slug=" + storeSlug;
         String subject = "Verify your email to start shopping";
@@ -51,6 +63,7 @@ public class EmailService {
         sendHtmlEmail(toEmail, subject, body);
     }
 
+    @Async
     public void sendPasswordResetEmail(String toEmail, String token) {
         String resetLink = frontendUrl + "/reset-password?token=" + token;
         String subject = "Reset your FlowMerce password";
@@ -74,6 +87,12 @@ public class EmailService {
             helper.setText(htmlBody, true); // true = HTML
             mailSender.send(message);
         } catch (MessagingException e) {
+            log.error("Failed to send email to {}: {}", to, e.getMessage());
+        } catch (MailException e) {
+            // mailSender.send() throws this unchecked on real SMTP failures
+            // (auth, timeout, connection refused). Must not propagate: this runs
+            // inside the caller's @Transactional register() — letting it escape
+            // would roll back an otherwise-successful registration.
             log.error("Failed to send email to {}: {}", to, e.getMessage());
         }
     }
