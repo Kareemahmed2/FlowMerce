@@ -77,7 +77,8 @@ export const authService = {
   },
 
   async activateCustomer(token: string): Promise<ApiResult<{ message: string }>> {
-    return httpClient.get<{ message: string }>(`/auth/customer/activate?token=${encodeURIComponent(token)}`)
+    // 35 s gives Supabase cold-start (up to ~30 s after project resume) time to respond.
+    return httpClient.get<{ message: string }>(`/auth/customer/activate?token=${encodeURIComponent(token)}`, undefined, 35_000)
   },
 
   async forgotPasswordCustomer(payload: ForgotPasswordRequest): Promise<ApiResult<{ message: string }>> {

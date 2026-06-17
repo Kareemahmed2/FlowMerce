@@ -78,6 +78,7 @@ export interface RequestConfig {
   readonly headers: Record<string, string>
   readonly body?: string
   readonly signal?: AbortSignal
+  readonly timeoutMs?: number
 }
 
 export type RequestInterceptorFn = (
@@ -150,7 +151,8 @@ function shouldRetry(method: string, result: ApiResult<unknown>, attempt: number
 
 async function fetchOnce<T>(config: RequestConfig): Promise<ApiResult<T>> {
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS)
+  const effectiveTimeout = config.timeoutMs ?? DEFAULT_TIMEOUT_MS
+  const timeoutId = setTimeout(() => controller.abort(), effectiveTimeout)
 
   // Merge provided signal (if any) with our timeout signal
   const signal = config.signal
@@ -195,7 +197,7 @@ async function fetchOnce<T>(config: RequestConfig): Promise<ApiResult<T>> {
   } catch (err: unknown) {
     clearTimeout(timeoutId)
     if (err instanceof Error && err.name === 'AbortError') {
-      return apiFailure(`Request timed out after ${DEFAULT_TIMEOUT_MS}ms`, 408)
+      return apiFailure(`Request timed out after ${effectiveTimeout}ms`, 408)
     }
     const message = err instanceof Error ? err.message : 'Network error'
     return apiFailure(message, 0)
@@ -208,7 +210,8 @@ async function request<T>(
   method: string,
   path: string,
   body?: unknown,
-  extraHeaders?: Record<string, string>
+  extraHeaders?: Record<string, string>,
+  timeoutMs?: number
 ): Promise<ApiResult<T>> {
   const url = `${BASE_URL}${path}`
   const span = startSpan(`http.${method.toLowerCase()}`, { url, method })
@@ -222,6 +225,7 @@ async function request<T>(
       ...extraHeaders,
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
+    timeoutMs,
   }
 
   // Apply request interceptors
@@ -304,9 +308,9 @@ function anySignal(signals: AbortSignal[]): AbortSignal {
 export const httpClient = {
   isMockMode,
 
-  get<T>(path: string, headers?: Record<string, string>): Promise<ApiResult<T>> {
+  get<T>(path: string, headers?: Record<string, string>, timeoutMs?: number): Promise<ApiResult<T>> {
     const key = `GET:${BASE_URL}${path}`
-    return dedupeRequest(key, () => request<T>('GET', path, undefined, headers))
+    return dedupeRequest(key, () => request<T>('GET', path, undefined, headers, timeoutMs))
   },
 
   post<T>(path: string, body?: unknown, headers?: Record<string, string>): Promise<ApiResult<T>> {

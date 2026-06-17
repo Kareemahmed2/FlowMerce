@@ -36,12 +36,8 @@ public class EmailService {
         sendHtmlEmail(toEmail, subject, body);
     }
 
-    /**
-     * Customer-specific activation email — links to the store-branded page
-     * /store/{storeSlug}/activate so the customer stays within the store context.
-     */
     public void sendCustomerActivationEmail(String toEmail, String token, String storeSlug) {
-        String activationLink = frontendUrl + "/store/" + storeSlug + "/activate?token=" + token;
+        String activationLink = frontendUrl + "/activate?token=" + token + "&type=customer&slug=" + storeSlug;
         String subject = "Verify your email to start shopping";
         String body = """
                 <h2>Almost there!</h2>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from '@/components/store/StoreProvider'
 import { useCustomerAuth } from '@/components/store/CustomerAuthProvider'
 import { textOnBg } from '@/components/store/store-types'
@@ -28,10 +28,11 @@ export default function StoreLoginPage() {
   const accent = store.colors.accent
 
   // Redirect if already logged in
-  if (auth.isLoggedIn) {
-    router.push(`${base}/profile`)
-    return null
-  }
+  useEffect(() => {
+    if (auth.isLoggedIn) {
+      router.push(`${base}/profile`)
+    }
+  }, [auth.isLoggedIn, base, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

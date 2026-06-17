@@ -35,9 +35,10 @@ export default function ActivatePage() {
 
   const token = searchParams.get('token') ?? ''
   const type = searchParams.get('type') ?? 'merchant'
+  const slug = searchParams.get('slug') ?? ''
   const isCustomer = type === 'customer'
 
-  const loginHref = '/login'
+  const loginHref = isCustomer && slug ? `/store/${slug}/login` : '/login'
 
   const [state, setState] = useState<ActivationState>(token ? 'loading' : 'no-token')
   const [message, setMessage] = useState('')
