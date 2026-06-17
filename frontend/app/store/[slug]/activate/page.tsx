@@ -38,24 +38,31 @@ export default function CustomerActivatePage() {
   const [state, setState] = useState<ActivationState>(token ? 'loading' : 'no-token')
   const [message, setMessage] = useState('')
   const [countdown, setCountdown] = useState(REDIRECT_SECONDS)
+  const [isRetrying, setIsRetrying] = useState(false)
   const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // ── Activation call ──────────────────────────────────────────────────────
-  useEffect(() => {
+  const runActivation = async () => {
     if (!token) return
-
-    const activate = async () => {
-      const result = await authService.activateCustomer(token)
-      if (result.ok) {
-        setMessage(result.data.message)
-        setState('success')
-      } else {
-        setMessage(result.error)
-        setState('error')
-      }
+    setState('loading')
+    const result = await authService.activateCustomer(token)
+    if (result.ok) {
+      setMessage(result.data.message)
+      setState('success')
+    } else {
+      const isTimeout = result.status === 408
+      setMessage(
+        isTimeout
+          ? 'The server took too long to respond. Please try again.'
+          : result.error
+      )
+      setState('error')
     }
+    setIsRetrying(false)
+  }
 
-    activate()
+  useEffect(() => {
+    runActivation()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -130,7 +137,7 @@ export default function CustomerActivatePage() {
             <div role="status" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '24px 0' }}>
               <Loader2 size={44} aria-hidden="true" style={{ color: accent, animation: 'spin 1s linear infinite' }} />
               <p style={{ fontSize: 14, color: '#888', textAlign: 'center' }}>
-                Verifying your account…
+                Verifying your account… this may take up to 30 seconds.
               </p>
             </div>
           )}
@@ -164,11 +171,24 @@ export default function CustomerActivatePage() {
               <h2 style={{ fontSize: 20, fontWeight: 700, margin: 0, textAlign: 'center' }}>Verification Failed</h2>
               <p style={{ fontSize: 14, color: '#666', textAlign: 'center', lineHeight: 1.6 }}>{message}</p>
               <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
-                <Link href={`${base}/signup`} style={{ display: 'block', padding: '13px 0', background: accent, color: textOnBg(accent), borderRadius: 10, textAlign: 'center', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
-                  Create a New Account
-                </Link>
+                <button
+                  onClick={() => { setIsRetrying(true); runActivation() }}
+                  disabled={isRetrying}
+                  style={{
+                    display: 'block', width: '100%', padding: '13px 0',
+                    background: isRetrying ? '#999' : accent,
+                    color: textOnBg(isRetrying ? '#999' : accent),
+                    border: 'none', borderRadius: 10, textAlign: 'center',
+                    fontWeight: 600, fontSize: 14, cursor: isRetrying ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {isRetrying ? 'Retrying…' : 'Try Again'}
+                </button>
                 <Link href={`${base}/login`} style={{ display: 'block', padding: '12px 0', border: '1px solid #e5e7eb', borderRadius: 10, textAlign: 'center', fontWeight: 500, fontSize: 14, color: '#555', textDecoration: 'none' }}>
                   Back to Sign In
+                </Link>
+                <Link href={`${base}/signup`} style={{ display: 'block', padding: '10px 0', textAlign: 'center', fontSize: 13, color: '#aaa', textDecoration: 'none' }}>
+                  Create a New Account
                 </Link>
               </div>
             </div>

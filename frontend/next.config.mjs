@@ -1,7 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // DOC-2: enables the .next/standalone output needed by the Docker runner stage.
-  output: 'standalone',
+  // standalone output is only needed for Docker production builds — Turbopack
+  // dev mode errors on it, so we skip it outside of a real build.
+  ...(process.env.NODE_ENV === 'production' ? { output: 'standalone' } : {}),
 
   images: {
     // DOC-7: allow images served from localhost (dev) and the backend upload path.
