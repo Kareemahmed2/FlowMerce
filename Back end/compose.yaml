@@ -8,6 +8,8 @@
 #   postgres  :5432   — relational DB (named volume: pgdata)
 #   rabbitmq  :5672   — async notifications
 #   redis     :6379   — stock cache + rate limits
+#   minio     :9000   — object storage for images, PDFs, attachments
+#   minio     :9001   — MinIO web console (browser)
 #   backend   :8080   — Spring Boot /api/v1
 #   frontend  :3000   — Next.js storefront + merchant dashboard
 #
@@ -61,6 +63,26 @@ services:
       timeout: 5s
       retries: 5
 
+  # MinIO object storage — stores product images, store logos,
+  # invoices, profile pictures, notification attachments, and storefront assets.
+  # Open http://localhost:9001 in browser to manage files visually.
+  minio:
+    image: 'minio/minio:latest'
+    ports:
+      - '9000:9000'   # API — Spring Boot connects here
+      - '9001:9001'   # Web console — open in browser
+    environment:
+      MINIO_ROOT_USER:     ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data                       # persist uploaded files
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
   # ── Backend ──────────────────────────────────────────────────────────────────
 
   backend:
@@ -83,6 +105,11 @@ services:
       RABBITMQ_PORT:   5672
       RABBITMQ_USERNAME: myuser
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-secret}
+      # MinIO — use service name "minio" not localhost inside Docker
+      MINIO_URL:        http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_BUCKET:     flowmerce
       UPLOAD_DIR:      /app/uploads
       # Override frontend URL for email activation links
       FRONTEND_URL:    ${FRONTEND_URL:-http://localhost:3000}
@@ -97,6 +124,8 @@ services:
       rabbitmq:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     healthcheck:
       test: ['CMD-SHELL', 'curl -sf http://localhost:8080/api/v1/actuator/health || exit 1']
@@ -124,5 +153,6 @@ services:
 
 # ── Volumes ───────────────────────────────────────────────────────────────────
 volumes:
-  pgdata:    # DOC-4
-  uploads:   # DOC-5
+  pgdata:      # DOC-4: postgres data
+  uploads:     # DOC-5: local uploads fallback
+  minio_data:  # MinIO object storage data
