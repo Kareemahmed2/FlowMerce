@@ -426,3 +426,30 @@ CREATE TABLE IF NOT EXISTS reports (
     generated_at TIMESTAMP WITHOUT TIME ZONE,
     FOREIGN KEY (store_id) REFERENCES stores(store_id)
     );
+
+-- =========================
+-- FILE METADATA
+-- =========================
+
+CREATE TABLE IF NOT EXISTS file_metadata (
+                                             id           BIGSERIAL    PRIMARY KEY,
+                                             file_name    VARCHAR(255) NOT NULL,
+    file_url     VARCHAR(512) NOT NULL,
+    file_type    VARCHAR(50),   -- IMAGE, PDF, VIDEO, DOCUMENT
+    entity_type  VARCHAR(50),   -- PRODUCT, STORE, THEME, USER, ORDER, STOREFRONT, ATTACHMENT, AI_ASSET
+    entity_id    INT,           -- ID of the owning entity
+    bucket_name  VARCHAR(100)   DEFAULT 'flowmerce',
+    folder       VARCHAR(100),  -- which folder inside the bucket
+    size_bytes   BIGINT,
+    content_type VARCHAR(100),
+    uploaded_by  INT,           -- user_id who uploaded
+    uploaded_at  TIMESTAMP WITHOUT TIME ZONE,
+    is_deleted   BOOLEAN        DEFAULT false,  -- soft delete
+    FOREIGN KEY (uploaded_by) REFERENCES users(user_id)
+    );
+
+CREATE INDEX IF NOT EXISTS idx_file_metadata_entity
+    ON file_metadata(entity_type, entity_id);
+
+CREATE INDEX IF NOT EXISTS idx_file_metadata_uploaded_by
+    ON file_metadata(uploaded_by);
