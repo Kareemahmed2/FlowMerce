@@ -1,7 +1,7 @@
 'use client'
 
 import React from "react"
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -18,7 +18,17 @@ import type { OAuthProvider } from '@/lib/oauth'
 import { useEffect } from 'react'
 
 
+// useSearchParams() requires a Suspense boundary for the build's static
+// prerender pass — the actual content is in LoginPageContent below.
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageContent />
+    </Suspense>
+  )
+}
+
+function LoginPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const auth = useMerchantAuth()

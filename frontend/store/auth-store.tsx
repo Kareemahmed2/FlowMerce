@@ -33,6 +33,7 @@ import { useRouter } from 'next/navigation'
 import type { AuthSession, AuthUser, MerchantAuthState, UserRole } from '@/types/auth.types'
 import { authService } from '@/services/auth.service'
 import { httpClient } from '@/lib/api/http-client'
+import { clearAllLocalMerchantData } from '@/lib/local-store/settings-storage'
 
 // ─── Storage keys ─────────────────────────────────────────────────────────────
 
@@ -81,6 +82,10 @@ function removeSession(): void {
   localStorage.removeItem(LEGACY_TOKEN_KEY)
   localStorage.removeItem(REMEMBER_ME_KEY)
   // SEC-6: httpOnly cookie is cleared server-side by the logout endpoint.
+  // The onboarding draft / settings / orders caches are keyed globally, not per-account —
+  // wipe them on every session removal so the next merchant on this browser (a different
+  // account) doesn't inherit a previous merchant's "published" store draft.
+  clearAllLocalMerchantData()
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -194,8 +199,11 @@ export function MerchantAuthProvider({ children }: { children: React.ReactNode }
   }, [router])
 
   const getAuthHeader = useCallback((): Record<string, string> => {
-    if (!session?.accessToken) return {}
-    return { Authorization: `Bearer ${session.accessToken}` }
+    // SEC-11: X-Auth-Role tells the backend which httpOnly cookie (merchant vs
+    // customer) to fall back to when no live token is held in memory (e.g. right
+    // after a page reload) — lets both sessions coexist in the same browser.
+    if (!session?.accessToken) return { 'X-Auth-Role': 'MERCHANT' }
+    return { Authorization: `Bearer ${session.accessToken}`, 'X-Auth-Role': 'MERCHANT' }
   }, [session])
 
   const value: MerchantAuthState = useMemo(

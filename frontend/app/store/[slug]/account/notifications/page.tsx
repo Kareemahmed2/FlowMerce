@@ -189,8 +189,10 @@ export default function NotificationsPage() {
           </div>
         )}
 
-        {/* Notification list */}
-        <div style={{ background: store.colors.card, borderRadius: 16, border: '1px solid #00000008', overflow: 'hidden' }}>
+        {/* Notification list — fixed white, like the checkout payment cards, since
+            store.colors.card can be dark in some themes and the row text below
+            doesn't adapt to it. */}
+        <div style={{ background: '#fff', color: '#1e293b', borderRadius: 16, border: '1px solid #00000008', overflow: 'hidden' }}>
           {isLoading && notifications.length === 0 ? (
             <div style={{ padding: 48, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
               <div style={{ width: 28, height: 28, borderRadius: '50%', border: `3px solid ${accent}`, borderTopColor: 'transparent', animation: 'spin 0.8s linear infinite' }} />

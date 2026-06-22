@@ -46,7 +46,9 @@ public class AuthController {
             HttpServletResponse response) {
         AuthResponse auth = authService.login(request);
         // SEC-6: also set httpOnly cookies so the browser doesn't need to manage tokens.
-        cookieUtil.setAuthCookies(response, auth.getAccessToken(), auth.getRefreshToken(),
+        // SEC-11: namespaced to the merchant scope so a customer login elsewhere in the
+        // same browser can't overwrite this session's cookie.
+        cookieUtil.setAuthCookies(response, CookieUtil.MERCHANT_SCOPE, auth.getAccessToken(), auth.getRefreshToken(),
                 jwtExpirationMs / 1000, 30L * 24 * 3600);
         return ResponseEntity.ok(ApiResponse.ok(auth, "Login successful"));
     }
@@ -57,11 +59,11 @@ public class AuthController {
             jakarta.servlet.http.HttpServletRequest request,
             HttpServletResponse response) {
         // SEC-6: accept refresh token from httpOnly cookie or request body.
-        String token = CookieUtil.extractRefreshToken(request);
+        String token = CookieUtil.extractRefreshToken(request, CookieUtil.MERCHANT_SCOPE);
         if (token == null && bodyRequest != null) token = bodyRequest.getRefreshToken();
         if (token == null) throw new BadRequestException("Refresh token is required");
         AuthResponse auth = authService.refreshToken(token);
-        cookieUtil.setAuthCookies(response, auth.getAccessToken(), auth.getRefreshToken(),
+        cookieUtil.setAuthCookies(response, CookieUtil.MERCHANT_SCOPE, auth.getAccessToken(), auth.getRefreshToken(),
                 jwtExpirationMs / 1000, 30L * 24 * 3600);
         return ResponseEntity.ok(ApiResponse.ok(auth));
     }
@@ -72,12 +74,12 @@ public class AuthController {
             jakarta.servlet.http.HttpServletRequest request,
             HttpServletResponse response) {
         // Accept token from cookie or header.
-        String token = CookieUtil.extractAccessToken(request);
+        String token = CookieUtil.extractAccessToken(request, CookieUtil.MERCHANT_SCOPE);
         if (token == null && authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
         }
         if (token == null) throw new BadRequestException("No active session found");
-        cookieUtil.clearAuthCookies(response);
+        cookieUtil.clearAuthCookies(response, CookieUtil.MERCHANT_SCOPE);
         return ResponseEntity.ok(ApiResponse.ok(authService.logout(token)));
     }
 

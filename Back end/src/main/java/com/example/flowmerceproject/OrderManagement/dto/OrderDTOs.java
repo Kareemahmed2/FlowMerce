@@ -66,4 +66,19 @@ public class OrderDTOs {
         private LocalDateTime orderDate;
         private String storeName;
     }
+
+    @Data
+    @Builder
+    public static class CustomerSummary {
+        // One row per distinct customer who has ordered from the store
+        private Integer customerId;
+        private String name;
+        private String email;
+        private String phone;
+        private String lastShippingAddress;
+        private int ordersCount;
+        private BigDecimal totalSpent;
+        private LocalDateTime lastOrderDate;
+        private LocalDateTime joinDate;
+    }
 }

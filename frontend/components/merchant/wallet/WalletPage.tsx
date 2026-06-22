@@ -70,7 +70,8 @@ function TransactionRow({ txn }: { txn: WalletTransactionResponse }) {
 export function WalletPage() {
   const auth = useMerchantAuth()
   const storeId = auth.storeId
-  const { wallet, transactions, isLoading, error, refresh } = useMerchantWallet(storeId, auth.getAuthHeader())
+  // Pass the getAuthHeader FUNCTION (stable ref), not its return value — see useWallet.ts.
+  const { wallet, transactions, isLoading, error, refresh } = useMerchantWallet(storeId, auth.getAuthHeader)
 
   const stats = useMemo(() => {
     const credits = transactions.filter((t) => ['CREDIT', 'TOPUP', 'REFUND'].includes(t.type) || TRANSACTION_TYPE_CONFIG[t.type]?.sign === '+')

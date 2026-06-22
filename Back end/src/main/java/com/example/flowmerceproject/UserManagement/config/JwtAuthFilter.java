@@ -32,12 +32,30 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        // SEC-6: try cookie first (httpOnly, XSS-safe), fall back to Authorization header.
-        String token = CookieUtil.extractAccessToken(request);
+        // SEC-6 / SEC-11: prefer the Authorization header when present — it reflects
+        // exactly which auth context (merchant vs customer) made this specific call,
+        // and stays correct even if the *other* context's cookie was set more recently
+        // in the same browser. Cookies are namespaced per scope via X-Auth-Role so a
+        // merchant dashboard session and a customer storefront session in the same
+        // browser don't clobber each other; fall back to checking both scopes when
+        // there's no hint (e.g. a caller that doesn't send the header).
+        String token = null;
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ") && !authHeader.substring(7).isBlank()) {
+            token = authHeader.substring(7);
+        }
+
         if (token == null) {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                token = authHeader.substring(7);
+            String roleHint = request.getHeader("X-Auth-Role");
+            if ("CUSTOMER".equalsIgnoreCase(roleHint)) {
+                token = CookieUtil.extractAccessToken(request, CookieUtil.CUSTOMER_SCOPE);
+            } else if ("MERCHANT".equalsIgnoreCase(roleHint)) {
+                token = CookieUtil.extractAccessToken(request, CookieUtil.MERCHANT_SCOPE);
+            } else {
+                token = CookieUtil.extractAccessToken(request, CookieUtil.MERCHANT_SCOPE);
+                if (token == null) {
+                    token = CookieUtil.extractAccessToken(request, CookieUtil.CUSTOMER_SCOPE);
+                }
             }
         }
 

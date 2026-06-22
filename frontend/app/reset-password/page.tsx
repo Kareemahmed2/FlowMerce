@@ -17,7 +17,7 @@
  *   sessionStorage so /login can display a "password changed" banner.
  */
 
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -62,7 +62,17 @@ const focusStyle = {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
+// useSearchParams() requires a Suspense boundary for the build's static
+// prerender pass — the actual content is in ResetPasswordPageContent below.
 export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordPageContent />
+    </Suspense>
+  )
+}
+
+function ResetPasswordPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token') ?? ''

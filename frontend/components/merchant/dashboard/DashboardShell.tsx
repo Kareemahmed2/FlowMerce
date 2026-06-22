@@ -73,6 +73,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     [storeSlug, displayName]
   )
   const storeHref = `http://localhost:3000/store/${host.split('.')[0]}`
+  const hasStore = !!auth.storeId && !!storeSlug
   const avatar = useMemo(() => initialsFromName(displayName), [displayName])
   const plan = 'Merchant'
 
@@ -115,9 +116,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
         {sidebarOpen && (
           <div style={S.sidebarFooter}>
-            <a href={storeHref} target="_blank" rel="noopener noreferrer" style={S.storeLink}>
-              <span style={{ fontSize: 12 }}>▷</span> View Live Store
-            </a>
+            {hasStore ? (
+              <a href={storeHref} target="_blank" rel="noopener noreferrer" style={S.storeLink}>
+                <span style={{ fontSize: 12 }}>▷</span> View Live Store
+              </a>
+            ) : (
+              <Link href="/onboarding" style={S.storeLink}>
+                <span style={{ fontSize: 12 }}>▷</span> Create Your Store
+              </Link>
+            )}
           </div>
         )}
 

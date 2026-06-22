@@ -31,9 +31,10 @@ export default function WalletPage() {
   const router = useRouter()
   const store = useStore()
   const auth = useCustomerAuth()
-  // INT-35: pass auth header so wallet endpoints get the BUYER JWT.
+  // INT-35: pass the getAuthHeader FUNCTION (stable ref), not its return value —
+  // see useWallet.ts for why passing the invoked object caused an infinite loop.
   const { wallet, transactions, isLoading, isTopUpLoading, error, topUp } = useWallet(
-    auth.isLoggedIn ? auth.getAuthHeader() : undefined
+    auth.isLoggedIn ? auth.getAuthHeader : undefined
   )
 
   const base = `/store/${slug}`

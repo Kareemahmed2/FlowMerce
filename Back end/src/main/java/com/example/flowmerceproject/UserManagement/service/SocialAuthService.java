@@ -103,10 +103,11 @@ public class SocialAuthService {
     /** Frontend redirect URL after successful social login. */
     public String buildFrontendRedirect(AuthResponse auth) {
         return String.format(
-            "%s/login?accessToken=%s&refreshToken=%s&role=%s",
+            "%s/login?accessToken=%s&refreshToken=%s&expiresIn=%s&role=%s",
             frontendUrl,
             auth.getAccessToken(),
             auth.getRefreshToken(),
+            auth.getExpiresIn(),
             auth.getUser().getRole()
         );
     }

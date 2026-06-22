@@ -83,12 +83,14 @@ public class ProductService {
         return toResponse(product);
     }
 
+    @Transactional(readOnly = true)
     public List<ProductDTOs.ProductResponse> getStoreProducts(String email, Integer storeId) {
         getStoreAndVerifyOwner(email, storeId);
         return productRepository.findByStore_StoreIdWithMedia(storeId)
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<ProductDTOs.ProductResponse> getActiveProducts(Integer storeId) {
         storeRepository.findById(storeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Store not found: " + storeId));
@@ -96,6 +98,7 @@ public class ProductService {
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public ProductDTOs.ProductResponse getProductById(Integer productId) {
         return toResponse(findProductOrThrow(productId));
     }
@@ -143,6 +146,7 @@ public class ProductService {
      * INT-1: search is scoped to a specific store to prevent cross-store leakage.
      * Falls back to global search (all stores) only when storeId is null — e.g. admin use.
      */
+    @Transactional(readOnly = true)
     public List<ProductDTOs.ProductResponse> searchProducts(String keyword, Integer storeId) {
         if (storeId != null) {
             return productRepository

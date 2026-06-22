@@ -234,6 +234,19 @@ export interface MerchantOrderSummary {
   storeName: string
 }
 
+/** Returned by GET /orders/store/{storeId}/customers — one row per distinct customer. */
+export interface MerchantCustomerSummary {
+  customerId: number
+  name: string
+  email: string
+  phone: string | null
+  lastShippingAddress: string | null
+  ordersCount: number
+  totalSpent: number
+  lastOrderDate: string
+  joinDate: string
+}
+
 export interface MerchantOrderItemResponse {
   orderItemId: number
   productId: number

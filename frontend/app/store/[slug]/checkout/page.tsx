@@ -254,11 +254,16 @@ export default function CheckoutPage() {
                   const insufficientBalance = isWallet && walletBalance !== null && walletBalance < cart.subtotal
 
                   return (
-                    <label key={m} style={{
+                    <label key={m} className={selected ? '' : 'payment-option'} style={{
                       display: 'flex', alignItems: 'flex-start', gap: 12,
                       padding: '14px 16px', borderRadius: 10,
                       border: selected ? `2px solid ${accent}` : '1px solid #e5e7eb',
-                      background: selected ? `${accent}08` : store.colors.card,
+                      // Checkout payment cards stay white regardless of the storefront's
+                      // theme (like the order summary card below) — store.colors.card can
+                      // be dark in some themes, which made the unstyled label text
+                      // (inherited dark) unreadable against it.
+                      background: selected ? `${accent}08` : '#fff',
+                      color: '#1e293b',
                       cursor: 'pointer',
                     }}>
                       <input
@@ -411,6 +416,7 @@ export default function CheckoutPage() {
       <style>{`
         .store-cta-btn:hover { opacity: 0.88 !important; }
         .sf-breadcrumb-link:hover { color: #1e293b !important; }
+        .payment-option:hover { border-color: ${accent} !important; background: ${accent}08 !important; }
         @media (max-width: 768px) {
           .checkout-grid { grid-template-columns: 1fr !important; }
           .checkout-summary { position: static !important; }

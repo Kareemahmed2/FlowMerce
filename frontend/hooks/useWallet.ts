@@ -18,8 +18,11 @@ import type { WalletResponse, WalletState, WalletTransactionResponse } from '@/t
 // ── Customer wallet ────────────────────────────────────────────────────────────
 
 // INT-35: customer wallet endpoints require a BUYER token.
-// Pass authHeaders from useCustomerAuth().getAuthHeader() at the call site.
-export function useWallet(authHeaders?: Record<string, string>): WalletState {
+// Takes the stable getAuthHeader FUNCTION (from useCustomerAuth()), not its
+// return value — that function builds a fresh header object on every call,
+// so using the object itself as an effect dependency caused an infinite
+// fetch loop (new object -> effect reruns -> setState -> rerender -> ...).
+export function useWallet(getAuthHeader?: () => Record<string, string>): WalletState {
   const [wallet, setWallet] = useState<WalletResponse | null>(null)
   const [transactions, setTransactions] = useState<WalletTransactionResponse[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -29,24 +32,24 @@ export function useWallet(authHeaders?: Record<string, string>): WalletState {
   const fetchWallet = useCallback(async () => {
     setIsLoading(true)
     setError('')
-    const result = await walletService.getMyWallet(authHeaders)
+    const result = await walletService.getMyWallet(getAuthHeader?.())
     setIsLoading(false)
     if (result.ok) setWallet(result.data)
     else setError(result.error)
-  }, [authHeaders])
+  }, [getAuthHeader])
 
   const fetchTransactions = useCallback(async () => {
-    const result = await walletService.getMyTransactions(authHeaders)
+    const result = await walletService.getMyTransactions(getAuthHeader?.())
     if (result.ok) setTransactions(result.data)
     else setError(result.error)
-  }, [authHeaders])
+  }, [getAuthHeader])
 
   // Initial load — both calls in parallel
   useSafeEffect((isMounted) => {
     setIsLoading(true)
     Promise.all([
-      walletService.getMyWallet(authHeaders),
-      walletService.getMyTransactions(authHeaders),
+      walletService.getMyWallet(getAuthHeader?.()),
+      walletService.getMyTransactions(getAuthHeader?.()),
     ]).then(([wResult, txResult]) => {
       if (!isMounted()) return
       setIsLoading(false)
@@ -55,21 +58,21 @@ export function useWallet(authHeaders?: Record<string, string>): WalletState {
       if (txResult.ok) setTransactions(txResult.data)
       else if (!wResult.ok) setError(txResult.error)
     })
-  }, [authHeaders])
+  }, [getAuthHeader])
 
   const topUp = useCallback(async (amount: number): Promise<{ ok: boolean; message: string }> => {
     setIsTopUpLoading(true)
-    const result = await walletService.topUpWallet({ amount }, authHeaders)
+    const result = await walletService.topUpWallet({ amount }, getAuthHeader?.())
     if (!result.ok) {
       setIsTopUpLoading(false)
       return { ok: false, message: result.error }
     }
     setWallet(result.data)
-    const txResult = await walletService.getMyTransactions(authHeaders)
+    const txResult = await walletService.getMyTransactions(getAuthHeader?.())
     if (txResult.ok) setTransactions(txResult.data)
     setIsTopUpLoading(false)
     return { ok: true, message: `EGP ${amount.toFixed(2)} added to your wallet.` }
-  }, [authHeaders])
+  }, [getAuthHeader])
 
   return { wallet, transactions, isLoading, isTopUpLoading, error, fetchWallet, fetchTransactions, topUp }
 }
@@ -86,7 +89,7 @@ export interface MerchantWalletState {
 
 export function useMerchantWallet(
   storeId: number | null,
-  authHeaders?: Record<string, string>
+  getAuthHeader?: () => Record<string, string>
 ): MerchantWalletState {
   const [wallet, setWallet] = useState<WalletResponse | null>(null)
   const [transactions, setTransactions] = useState<WalletTransactionResponse[]>([])
@@ -98,22 +101,22 @@ export function useMerchantWallet(
     setIsLoading(true)
     setError('')
     const [wResult, txResult] = await Promise.all([
-      walletService.getStoreWallet(storeId, authHeaders),
-      walletService.getStoreTransactions(storeId, authHeaders),
+      walletService.getStoreWallet(storeId, getAuthHeader?.()),
+      walletService.getStoreTransactions(storeId, getAuthHeader?.()),
     ])
     setIsLoading(false)
     if (wResult.ok) setWallet(wResult.data)
     else setError(wResult.error)
     if (txResult.ok) setTransactions(txResult.data)
     else if (!wResult.ok) setError(txResult.error)
-  }, [storeId, authHeaders])
+  }, [storeId, getAuthHeader])
 
   useSafeEffect((isMounted) => {
     if (!storeId) return
     setIsLoading(true)
     Promise.all([
-      walletService.getStoreWallet(storeId, authHeaders),
-      walletService.getStoreTransactions(storeId, authHeaders),
+      walletService.getStoreWallet(storeId, getAuthHeader?.()),
+      walletService.getStoreTransactions(storeId, getAuthHeader?.()),
     ]).then(([wResult, txResult]) => {
       if (!isMounted()) return
       setIsLoading(false)
@@ -122,7 +125,7 @@ export function useMerchantWallet(
       if (txResult.ok) setTransactions(txResult.data)
       else if (!wResult.ok) setError(txResult.error)
     })
-  }, [storeId])
+  }, [storeId, getAuthHeader])
 
   return { wallet, transactions, isLoading, error, refresh: load }
 }

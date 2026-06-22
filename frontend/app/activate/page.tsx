@@ -18,7 +18,7 @@
  *   GET /auth/customer/activate?token=  (customer)
  */
 
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, XCircle, Loader2, Mail } from 'lucide-react'
@@ -29,7 +29,38 @@ type ActivationState = 'loading' | 'success' | 'error' | 'no-token'
 
 const REDIRECT_SECONDS = 5
 
+// useSearchParams() requires a Suspense boundary for the build's static
+// prerender pass — the actual content is in ActivatePageContent below.
 export default function ActivatePage() {
+  return (
+    <Suspense fallback={<ActivateFallback />}>
+      <ActivatePageContent />
+    </Suspense>
+  )
+}
+
+function ActivateFallback() {
+  return (
+    <AuthPageLayout
+      heroHeading="Almost there..."
+      heroSubtext="Activate your account to start building your store with FlowMerce."
+      bgImage="/bg-login.png"
+    >
+      <div className="flex flex-col items-center py-10 gap-4" role="status">
+        <Loader2
+          className="w-12 h-12 animate-spin"
+          style={{ color: '#49342F' }}
+          aria-hidden="true"
+        />
+        <p className="text-gray-500 text-sm text-center">
+          Verifying your activation link…
+        </p>
+      </div>
+    </AuthPageLayout>
+  )
+}
+
+function ActivatePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 

@@ -12,7 +12,7 @@
  *   /store/{slug}/reset-password?token={token}
  */
 
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -53,7 +53,17 @@ const baseInputStyle: React.CSSProperties = {
   boxSizing: 'border-box',
 }
 
+// useSearchParams() requires a Suspense boundary for the build's static
+// prerender pass — the actual content is in CustomerResetPasswordPageContent below.
 export default function CustomerResetPasswordPage() {
+  return (
+    <Suspense fallback={null}>
+      <CustomerResetPasswordPageContent />
+    </Suspense>
+  )
+}
+
+function CustomerResetPasswordPageContent() {
   const { slug } = useParams<{ slug: string }>()
   const router = useRouter()
   const searchParams = useSearchParams()

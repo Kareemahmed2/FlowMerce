@@ -13,7 +13,7 @@
  *   The slug must be embedded in the email by the backend at registration time.
  */
 
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, XCircle, Loader2, Mail } from 'lucide-react'
@@ -25,7 +25,17 @@ type ActivationState = 'loading' | 'success' | 'error' | 'no-token'
 
 const REDIRECT_SECONDS = 5
 
+// useSearchParams() requires a Suspense boundary for the build's static
+// prerender pass — the actual content is in CustomerActivatePageContent below.
 export default function CustomerActivatePage() {
+  return (
+    <Suspense fallback={null}>
+      <CustomerActivatePageContent />
+    </Suspense>
+  )
+}
+
+function CustomerActivatePageContent() {
   const { slug } = useParams<{ slug: string }>()
   const searchParams = useSearchParams()
   const router = useRouter()

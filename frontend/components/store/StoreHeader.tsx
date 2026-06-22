@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useStore, useCart } from './StoreProvider'
 import { useCustomerAuth } from './CustomerAuthProvider'
+import { useRealtime } from './RealtimeProvider'
 import { useWishlistSafe } from '@/store/wishlist-store'
 import { notificationService } from '@/services/notification.service'
 import { textOnBg } from './store-types'
@@ -98,6 +99,7 @@ export default function StoreHeader() {
   const store = useStore()
   const cart = useCart()
   const auth = useCustomerAuth()
+  const realtime = useRealtime()
   const wishlist = useWishlistSafe()
 
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -117,12 +119,23 @@ export default function StoreHeader() {
   // Unread notification count
   useEffect(() => {
     if (!auth.isLoggedIn) { setUnreadCount(0); return }
-    notificationService.getUnreadCount().then((r) => { if (r.ok) setUnreadCount(r.data) }).catch(() => {})
+    // Pass the customer auth header explicitly — without it, the backend's
+    // cookie fallback checks the merchant cookie first, which would show the
+    // wrong count if the same browser also has a merchant session open.
+    notificationService.getUnreadCount(auth.getAuthHeader()).then((r) => { if (r.ok) setUnreadCount(r.data) }).catch(() => {})
     const id = setInterval(() => {
-      notificationService.getUnreadCount().then((r) => { if (r.ok) setUnreadCount(r.data) }).catch(() => {})
+      notificationService.getUnreadCount(auth.getAuthHeader()).then((r) => { if (r.ok) setUnreadCount(r.data) }).catch(() => {})
     }, 60_000)
     return () => clearInterval(id)
-  }, [auth.isLoggedIn])
+  }, [auth.isLoggedIn, auth.getAuthHeader])
+
+  // Refresh immediately on a real-time order/account event instead of waiting
+  // for the next 60s poll — the persisted notification is written before the
+  // SSE push, so this read is never ahead of the row it's counting.
+  useEffect(() => {
+    if (!auth.isLoggedIn || realtime.notificationTick === 0) return
+    notificationService.getUnreadCount(auth.getAuthHeader()).then((r) => { if (r.ok) setUnreadCount(r.data) }).catch(() => {})
+  }, [realtime.notificationTick, auth.isLoggedIn, auth.getAuthHeader])
 
   // Focus search on open
   useEffect(() => {

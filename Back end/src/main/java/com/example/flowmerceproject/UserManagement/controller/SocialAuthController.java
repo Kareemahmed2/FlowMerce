@@ -1,9 +1,12 @@
 package com.example.flowmerceproject.UserManagement.controller;
 
+import com.example.flowmerceproject.UserManagement.config.CookieUtil;
 import com.example.flowmerceproject.UserManagement.dto.AuthResponse;
 import com.example.flowmerceproject.UserManagement.service.SocialAuthService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +35,10 @@ import java.net.URI;
 public class SocialAuthController {
 
     private final SocialAuthService socialAuthService;
+    private final CookieUtil cookieUtil;
+
+    @Value("${jwt.expiration-ms:86400000}")
+    private long jwtExpirationMs;
 
     /**
      * Step 1 — redirect the browser to the provider's consent page.
@@ -61,7 +68,8 @@ public class SocialAuthController {
             @PathVariable String provider,
             @RequestParam String code,
             @RequestParam(required = false) String state,
-            @RequestParam(required = false) String error) {
+            @RequestParam(required = false) String error,
+            HttpServletResponse response) {
 
         if (error != null) {
             log.warn("{} OAuth error: {}", provider, error);
@@ -74,6 +82,15 @@ public class SocialAuthController {
 
         log.info("{} OAuth callback received, exchanging code...", provider);
         AuthResponse auth = socialAuthService.handleCallback(provider, code);
+
+        // SEC-6 parity: password login sets an httpOnly cookie alongside the JSON
+        // token (AuthController#login); without it, an OAuth session has no
+        // fallback if the bearer token ever fails to reach a request, since the
+        // browser navigated here via a top-level redirect rather than an AJAX call.
+        cookieUtil.setAuthCookies(response, CookieUtil.MERCHANT_SCOPE,
+                auth.getAccessToken(), auth.getRefreshToken(),
+                jwtExpirationMs / 1000, 30L * 24 * 3600);
+
         String redirectUrl = socialAuthService.buildFrontendRedirect(auth);
 
         HttpHeaders headers = new HttpHeaders();

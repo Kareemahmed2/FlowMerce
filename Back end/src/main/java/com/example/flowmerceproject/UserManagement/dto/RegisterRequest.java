@@ -22,6 +22,10 @@ public class RegisterRequest {
 
     private String phone;
 
+    private String address;
+
+    private String city;
+
     private String businessName;
 
     // Optional: if not provided, defaults to BUYER

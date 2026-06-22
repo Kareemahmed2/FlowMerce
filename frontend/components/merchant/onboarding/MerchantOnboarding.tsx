@@ -63,8 +63,19 @@ export function MerchantOnboarding() {
   const [finalStoreUrl, setFinalStoreUrl] = useState('')
 
   useEffect(() => {
+    // Wait for auth to hydrate — storeId is what tells us whether this account
+    // actually owns a backend store yet.
+    if (!auth.isHydrated) return
     const p = loadPersistedStore()
     if (p) {
+      // The draft is keyed globally in localStorage, not per-account. If it claims
+      // "published" but this account has no backend store, it's a leftover from a
+      // different account that previously used this browser — discard it instead
+      // of redirecting straight to someone else's "store is live" screen.
+      if (p.published && !auth.storeId) {
+        setHydrated(true)
+        return
+      }
       setData(payloadToOnboarding(p))
       // Clamp to valid range — guards against stale localStorage from older
       // versions that had more steps (e.g. before the payment step was removed).
@@ -72,7 +83,7 @@ export function MerchantOnboarding() {
       setPublished(p.published)
     }
     setHydrated(true)
-  }, [])
+  }, [auth.isHydrated, auth.storeId])
 
   useEffect(() => {
     if (!hydrated) return
@@ -145,6 +156,19 @@ export function MerchantOnboarding() {
         storeId = existingR.data[0].storeId
       } else {
         throw new Error(storeR.error)
+      }
+
+      // createStore has no logo field — the uploaded logo URL only gets attached
+      // to the store via this follow-up call. Skip local-only blob:/data: URLs
+      // (upload failed or never finished) since the backend can't fetch those.
+      const logoUrl = data.brand.logoPreview
+      if (logoUrl && !logoUrl.startsWith('blob:') && !logoUrl.startsWith('data:')) {
+        const brandR = await storeService.updateBrand(
+          storeId,
+          { brandName: data.brand.name || 'My Store', logoUrl },
+          headers
+        )
+        if (!brandR.ok) throw new Error(brandR.error)
       }
 
       // 3. Initialise storefront — 409 means already initialised, that's fine
@@ -224,13 +248,29 @@ export function MerchantOnboarding() {
         if (!productR.ok && productR.status !== 409) {
           throw new Error(`Failed to create "${product.name}": ${productR.error}`)
         }
+
+        // create() has no images field — uploaded photos only get attached via this
+        // follow-up call, and only once we have a real productId. Skip on 409 (product
+        // already existed from a previous attempt, so it likely already has its media)
+        // and skip local-only blob:/data: URLs the backend can't fetch.
+        if (productR.ok) {
+          const realImages = product.images.filter(
+            (img) => !img.startsWith('blob:') && !img.startsWith('data:')
+          )
+          for (const mediaUrl of realImages) {
+            await productService.addMedia(storeId, productR.data.productId, { mediaUrl }, headers)
+          }
+        }
         createdCount++
       }
 
-      // 6. Publish the store
+      // 6. Publish the store + the storefront template (two separate "published"
+      //    flags on the backend — both must flip or the public page 404s).
       setPublishProgress({ label: 'Publishing storefront…' })
       const pubR = await storeService.publishStore(storeId, headers)
       if (!pubR.ok) throw new Error(pubR.error)
+      const sfPubR = await storefrontService.publishStorefront(storeId, headers)
+      if (!sfPubR.ok && sfPubR.status !== 409) throw new Error(sfPubR.error)
 
       // 7. Persist storeId everywhere the dashboard reads from.
       auth.patchStoreId(storeId)

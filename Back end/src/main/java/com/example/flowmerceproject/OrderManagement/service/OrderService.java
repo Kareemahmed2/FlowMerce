@@ -22,6 +22,10 @@ import com.example.flowmerceproject.UserManagement.repository.CustomerRepository
 import com.example.flowmerceproject.UserManagement.repository.MerchantRepository;
 import com.example.flowmerceproject.UserManagement.repository.UserRepository;
 import com.example.flowmerceproject.OrderManagement.event.OrderEventPublisher;
+import com.example.flowmerceproject.PaymentManagement.dto.PaymentDTOs;
+import com.example.flowmerceproject.PaymentManagement.entity.Payment;
+import com.example.flowmerceproject.PaymentManagement.repository.PaymentRepository;
+import com.example.flowmerceproject.PaymentManagement.service.PaymentServiceImpl;
 import com.example.flowmerceproject.UserManagement.service.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +56,8 @@ public class OrderService {
     private final CheckoutService checkoutService;
     private final SseService sseService;
     private final OrderEventPublisher orderEventPublisher;
+    private final PaymentRepository paymentRepository;
+    private final PaymentServiceImpl paymentService;
 
     // ── CREATE ORDER ────────────────────────────────────────────────────────────
     // Called after checkout reserves stock. Stock is confirmed (permanently
@@ -153,6 +159,49 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
+    // ── MERCHANT: STORE CUSTOMER LIST ───────────────────────────────────────────
+    // One row per distinct customer who has ordered from this store, aggregated
+    // server-side (orders count, lifetime spend, last order) — replaces the old
+    // frontend-only derivation that had no access to customer email/name.
+    @Transactional(readOnly = true)
+    public List<OrderDTOs.CustomerSummary> getStoreCustomers(String email, Integer storeId) {
+        verifyMerchantOwnsStore(email, storeId);
+        List<Order> orders = orderRepository.findByStore_StoreIdOrderByOrderDateDesc(storeId);
+
+        return orders.stream()
+                .collect(Collectors.groupingBy(o -> o.getCustomer().getCustomerId()))
+                .values().stream()
+                .map(this::toCustomerSummary)
+                .sorted(java.util.Comparator.comparing(OrderDTOs.CustomerSummary::getTotalSpent).reversed())
+                .collect(Collectors.toList());
+    }
+
+    private OrderDTOs.CustomerSummary toCustomerSummary(List<Order> customerOrders) {
+        List<Order> sorted = customerOrders.stream()
+                .sorted(java.util.Comparator.comparing(Order::getOrderDate).reversed())
+                .collect(Collectors.toList());
+        Order latest = sorted.get(0);
+        Customer customer = latest.getCustomer();
+        User user = customer.getUser();
+
+        BigDecimal totalSpent = sorted.stream()
+                .filter(o -> o.getStatus() != Order.OrderStatus.CANCELLED)
+                .map(Order::getTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return OrderDTOs.CustomerSummary.builder()
+                .customerId(customer.getCustomerId())
+                .name(user.getFullName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .lastShippingAddress(latest.getShippingAddress())
+                .ordersCount(sorted.size())
+                .totalSpent(totalSpent)
+                .lastOrderDate(latest.getOrderDate())
+                .joinDate(user.getCreatedAt())
+                .build();
+    }
+
     // ── MERCHANT: STORE ORDER DETAILS ───────────────────────────────────────────
     @Transactional(readOnly = true)
     public OrderDTOs.OrderResponse getOrderDetails(String email, Integer storeId, Integer orderId) {
@@ -184,7 +233,8 @@ public class OrderService {
         String customerEmail = order.getCustomer().getUser().getEmail();
         String merchantEmail = order.getStore().getMerchant().getUser().getEmail();
 
-        sseService.sendOrderUpdate(customerEmail, order.getOrderId(), order.getStatus().name());
+        // SSE push + notification persistence both happen in OrderNotificationConsumer,
+        // triggered by this event — sending SSE directly here would double-fire it.
         orderEventPublisher.publishStatusChanged(order, oldStatus, customerEmail, merchantEmail);
 
         log.info("Order status updated: orderId={}, newStatus={}", orderId, request.getStatus());
@@ -213,8 +263,20 @@ public class OrderService {
         order.setStatus(Order.OrderStatus.CANCELLED);
         orderRepository.save(order);
 
+        // Reverse any money that already moved — COD/bank-transfer payments stay
+        // PENDING until the merchant collects/confirms them, but wallet payments
+        // settle synchronously at checkout, so a still-PENDING order can already
+        // have a COMPLETED payment that needs refunding.
+        paymentRepository.findByOrder_OrderId(orderId)
+                .filter(p -> p.getPaymentStatus() == Payment.PaymentStatus.COMPLETED)
+                .ifPresent(payment -> {
+                    PaymentDTOs.RefundRequest refundRequest = new PaymentDTOs.RefundRequest();
+                    refundRequest.setAmount(payment.getAmount());
+                    refundRequest.setReason("Order cancelled by customer");
+                    paymentService.refundPayment(payment.getPaymentId(), refundRequest, email);
+                });
+
         String merchantEmail = order.getStore().getMerchant().getUser().getEmail();
-        sseService.sendOrderUpdate(email, orderId, "CANCELLED");
         orderEventPublisher.publishStatusChanged(order, "PENDING", email, merchantEmail);
 
         log.info("Order cancelled: orderId={}, customer={}. " +

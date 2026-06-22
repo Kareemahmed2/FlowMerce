@@ -40,11 +40,13 @@ public class CategoryService {
         return toResponse(category);
     }
 
+    @Transactional(readOnly = true)
     public List<CategoryDTOs.CategoryResponse> getAllCategories() {
         return categoryRepository.findAll()
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public CategoryDTOs.CategoryResponse getCategoryById(Integer id) {
         return toResponse(categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found: " + id)));
@@ -72,6 +74,7 @@ public class CategoryService {
     // ── STORE-SPECIFIC CATEGORY MANAGEMENT ───────────────────────────────────
 
     /** Returns global categories + this store's own categories, store-specific first. */
+    @Transactional(readOnly = true)
     public List<CategoryDTOs.CategoryResponse> getStoreCombinedCategories(Integer storeId) {
         List<Category> storeOwned = categoryRepository.findByStore_StoreId(storeId);
         List<Category> globals    = categoryRepository.findByStoreIsNull();
