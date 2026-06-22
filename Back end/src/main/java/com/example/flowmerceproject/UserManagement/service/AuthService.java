@@ -11,6 +11,7 @@ import com.example.flowmerceproject.UserManagement.entity.Merchant;
 import com.example.flowmerceproject.UserManagement.entity.Role;
 import com.example.flowmerceproject.UserManagement.entity.Session;
 import com.example.flowmerceproject.UserManagement.entity.User;
+import com.example.flowmerceproject.UserManagement.entity.UserProfile;
 import com.example.flowmerceproject.UserManagement.entity.VerificationToken;
 import com.example.flowmerceproject.UserManagement.exception.BadRequestException;
 import com.example.flowmerceproject.UserManagement.exception.ConflictException;
@@ -19,6 +20,7 @@ import com.example.flowmerceproject.UserManagement.exception.UnauthorizedExcepti
 import com.example.flowmerceproject.UserManagement.repository.CustomerRepository;
 import com.example.flowmerceproject.UserManagement.repository.MerchantRepository;
 import com.example.flowmerceproject.UserManagement.repository.SessionRepository;
+import com.example.flowmerceproject.UserManagement.repository.UserProfileRepository;
 import com.example.flowmerceproject.UserManagement.repository.UserRepository;
 import com.example.flowmerceproject.UserManagement.repository.VerificationTokenRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +41,7 @@ public class AuthService {
     private final MerchantRepository merchantRepository;
     private final SessionRepository sessionRepository;
     private final VerificationTokenRepository tokenRepository;
+    private final UserProfileRepository userProfileRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
@@ -206,11 +209,14 @@ public class AuthService {
     public UserResponse getCurrentUser(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        UserProfile profile = userProfileRepository.findByUser_UserId(user.getUserId()).orElse(null);
         return UserResponse.builder()
                 .userId(user.getUserId())
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .phone(user.getPhone())
+                .address(profile != null ? profile.getAddress() : null)
+                .city(profile != null ? profile.getCity() : null)
                 .role(user.getRole())
                 .isActive(user.getIsActive())
                 .createdAt(user.getCreatedAt())
@@ -287,6 +293,14 @@ public class AuthService {
 
         customerRepository.save(Customer.builder().user(user).build());
 
+        if (request.getAddress() != null || request.getCity() != null) {
+            userProfileRepository.save(UserProfile.builder()
+                    .user(user)
+                    .address(request.getAddress())
+                    .city(request.getCity())
+                    .build());
+        }
+
         String activationToken = UUID.randomUUID().toString();
         tokenRepository.deleteByEmailAndType(user.getEmail(), VerificationToken.TokenType.ACTIVATION);
         tokenRepository.save(VerificationToken.builder()
@@ -323,6 +337,7 @@ public class AuthService {
     // ── HELPER ────────────────────────────────────────────────────────────────
 
     private AuthResponse buildAuthResponse(User user, String accessToken, String refreshToken) {
+        UserProfile profile = userProfileRepository.findByUser_UserId(user.getUserId()).orElse(null);
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -331,6 +346,9 @@ public class AuthService {
                         .userId(user.getUserId())
                         .fullName(user.getFullName())
                         .email(user.getEmail())
+                        .phone(user.getPhone())
+                        .address(profile != null ? profile.getAddress() : null)
+                        .city(profile != null ? profile.getCity() : null)
                         .role(user.getRole().name())
                         .createdAt(user.getCreatedAt())
                         .build())

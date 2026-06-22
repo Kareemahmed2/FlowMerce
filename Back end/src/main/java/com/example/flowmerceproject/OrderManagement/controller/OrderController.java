@@ -121,6 +121,16 @@ public class OrderController {
                 orderService.getStoreOrders(principal.getName(), storeId)));
     }
 
+    // GET /orders/store/{storeId}/customers — distinct customers who ordered from this store
+    @GetMapping("/store/{storeId}/customers")
+    @PreAuthorize("hasRole('MERCHANT')")
+    public ResponseEntity<ApiResponse<List<OrderDTOs.CustomerSummary>>> getStoreCustomers(
+            Principal principal,
+            @PathVariable Integer storeId) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                orderService.getStoreCustomers(principal.getName(), storeId)));
+    }
+
     // GET /orders/store/{storeId}/{orderId} — full order detail for merchant
     @GetMapping("/store/{storeId}/{orderId}")
     @PreAuthorize("hasRole('MERCHANT')")

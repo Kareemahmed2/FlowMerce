@@ -54,6 +54,8 @@ export interface CustomerRegisterRequest {
   email: string
   password: string
   phone?: string
+  address?: string
+  city?: string
   /** Store slug — when provided, the activation email links to /store/{slug}/activate */
   storeSlug?: string
 }
@@ -112,6 +114,9 @@ export interface AuthResponse {
     userId: number
     email: string
     fullName: string
+    phone?: string
+    address?: string
+    city?: string
     /** Backend returns role as uppercase string — matches UserRole union */
     role: UserRole
     createdAt: string
@@ -124,6 +129,8 @@ export interface UserResponse {
   email: string
   fullName: string
   phone?: string
+  address?: string
+  city?: string
   role: UserRole
   isActive: boolean
   createdAt: string

@@ -24,6 +24,9 @@ public class UserProfile {
     @Column(name = "address", columnDefinition = "TEXT")
     private String address;
 
+    @Column(name = "city", length = 100)
+    private String city;
+
     @Column(name = "profile_image", length = 255)
     private String profileImage;
 }

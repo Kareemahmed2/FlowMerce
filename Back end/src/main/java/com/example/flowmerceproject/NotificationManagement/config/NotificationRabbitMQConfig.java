@@ -25,8 +25,11 @@ public class NotificationRabbitMQConfig {
     @Bean
     public Binding orderNotificationBinding(Queue orderNotificationQueue,
                                             TopicExchange orderExchange) {
+        // "*" matches exactly one word, so it only matches 2-segment keys like
+        // "order.cancelled" — it silently drops "order.status.updated" (3 segments).
+        // "#" matches zero or more words, covering every order.* routing key.
         return BindingBuilder.bind(orderNotificationQueue)
                 .to(orderExchange)
-                .with("order.*");
+                .with("order.#");
     }
 }

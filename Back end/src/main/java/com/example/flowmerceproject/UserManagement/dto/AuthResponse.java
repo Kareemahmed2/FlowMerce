@@ -17,6 +17,9 @@ public class AuthResponse {
         /** CON-11: renamed name → fullName to match frontend AuthResponse.user.fullName */
         private String fullName;
         private String email;
+        private String phone;
+        private String address;
+        private String city;
         private String role;
         private LocalDateTime createdAt;
     }

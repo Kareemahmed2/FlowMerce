@@ -137,7 +137,9 @@ function profileFromAuthResponse(
   email: string,
   fullName: string,
   createdAt: string,
-  existing?: CustomerProfile | null
+  existing?: CustomerProfile | null,
+  /** Live values from the server (login/me response) — preferred over the local cache. */
+  serverData?: { phone?: string; address?: string; city?: string }
 ): CustomerProfile {
   const parts = fullName.trim().split(/\s+/)
   return {
@@ -145,9 +147,9 @@ function profileFromAuthResponse(
     firstName: parts[0] ?? email.split('@')[0],
     lastName: parts.slice(1).join(' '),
     email,
-    phone: existing?.phone ?? '',
-    address: existing?.address ?? '',
-    city: existing?.city ?? '',
+    phone: serverData?.phone ?? existing?.phone ?? '',
+    address: serverData?.address ?? existing?.address ?? '',
+    city: serverData?.city ?? existing?.city ?? '',
     avatar: existing?.avatar ?? null,
     createdAt,
   }
@@ -187,10 +189,11 @@ export default function CustomerAuthProvider({ children }: { children: React.Rea
     // Verify the JWT against /auth/customer/me — if the token is no longer valid
     // (revoked, password changed elsewhere, user deleted), clear the session.
     // Fire-and-forget: failure clears, success refreshes the profile name/phone.
-    // SEC-6: token is in httpOnly cookie — send empty auth header, filter reads cookie.
+    // SEC-6: token is in httpOnly cookie — no bearer token to send yet, but the
+    // role hint tells the filter which cookie (merchant vs customer) to read.
     if (savedSession) {
       authService
-        .getCustomerMe({})
+        .getCustomerMe({ 'X-Auth-Role': 'CUSTOMER' })
         .then((result) => {
           if (!result.ok) {
             // Session is invalid on the server — clear it locally.
@@ -199,14 +202,15 @@ export default function CustomerAuthProvider({ children }: { children: React.Rea
             setSessionState(null)
             return
           }
-          // Refresh the name on the cached profile from the server.
+          // Refresh the cached profile from the server (name, phone, address, city).
           if (savedProfile) {
             const refreshed = profileFromAuthResponse(
               result.data.userId,
               result.data.email,
               result.data.fullName,
               result.data.createdAt,
-              savedProfile
+              savedProfile,
+              result.data
             )
             writeProfile(refreshed)
             setCustomer(refreshed)
@@ -247,9 +251,12 @@ export default function CustomerAuthProvider({ children }: { children: React.Rea
   // ── Auth header ───────────────────────────────────────────────────────────
 
   const getAuthHeader = useCallback((): Record<string, string> => {
+    // SEC-11: X-Auth-Role tells the backend which httpOnly cookie (merchant vs
+    // customer) to fall back to when no live token is held in memory (e.g. right
+    // after a page reload) — lets both sessions coexist in the same browser.
     const s = sessionRef.current
-    if (!s || Date.now() > s.expiresAt - 30_000) return {}
-    return { Authorization: `Bearer ${s.accessToken}` }
+    if (!s || Date.now() > s.expiresAt - 30_000) return { 'X-Auth-Role': 'CUSTOMER' }
+    return { Authorization: `Bearer ${s.accessToken}`, 'X-Auth-Role': 'CUSTOMER' }
   }, [])
 
   // ── Login ──────────────────────────────────────────────────────────────────
@@ -261,7 +268,7 @@ export default function CustomerAuthProvider({ children }: { children: React.Rea
     if (!result.ok) return false
 
     const { user, accessToken, refreshToken, expiresIn } = result.data
-    const profile = profileFromAuthResponse(user.userId, user.email, user.fullName, user.createdAt, readProfile())
+    const profile = profileFromAuthResponse(user.userId, user.email, user.fullName, user.createdAt, readProfile(), user)
     const newSession: CustomerSession = {
       accessToken,
       refreshToken,
@@ -289,6 +296,8 @@ export default function CustomerAuthProvider({ children }: { children: React.Rea
         email: data.email,
         password: data.password,
         phone: data.phone,
+        address: data.address,
+        city: data.city,
         storeSlug,   // tells backend to link activation email to /store/{slug}/activate
       })
       setIsLoading(false)

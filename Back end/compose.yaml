@@ -5,7 +5,6 @@
 #   docker compose up --build
 #
 # Services:
-#   postgres  :5432   — relational DB (named volume: pgdata)
 #   rabbitmq  :5672   — async notifications
 #   redis     :6379   — stock cache + rate limits
 #   minio     :9000   — object storage for images, PDFs, attachments
@@ -13,8 +12,9 @@
 #   backend   :8080   — Spring Boot /api/v1
 #   frontend  :3000   — Next.js storefront + merchant dashboard
 #
-# DOC-3: DB host is now the service name "postgres", not localhost.
-# DOC-4: pgdata volume prevents data loss on compose down.
+# DB-1: No local postgres service — the backend always talks to the shared
+# Supabase Postgres instance (same default as application.properties).
+# Set DB_URL/DB_USERNAME/DB_PASSWORD in .env to point elsewhere.
 # DOC-5: uploads volume persists merchant-uploaded images.
 # DOC-6: healthchecks + depends_on ensure correct startup order.
 # DOC-7: pinned image versions instead of :latest.
@@ -22,22 +22,6 @@
 services:
 
   # ── Infrastructure ───────────────────────────────────────────────────────────
-
-  postgres:
-    image: 'postgres:16-alpine'
-    environment:
-      POSTGRES_DB:       mydatabase
-      POSTGRES_USER:     myuser
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
-    ports:
-      - '5432:5432'
-    volumes:
-      - pgdata:/var/lib/postgresql/data        # DOC-4: persist DB data
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U myuser -d mydatabase']
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   rabbitmq:
     image: 'rabbitmq:3.13-management-alpine'
@@ -92,10 +76,13 @@ services:
     ports:
       - '8080:8080'
     environment:
-      # DOC-3: use service names, not localhost
-      DB_URL:          jdbc:postgresql://postgres:5432/mydatabase
-      DB_USERNAME:     myuser
-      DB_PASSWORD:     ${DB_PASSWORD:-secret}
+      # DB-1: defaults to the shared Supabase instance via the Supavisor session
+      # pooler — same fallback as application.properties. The direct
+      # db.<ref>.supabase.co host is IPv6-only, which Docker can't route to.
+      # Override via .env for a different DB.
+      DB_URL:          ${DB_URL:-jdbc:postgresql://aws-0-eu-west-1.pooler.supabase.com:5432/postgres}
+      DB_USERNAME:     ${DB_USERNAME:-postgres.jyzpcvosismwilptumpp}
+      DB_PASSWORD:     ${DB_PASSWORD}
       JWT_SECRET:      ${JWT_SECRET}
       MAIL_PASSWORD:   ${MAIL_PASSWORD}
       MAIL_USERNAME:   ${MAIL_USERNAME:-ka.mahrous@gmail.com}
@@ -116,11 +103,20 @@ services:
       ADMIN_EMAIL:     ${ADMIN_EMAIL:-admin@flowmerce.com}
       ADMIN_PASSWORD:  ${ADMIN_PASSWORD:-ChangeMe!2026}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-default}
+      # Social OAuth2 — must be forwarded explicitly; compose does not
+      # auto-inject .env keys into the container, only ones listed here.
+      # Redirect URIs fall back to the same localhost default as
+      # application.properties — an empty string here would override that
+      # default with a blank value instead of falling back to it.
+      GOOGLE_CLIENT_ID:      ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET:  ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REDIRECT_URI:   ${GOOGLE_REDIRECT_URI:-http://localhost:8080/api/v1/auth/social/google/callback}
+      FACEBOOK_APP_ID:       ${FACEBOOK_APP_ID:-}
+      FACEBOOK_APP_SECRET:   ${FACEBOOK_APP_SECRET:-}
+      FACEBOOK_REDIRECT_URI: ${FACEBOOK_REDIRECT_URI:-http://localhost:8080/api/v1/auth/social/facebook/callback}
     volumes:
       - uploads:/app/uploads                   # DOC-5: persist uploaded images
     depends_on:
-      postgres:
-        condition: service_healthy
       rabbitmq:
         condition: service_healthy
       redis:
@@ -153,6 +149,5 @@ services:
 
 # ── Volumes ───────────────────────────────────────────────────────────────────
 volumes:
-  pgdata:      # DOC-4: postgres data
   uploads:     # DOC-5: local uploads fallback
   minio_data:  # MinIO object storage data
