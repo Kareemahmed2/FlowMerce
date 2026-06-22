@@ -2,12 +2,22 @@
 
 import Link from 'next/link'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useStore } from '@/components/store/StoreProvider'
 import { useCustomerAuth } from '@/components/store/CustomerAuthProvider'
 import { textOnBg } from '@/components/store/store-types'
 
+// useSearchParams() requires a Suspense boundary for the build's static
+// prerender pass — the actual content is in StoreLoginPageContent below.
 export default function StoreLoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <StoreLoginPageContent />
+    </Suspense>
+  )
+}
+
+function StoreLoginPageContent() {
   const { slug } = useParams<{ slug: string }>()
   const router = useRouter()
   const searchParams = useSearchParams()

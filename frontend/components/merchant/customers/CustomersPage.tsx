@@ -1,10 +1,10 @@
 'use client'
 
-import { buildCustomersFromOrders } from '@/lib/local-store/customers-from-orders'
+import { buildCustomersFromSummaries } from '@/lib/local-store/customers-from-summaries'
 import { useMerchantAuth } from '@/store/auth-store'
 import { orderService } from '@/services/order.service'
 import { useEffect, useMemo, useState } from 'react'
-import type { OrderRow } from '../orders/orders-data'
+import type { MerchantCustomerSummary } from '@/types/order.types'
 import {
   SEGMENT_CONFIG,
   STATUS_CONFIG,
@@ -115,34 +115,19 @@ function CustomerDrawer({
 
 export function CustomersPage() {
   const auth = useMerchantAuth()
-  const [liveOrders, setLiveOrders] = useState<OrderRow[] | null>(null)
+  const [summaries, setSummaries] = useState<MerchantCustomerSummary[] | null>(null)
 
   useEffect(() => {
     if (!auth.storeId) return
     let cancelled = false
-    orderService.getStoreOrders(auth.storeId, auth.getAuthHeader()).then((r) => {
+    orderService.getStoreCustomers(auth.storeId, auth.getAuthHeader()).then((r) => {
       if (cancelled || !r.ok) return
-      import('@/types/order.types').then(({ }) => {
-        const rows = (r.data as import('@/types/order.types').MerchantOrderSummary[]).map((o) => ({
-          id: String(o.orderId),
-          customer: o.storeName ?? 'Customer',
-          email: '',
-          product: '',
-          items: o.itemCount ?? 0,
-          amount: o.total,
-          status: (o.status?.toLowerCase() ?? 'pending') as OrderRow['status'],
-          payment: 'cod' as OrderRow['payment'],
-          date: o.orderDate ? new Date(o.orderDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-          address: '',
-        }))
-        if (!cancelled) setLiveOrders(rows)
-      })
+      setSummaries(r.data)
     })
     return () => { cancelled = true }
   }, [auth.storeId, auth.getAuthHeader])
 
-  const orders = liveOrders ?? []
-  const customers = useMemo(() => buildCustomersFromOrders(orders), [orders])
+  const customers = useMemo(() => buildCustomersFromSummaries(summaries ?? []), [summaries])
 
   const [search, setSearch] = useState('')
   const [segFilter, setSegFilter] = useState<(typeof SEGMENT_FILTERS)[number]>('all')
@@ -289,7 +274,7 @@ export function CustomersPage() {
               <tr>
                 <td colSpan={7} style={C.emptyRow}>
                   {customers.length === 0
-                    ? 'No customers yet — they will appear here from orders (localStorage in dev, backend when connected).'
+                    ? 'No customers yet — they will appear here once your store receives its first order.'
                     : 'No customers match your filters.'}
                 </td>
               </tr>

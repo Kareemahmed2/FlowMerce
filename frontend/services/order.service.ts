@@ -9,6 +9,7 @@
  *   POST   /orders/{id}/reorder                → getReorderItems()    (BUYER)
  *   GET    /orders/store/{storeId}             → getStoreOrders()     (MERCHANT)
  *   GET    /orders/store/{storeId}/{orderId}   → getStoreOrderDetails() (MERCHANT)
+ *   GET    /orders/store/{storeId}/customers   → getStoreCustomers()  (MERCHANT)
  *   PUT    /orders/{orderId}/status            → updateOrderStatus()  (MERCHANT)
  */
 
@@ -17,6 +18,7 @@ import { buildPaginationMeta } from '@/lib/pagination'
 import type {
   CustomerOrder,
   CustomerOrderStatus,
+  MerchantCustomerSummary,
   MerchantOrderResponse,
   MerchantOrderSummary,
   OrderConfirmationResponse,
@@ -226,6 +228,11 @@ export const orderService = {
   /** GET /orders/store/{storeId}/{orderId} */
   async getStoreOrderDetails(storeId: number, orderId: number, authHeaders?: Record<string, string>): Promise<ApiResult<MerchantOrderResponse>> {
     return httpClient.get<MerchantOrderResponse>(`/orders/store/${storeId}/${orderId}`, authHeaders)
+  },
+
+  /** GET /orders/store/{storeId}/customers */
+  async getStoreCustomers(storeId: number, authHeaders?: Record<string, string>): Promise<ApiResult<MerchantCustomerSummary[]>> {
+    return httpClient.get<MerchantCustomerSummary[]>(`/orders/store/${storeId}/customers`, authHeaders)
   },
 
   /** PUT /orders/{orderId}/status */

@@ -73,16 +73,19 @@ public class StoreService {
         return toResponse(store);
     }
 
+    @Transactional(readOnly = true)
     public List<StoreDTOs.StoreResponse> getMyStores(String email) {
         Merchant merchant = getMerchantByEmail(email);
         return storeRepository.findByMerchantIdWithMerchant(merchant.getMerchantId())
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public StoreDTOs.StoreResponse getStoreById(String email, Integer storeId) {
         return toResponse(getStoreAndVerifyOwner(email, storeId));
     }
 
+    @Transactional(readOnly = true)
     public StoreDTOs.StoreResponse getBySlug(String slug) {
         Store store = storeRepository.findByStoreUrl(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Store not found: " + slug));
@@ -156,6 +159,7 @@ public class StoreService {
         return "Store deleted successfully.";
     }
 
+    @Transactional(readOnly = true)
     public StoreSettingsDTOs.SettingsResponse getSettings(String email, Integer storeId) {
         getStoreAndVerifyOwner(email, storeId);
         StoreSettings settings = settingsRepository.findByStore_StoreId(storeId)
@@ -182,6 +186,7 @@ public class StoreService {
         return toSettingsResponse(settings);
     }
 
+    @Transactional(readOnly = true)
     public List<StoreDTOs.StoreResponse> getAllStores() {
         return storeRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
     }
@@ -248,11 +253,14 @@ public class StoreService {
     }
 
     public StoreDTOs.StoreResponse toResponse(Store store) {
-        // CON-12: include brandName from merchant so clients don't need a
-        // separate BrandUpdateRequest round-trip to show the brand name.
-        String brandName = store.getMerchant() != null
-                ? store.getMerchant().getBusinessName()
-                : store.getStoreName();
+        // CON-12: brandName mirrors the store's own name — every storefront-facing
+        // page (hero, header, footer, login/signup) treats brandName as "what the
+        // customer sees", which is the store name, not the merchant's personal/OAuth
+        // account name. merchant.getBusinessName() used to back this and was wrong:
+        // it's set once at account creation (OAuth providers fill it with the
+        // merchant's own profile name) and nothing can ever update it afterwards,
+        // so a merchant's chosen store name was permanently shadowed.
+        String brandName = store.getStoreName();
         // CON-6: enrich with merchant info for admin panel
         String merchantName = store.getMerchant() != null && store.getMerchant().getUser() != null
                 ? store.getMerchant().getUser().getFullName()

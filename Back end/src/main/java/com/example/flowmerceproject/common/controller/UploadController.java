@@ -114,10 +114,20 @@ public class UploadController {
             String contentType = Files.probeContentType(filePath);
             if (contentType == null) contentType = "application/octet-stream";
 
-            // SEC-11: serve as attachment, not inline, so even if a rogue SVG/HTML
-            // slipped through it can't execute as a document in the browser.
+            // SEC-11: only the raster image types validated at upload time (see upload()
+            // above) get served inline so <img> tags can render them — anything else
+            // (the .bin fallback for an unrecognized type) is forced to download instead,
+            // so a rogue SVG/HTML that somehow slipped through can't execute as a document.
+            boolean isSafeRasterImage = contentType.equals("image/jpeg")
+                    || contentType.equals("image/png")
+                    || contentType.equals("image/gif")
+                    || contentType.equals("image/webp")
+                    || contentType.equals("image/avif");
+            String disposition = (isSafeRasterImage ? "inline" : "attachment")
+                    + "; filename=\"" + filename + "\"";
+
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, disposition)
                     .header(HttpHeaders.CACHE_CONTROL, "public, max-age=31536000")
                     .header("X-Content-Type-Options", "nosniff")
                     .contentType(MediaType.parseMediaType(contentType))

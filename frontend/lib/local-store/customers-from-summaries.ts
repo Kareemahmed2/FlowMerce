@@ -1,9 +1,10 @@
 /**
- * Dev / fallback: derive customer metrics from `flowmerce_orders_v1`.
- * Replace with GET /merchants/customers (or similar) when the backend is ready.
+ * Maps backend-aggregated customer summaries (GET /orders/store/{storeId}/customers)
+ * into the dashboard's CustomerRow presentation shape — segment/status/city are
+ * derived here since the backend only returns raw facts (counts, totals, dates).
  */
 
-import type { OrderRow } from '@/components/merchant/orders/orders-data'
+import type { MerchantCustomerSummary } from '@/types/order.types'
 import type {
   CustomerRow,
   CustomerSegment,
@@ -45,8 +46,8 @@ function daysBetween(a: number, b: number): number {
   return Math.floor(Math.abs(a - b) / (24 * 60 * 60 * 1000))
 }
 
-function cityFromAddress(address: string): string {
-  const a = address.trim()
+function cityFromAddress(address: string | null): string {
+  const a = (address ?? '').trim()
   if (!a) return '—'
   const lower = a.toLowerCase()
   for (const c of EGYPT_CITIES) {
@@ -55,20 +56,6 @@ function cityFromAddress(address: string): string {
   const parts = a.split(',').map((p) => p.trim()).filter(Boolean)
   if (parts.length) return parts[parts.length - 1]!
   return '—'
-}
-
-function stableCustomerId(email: string): string {
-  const e = email.toLowerCase().trim()
-  let h = 2166136261
-  for (let i = 0; i < e.length; i++) {
-    h ^= e.charCodeAt(i)
-    h = Math.imul(h, 16777619)
-  }
-  return `cust_${(h >>> 0).toString(16)}`
-}
-
-function countsTowardRevenue(o: OrderRow): boolean {
-  return o.status !== 'cancelled' && o.status !== 'refunded'
 }
 
 function deriveSegmentAndStatus(
@@ -109,60 +96,33 @@ function deriveSegmentAndStatus(
   return { segment, status }
 }
 
-/**
- * Aggregate orders by customer email into {@link CustomerRow} rows.
- */
-export function buildCustomersFromOrders(orders: OrderRow[], nowMs: number = Date.now()): CustomerRow[] {
-  const byEmail = new Map<string, OrderRow[]>()
-  for (const o of orders) {
-    const key = o.email.toLowerCase().trim()
-    if (!key) continue
-    const list = byEmail.get(key) ?? []
-    list.push(o)
-    byEmail.set(key, list)
-  }
-
-  const rows: CustomerRow[] = []
-
-  for (const [, list] of byEmail) {
-    const email = list[0]!.email
-    const times = list.map((o) => parseTime(o.date)).filter((t) => Number.isFinite(t))
-    const minT = times.length ? Math.min(...times) : NaN
-    const maxT = times.length ? Math.max(...times) : NaN
-
-    const sortedByDate = [...list].sort((a, b) => parseTime(b.date) - parseTime(a.date))
-    const name = sortedByDate[0]?.customer ?? list[0]!.customer
-
-    const orderCount = list.length
-    const totalSpent = list.filter(countsTowardRevenue).reduce((s, o) => s + o.amount, 0)
-
-    const lastOrder =
-      Number.isFinite(maxT) ? formatYmd(maxT) : '—'
-    const joinDate = Number.isFinite(minT) ? formatYmd(minT) : '—'
+export function buildCustomersFromSummaries(
+  summaries: MerchantCustomerSummary[],
+  nowMs: number = Date.now()
+): CustomerRow[] {
+  return summaries.map((s) => {
+    const lastT = parseTime(s.lastOrderDate)
+    const joinT = parseTime(s.joinDate)
 
     const { segment, status } = deriveSegmentAndStatus(
-      orderCount,
-      totalSpent,
-      Number.isFinite(maxT) ? maxT : undefined,
+      s.ordersCount,
+      s.totalSpent,
+      Number.isFinite(lastT) ? lastT : undefined,
       nowMs
     )
 
-    const city = cityFromAddress(sortedByDate[0]?.address ?? list[0]!.address)
-
-    rows.push({
-      id: stableCustomerId(email),
-      name,
-      email,
-      phone: '—',
-      city,
-      orders: orderCount,
-      totalSpent,
-      lastOrder,
-      joinDate,
+    return {
+      id: String(s.customerId),
+      name: s.name,
+      email: s.email,
+      phone: s.phone ?? '—',
+      city: cityFromAddress(s.lastShippingAddress),
+      orders: s.ordersCount,
+      totalSpent: s.totalSpent,
+      lastOrder: Number.isFinite(lastT) ? formatYmd(lastT) : '—',
+      joinDate: Number.isFinite(joinT) ? formatYmd(joinT) : '—',
       status,
       segment,
-    })
-  }
-
-  return rows
+    }
+  })
 }
