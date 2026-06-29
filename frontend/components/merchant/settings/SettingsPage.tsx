@@ -13,8 +13,7 @@ import {
   loadMerchantSettings,
   saveMerchantSettings,
 } from '@/lib/local-store/settings-storage'
-import { patchPersistedStore } from '@/lib/local-store/store'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { SETTINGS_SECTIONS, type SettingsSectionId } from './settings-constants'
 import { S } from './settings-styles'
 import { useMerchantAuth } from '@/store/auth-store'
@@ -24,77 +23,8 @@ import { userService } from '@/services/user.service'
 import { uploadService } from '@/services/upload.service'
 import { PAYMENT_METHOD_CONFIG, toBackendPaymentMethod } from '@/types/payment.types'
 import type { BackendPaymentMethod } from '@/types/payment.types'
-
-function Field({
-  label,
-  hint,
-  error,
-  children,
-}: {
-  label: string
-  hint?: string
-  error?: string
-  children: ReactNode
-}) {
-  return (
-    <div style={S.field}>
-      <label style={S.label}>{label}</label>
-      {children}
-      {hint && !error ? <p style={S.hint}>{hint}</p> : null}
-      {error ? <p style={S.errorMsg}>{error}</p> : null}
-    </div>
-  )
-}
-
-function Toggle({
-  value,
-  onChange,
-  label,
-  sub,
-}: {
-  value: boolean
-  onChange: (v: boolean) => void
-  label: string
-  sub?: string
-}) {
-  return (
-    <div style={S.toggleRow}>
-      <div style={{ flex: 1 }}>
-        <p style={S.toggleLabel}>{label}</p>
-        {sub ? <p style={S.toggleSub}>{sub}</p> : null}
-      </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={value}
-        style={{ ...S.toggleBtn, ...(value ? S.toggleBtnOn : S.toggleBtnOff) }}
-        onClick={() => onChange(!value)}
-      >
-        <span style={{ ...S.toggleThumb, ...(value ? S.toggleThumbOn : {}) }} />
-      </button>
-    </div>
-  )
-}
-
-function SectionCard({
-  title,
-  sub,
-  children,
-}: {
-  title: string
-  sub?: string
-  children: ReactNode
-}) {
-  return (
-    <div style={S.sectionCard}>
-      <div style={S.sectionCardHeader}>
-        <p style={S.sectionCardTitle}>{title}</p>
-        {sub ? <p style={S.sectionCardSub}>{sub}</p> : null}
-      </div>
-      <div style={S.sectionCardBody}>{children}</div>
-    </div>
-  )
-}
+import { IntegrationsSection } from './IntegrationsSection'
+import { Field, SectionCard, Toggle } from './settings-shared'
 
 function StoreInfoSection({
   data,
@@ -716,11 +646,13 @@ function SecuritySection({
 
 function DangerSection({
   urlSlug,
+  isPaused,
   onPause,
   onExport,
   onDelete,
 }: {
   urlSlug: string
+  isPaused: boolean
   onPause: () => void
   onExport: () => void
   onDelete: () => void
@@ -738,13 +670,15 @@ function DangerSection({
 
       <div style={S.dangerItem}>
         <div>
-          <p style={S.dangerItemTitle}>Pause Store</p>
+          <p style={S.dangerItemTitle}>{isPaused ? 'Unpause Store' : 'Pause Store'}</p>
           <p style={S.dangerItemDesc}>
-            Temporarily hide your store from customers. Orders in progress will not be affected.
+            {isPaused
+              ? 'Your store is currently paused and hidden from customers. Unpause to make it visible again.'
+              : 'Temporarily hide your store from customers. Orders in progress will not be affected.'}
           </p>
         </div>
         <button type="button" style={S.warnBtn} onClick={onPause}>
-          Pause Store
+          {isPaused ? 'Unpause Store' : 'Pause Store'}
         </button>
       </div>
 
@@ -803,8 +737,11 @@ export function SettingsPage() {
   const [savedBanner, setSavedBanner] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
-  // The merchant's current store (loaded from backend) — used to wire updates
-  const [storeId, setStoreId] = useState<number | null>(null)
+  // The merchant's current store — sourced from auth context (populated by
+  // MerchantBackendSync at the dashboard layout level), same as every other
+  // dashboard page. Avoids a second, racier fetch just for this page.
+  const storeId = auth.storeId
+  const [isPaused, setIsPaused] = useState(false)
 
   useEffect(() => {
     const s = loadMerchantSettings()
@@ -832,7 +769,7 @@ export function SettingsPage() {
 
       if (storesR.ok && storesR.data.length > 0) {
         const first = storesR.data[0]
-        setStoreId(first.storeId)
+        setIsPaused(first.status === 'PAUSED')
         // Sync store info into the form (without overwriting user edits if they've already typed).
         setSettings((prev) => {
           if (!prev) return prev
@@ -930,10 +867,20 @@ export function SettingsPage() {
   }
 
   const handlePause = async () => {
-    patchPersistedStore({ published: false })
-    if (storeId !== null) {
-      await storeService.unpublishStore(storeId, auth.getAuthHeader())
+    setSaveError('')
+    if (storeId === null) {
+      setSaveError('Store not loaded yet — please wait a moment and try again.')
+      return
     }
+    const result = isPaused
+      ? await storeService.publishStore(storeId, auth.getAuthHeader())
+      : await storeService.unpublishStore(storeId, auth.getAuthHeader())
+
+    if (!result.ok) {
+      setSaveError(result.error)
+      return
+    }
+    setIsPaused((prev) => !prev)
     setSavedBanner(true)
     setTimeout(() => setSavedBanner(false), 2500)
   }
@@ -997,6 +944,9 @@ export function SettingsPage() {
           {activeSection === 'shipping' ? (
             <ShippingSection data={settings.shipping} onChange={update('shipping')} />
           ) : null}
+          {activeSection === 'integrations' ? (
+            <IntegrationsSection storeId={storeId} />
+          ) : null}
           {activeSection === 'notifications' ? (
             <NotificationsSection data={settings.notifications} onChange={update('notifications')} />
           ) : null}
@@ -1014,6 +964,7 @@ export function SettingsPage() {
           {activeSection === 'danger' ? (
             <DangerSection
               urlSlug={settings.store.url}
+              isPaused={isPaused}
               onPause={handlePause}
               onExport={handleExport}
               onDelete={handleDelete}
@@ -1022,7 +973,7 @@ export function SettingsPage() {
         </div>
       </div>
 
-      {!isDanger ? (
+      {!isDanger || savedBanner || saveError ? (
         <div style={S.saveBar}>
           {savedBanner ? <span style={S.savedMsg}>✓ Changes saved</span> : null}
           {saveError ? (
@@ -1030,22 +981,26 @@ export function SettingsPage() {
               {saveError}
             </span>
           ) : null}
-          <button
-            type="button"
-            style={S.cancelBtn}
-            onClick={handleReset}
-            disabled={!isDirty || isSaving}
-          >
-            Reset
-          </button>
-          <button
-            type="button"
-            style={{ ...S.saveBtn, opacity: isSaving ? 0.6 : 1 }}
-            onClick={handleSave}
-            disabled={(!isDirty && storeId === null) || isSaving}
-          >
-            {isSaving ? 'Saving…' : 'Save Changes'}
-          </button>
+          {!isDanger ? (
+            <>
+              <button
+                type="button"
+                style={S.cancelBtn}
+                onClick={handleReset}
+                disabled={!isDirty || isSaving}
+              >
+                Reset
+              </button>
+              <button
+                type="button"
+                style={{ ...S.saveBtn, opacity: isSaving ? 0.6 : 1 }}
+                onClick={handleSave}
+                disabled={(!isDirty && storeId === null) || isSaving}
+              >
+                {isSaving ? 'Saving…' : 'Save Changes'}
+              </button>
+            </>
+          ) : null}
         </div>
       ) : null}
     </div>

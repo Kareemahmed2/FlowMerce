@@ -192,7 +192,12 @@ export const orderService = {
       // already has items.
       items: request.items,
     }
-    const raw = await httpClient.post<OrderPlaceResponse>('/orders/place', wireBody, authHeaders)
+    // Placing an order runs several sequential steps server-side (stock
+    // validation/reservation, order + invoice creation, payment initiation) —
+    // the default 12s client timeout is too tight for this one endpoint, and a
+    // false client-side timeout while the order still completes server-side is
+    // worse than waiting a few extra seconds.
+    const raw = await httpClient.post<OrderPlaceResponse>('/orders/place', wireBody, authHeaders, 30_000)
     if (!raw.ok) return raw
     return {
       ok: true,

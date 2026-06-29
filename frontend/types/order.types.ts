@@ -232,6 +232,7 @@ export interface MerchantOrderSummary {
   itemCount: number
   orderDate: string
   storeName: string
+  customerName?: string
 }
 
 /** Returned by GET /orders/store/{storeId}/customers — one row per distinct customer. */

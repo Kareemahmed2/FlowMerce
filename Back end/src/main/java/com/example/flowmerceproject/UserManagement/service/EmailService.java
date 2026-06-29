@@ -1,5 +1,6 @@
 package com.example.flowmerceproject.UserManagement.service;
 
+import com.example.flowmerceproject.NotificationManagement.email.BaseEmailTemplate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,6 +58,11 @@ public class EmailService {
                 <p>If you did not create this account, please ignore this email.</p>
                 """.formatted(activationLink);
         sendHtmlEmail(toEmail, subject, body);
+    }
+
+    @Async
+    public void sendTransactionalEmail(String toEmail, BaseEmailTemplate template) {
+        sendHtmlEmail(toEmail, template.getSubject(), template.render());
     }
 
     @Async

@@ -28,6 +28,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final SessionRepository sessionRepository;
+    private final SessionCacheService sessionCacheService;
     private final PasswordEncoder passwordEncoder;
     private final MerchantRepository merchantRepository;
     private final CustomerRepository customerRepository;
@@ -72,6 +73,7 @@ public class UserService {
         userRepository.save(user);
 
         // revoke all sessions after password change
+        sessionCacheService.evictAllForUser(user.getUserId());
         sessionRepository.revokeAllByUserId(user.getUserId());
 
         return "Password changed successfully. Please log in again.";
@@ -80,6 +82,7 @@ public class UserService {
     @Transactional
     public String deleteMyAccount(String email) {
         User user = findByEmailOrThrow(email);
+        sessionCacheService.evictAllForUser(user.getUserId());
         sessionRepository.revokeAllByUserId(user.getUserId());
         userRepository.delete(user);
         return "Account deleted successfully.";
@@ -90,12 +93,22 @@ public class UserService {
     }
 
     @Transactional
+    public UserResponse activateUser(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+        user.setIsActive(true);
+        userRepository.save(user);
+        return toResponse(user);
+    }
+
+    @Transactional
     public String deleteUserById(Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         // Delete in dependency order to avoid FK constraint violations.
         // 1. Sessions (auth tokens)
+        sessionCacheService.evictAllForUser(userId);
         sessionRepository.revokeAllByUserId(userId);
         sessionRepository.deleteByUser_UserId(userId);
 

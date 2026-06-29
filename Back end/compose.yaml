@@ -1,7 +1,7 @@
 # Full FlowMerce compose — infra + backend + frontend.
 #
 # Quick start (development):
-#   cp .env.example .env && vi .env   # fill DB_PASSWORD, JWT_SECRET, MAIL_PASSWORD
+#   cp .env.example .env && vi .env   # fill DB_PASSWORD, JWT_SECRET, MAIL_PASSWORD, INTEGRATION_ENCRYPTION_KEY
 #   docker compose up --build
 #
 # Services:
@@ -85,6 +85,7 @@ services:
       DB_PASSWORD:     ${DB_PASSWORD}
       JWT_SECRET:      ${JWT_SECRET}
       MAIL_PASSWORD:   ${MAIL_PASSWORD}
+      INTEGRATION_ENCRYPTION_KEY: ${INTEGRATION_ENCRYPTION_KEY}
       MAIL_USERNAME:   ${MAIL_USERNAME:-ka.mahrous@gmail.com}
       REDIS_HOST:      redis
       REDIS_PORT:      6379

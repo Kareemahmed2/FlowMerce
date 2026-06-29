@@ -50,7 +50,10 @@ public class StorefrontCustomizationService {
     @Value("${storefront.cache.ttl-minutes:30}")
     private long ttlMinutes;
 
-    private static final String CACHE_KEY_PREFIX = "flowmerce:sf:";
+    private static final String CACHE_KEY_PREFIX        = "flowmerce:sf:";
+    private static final String DESIGN_CACHE_KEY_PREFIX = "flowmerce:sf:design:";
+    private static final String OWNER_CACHE_KEY_PREFIX  = "flowmerce:own:";
+    private static final Duration OWNER_CACHE_TTL       = Duration.ofSeconds(60);
 
     // ── INIT ──────────────────────────────────────────────────────────────────
 
@@ -125,61 +128,122 @@ public class StorefrontCustomizationService {
     @Transactional(readOnly = true)
     public DesignResponse getDesign(String email, Integer storeId) {
         getStoreAndVerifyOwner(email, storeId);
+        String cacheKey = DESIGN_CACHE_KEY_PREFIX + storeId;
+        Optional<DesignResponse> cached = getDesignFromCache(cacheKey);
+        if (cached.isPresent()) return cached.get();
+
         StorefrontTemplate template = requireTemplate(storeId);
         ThemeTemplate theme = template.getTheme();
-        if (theme == null) {
-            return DesignResponse.builder().build();
-        }
-        return toDesignResponse(theme);
+        if (theme == null) return DesignResponse.builder().build();
+        DesignResponse response = toDesignResponse(theme);
+        putDesignInCache(cacheKey, response);
+        return response;
     }
 
     @Transactional
     public DesignResponse saveDesign(String email, Integer storeId, JsonNode data) {
+        // FAST PATH: ownership + design both cached → zero DB queries.
+        // Only valid for existing themes (themeId must be non-null in the design cache).
+        if (isOwnershipCached(email, storeId)) {
+            String designKey = DESIGN_CACHE_KEY_PREFIX + storeId;
+            Optional<DesignResponse> cachedDesign = getDesignFromCache(designKey);
+            if (cachedDesign.isPresent() && cachedDesign.get().getThemeId() != null) {
+                DesignResponse response = mergeDesignResponse(cachedDesign.get(), data);
+                putDesignInCache(designKey, response);
+                evictCache(storeId);
+                writeBehindService.persistThemeUpdate(cachedDesign.get().getThemeId(), buildUpdateThemeRequest(data));
+                return response;
+            }
+        }
+
+        // SLOW PATH: cache miss → full DB verification.
         Store store = getStoreAndVerifyOwner(email, storeId);
         StorefrontTemplate template = requireTemplate(storeId);
         ThemeTemplate theme = template.getTheme();
 
+        DesignResponse response;
+
         if (theme == null) {
-            theme = new ThemeTemplate();
-            template.setTheme(theme);
+            // First-time theme creation: must persist synchronously to establish the record.
+            ThemeTemplate newTheme = ThemeTemplate.builder()
+                    .background(textOf(data, "background"))
+                    .header(textOf(data, "header"))
+                    .footer(textOf(data, "footer"))
+                    .accent(textOf(data, "accent"))
+                    .text(textOf(data, "text"))
+                    .card(textOf(data, "card"))
+                    .build();
+            template.setTheme(newTheme);
+            themeRepository.save(newTheme);
+            response = toDesignResponse(newTheme);
+        } else {
+            // Existing theme: build merged response in-memory without touching the entity
+            // so Hibernate dirty-check sees no changes and flushes nothing.
+            response = mergeDesignResponse(toDesignResponse(theme), data);
+            writeBehindService.persistThemeUpdate(theme.getThemeId(), buildUpdateThemeRequest(data));
         }
 
-        if (data.has("background")) theme.setBackground(data.get("background").asText());
-        if (data.has("header"))     theme.setHeader(data.get("header").asText());
-        if (data.has("footer"))     theme.setFooter(data.get("footer").asText());
-        if (data.has("accent"))     theme.setAccent(data.get("accent").asText());
-        if (data.has("text"))       theme.setText(data.get("text").asText());
-        if (data.has("card"))       theme.setCard(data.get("card").asText());
-
-        themeRepository.save(theme);
+        putDesignInCache(DESIGN_CACHE_KEY_PREFIX + storeId, response);
         evictCache(store.getStoreId());
-        return toDesignResponse(theme);
+        return response;
     }
 
-    @Transactional  // INT-39: was incorrectly readOnly=true; this method writes (evicts cache + persists theme).
+    @Transactional
     public ThemeResponse updateTheme(String email, Integer storeId, UpdateThemeRequest req) {
+        // FAST PATH: ownership + design both cached → zero DB queries.
+        if (isOwnershipCached(email, storeId)) {
+            String designKey = DESIGN_CACHE_KEY_PREFIX + storeId;
+            Optional<DesignResponse> cachedDesign = getDesignFromCache(designKey);
+            if (cachedDesign.isPresent() && cachedDesign.get().getThemeId() != null) {
+                DesignResponse existing = cachedDesign.get();
+                String background = req.getBackground() != null ? req.getBackground() : existing.getBackground();
+                String header     = req.getHeader()     != null ? req.getHeader()     : existing.getHeader();
+                String footer     = req.getFooter()     != null ? req.getFooter()     : existing.getFooter();
+                String accent     = req.getAccent()     != null ? req.getAccent()     : existing.getAccent();
+                String text       = req.getText()       != null ? req.getText()       : existing.getText();
+                String card       = req.getCard()       != null ? req.getCard()       : existing.getCard();
+                LocalDateTime now = LocalDateTime.now();
+                putDesignInCache(designKey, DesignResponse.builder()
+                        .themeId(existing.getThemeId())
+                        .background(background).header(header).footer(footer)
+                        .accent(accent).text(text).card(card).updatedAt(now).build());
+                evictCache(storeId);
+                writeBehindService.persistThemeUpdate(existing.getThemeId(), req);
+                return ThemeResponse.builder()
+                        .themeId(existing.getThemeId())
+                        .background(background).header(header).footer(footer)
+                        .accent(accent).text(text).card(card).updatedAt(now).build();
+            }
+        }
+
+        // SLOW PATH: cache miss → full DB verification.
         Store store = getStoreAndVerifyOwner(email, storeId);
         StorefrontTemplate template = requireTemplate(storeId);
+        ThemeTemplate theme = template.getTheme();
+        if (theme == null) {
+            throw new ResourceNotFoundException(
+                    "No theme configured for this storefront. Call saveDesign first.");
+        }
 
-        String cacheKey = CACHE_KEY_PREFIX + store.getStoreId();
-        StorefrontTemplateResponse cached = getFromCache(cacheKey).orElseGet(() -> toResponse(template));
+        String background = req.getBackground() != null ? req.getBackground() : theme.getBackground();
+        String header     = req.getHeader()     != null ? req.getHeader()     : theme.getHeader();
+        String footer     = req.getFooter()     != null ? req.getFooter()     : theme.getFooter();
+        String accent     = req.getAccent()     != null ? req.getAccent()     : theme.getAccent();
+        String text       = req.getText()       != null ? req.getText()       : theme.getText();
+        String card       = req.getCard()       != null ? req.getCard()       : theme.getCard();
+        LocalDateTime now = LocalDateTime.now();
 
-        ThemeResponse currentTheme = cached.getTheme();
-        ThemeResponse updatedTheme = ThemeResponse.builder()
-                .themeId(currentTheme.getThemeId())
-                .background(req.getBackground() != null ? req.getBackground() : currentTheme.getBackground())
-                .header(req.getHeader()         != null ? req.getHeader()     : currentTheme.getHeader())
-                .footer(req.getFooter()         != null ? req.getFooter()     : currentTheme.getFooter())
-                .accent(req.getAccent()         != null ? req.getAccent()     : currentTheme.getAccent())
-                .text(req.getText()             != null ? req.getText()       : currentTheme.getText())
-                .card(req.getCard()             != null ? req.getCard()       : currentTheme.getCard())
-                .updatedAt(LocalDateTime.now())
-                .build();
-
-        // Evict instead of write-behind so next read assembles a fresh document
+        putDesignInCache(DESIGN_CACHE_KEY_PREFIX + store.getStoreId(), DesignResponse.builder()
+                .themeId(theme.getThemeId())
+                .background(background).header(header).footer(footer)
+                .accent(accent).text(text).card(card).updatedAt(now).build());
         evictCache(store.getStoreId());
-        writeBehindService.persistThemeUpdate(currentTheme.getThemeId(), req);
-        return updatedTheme;
+        writeBehindService.persistThemeUpdate(theme.getThemeId(), req);
+
+        return ThemeResponse.builder()
+                .themeId(theme.getThemeId())
+                .background(background).header(header).footer(footer)
+                .accent(accent).text(text).card(card).updatedAt(now).build();
     }
 
     // ── PUBLISH / UNPUBLISH ───────────────────────────────────────────────────
@@ -490,14 +554,90 @@ public class StorefrontCustomizationService {
         }
     }
 
+    private Optional<DesignResponse> getDesignFromCache(String key) {
+        try {
+            String json = redisTemplate.opsForValue().get(key);
+            if (json == null) return Optional.empty();
+            return Optional.of(objectMapper.readValue(json, DesignResponse.class));
+        } catch (Exception e) {
+            log.warn("Design cache get failed for key '{}': {}", key, e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private void putDesignInCache(String key, DesignResponse response) {
+        try {
+            String json = objectMapper.writeValueAsString(response);
+            redisTemplate.opsForValue().set(key, json, Duration.ofMinutes(ttlMinutes));
+        } catch (Exception e) {
+            log.warn("Design cache put failed for key '{}': {}", key, e.getMessage());
+        }
+    }
+
+    private boolean isOwnershipCached(String email, Integer storeId) {
+        try {
+            return redisTemplate.opsForValue().get(OWNER_CACHE_KEY_PREFIX + storeId + ":" + email) != null;
+        } catch (Exception e) {
+            log.warn("Owner cache check failed for store {}: {}", storeId, e.getMessage());
+            return false;
+        }
+    }
+
+    private DesignResponse mergeDesignResponse(DesignResponse existing, JsonNode data) {
+        return DesignResponse.builder()
+                .themeId(existing.getThemeId())
+                .background(data.has("background") ? data.get("background").asText() : existing.getBackground())
+                .header    (data.has("header")      ? data.get("header").asText()     : existing.getHeader())
+                .footer    (data.has("footer")      ? data.get("footer").asText()     : existing.getFooter())
+                .accent    (data.has("accent")      ? data.get("accent").asText()     : existing.getAccent())
+                .text      (data.has("text")        ? data.get("text").asText()       : existing.getText())
+                .card      (data.has("card")        ? data.get("card").asText()       : existing.getCard())
+                .updatedAt(LocalDateTime.now())
+                .build();
+    }
+
+    private UpdateThemeRequest buildUpdateThemeRequest(JsonNode data) {
+        UpdateThemeRequest req = new UpdateThemeRequest();
+        if (data.has("background")) req.setBackground(data.get("background").asText());
+        if (data.has("header"))     req.setHeader(data.get("header").asText());
+        if (data.has("footer"))     req.setFooter(data.get("footer").asText());
+        if (data.has("accent"))     req.setAccent(data.get("accent").asText());
+        if (data.has("text"))       req.setText(data.get("text").asText());
+        if (data.has("card"))       req.setCard(data.get("card").asText());
+        return req;
+    }
+
     // ── AUTH & GUARD HELPERS ──────────────────────────────────────────────────
 
     private Store getStoreAndVerifyOwner(String email, Integer storeId) {
+        // Cache key encodes both dimensions so different merchants can't cross-validate.
+        String ownerKey = OWNER_CACHE_KEY_PREFIX + storeId + ":" + email;
+
+        String cachedMerchantId = null;
+        try {
+            cachedMerchantId = redisTemplate.opsForValue().get(ownerKey);
+        } catch (Exception e) {
+            log.warn("Owner cache get failed for store {}: {}", storeId, e.getMessage());
+        }
+
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Store not found: " + storeId));
+
+        if (cachedMerchantId != null) {
+            // Ownership already verified — skip the 2 user/merchant DB round-trips.
+            return store;
+        }
+
+        // Cache miss: verify ownership against DB, then cache the result.
         Merchant merchant = getMerchantByEmail(email);
         if (!store.getMerchant().getMerchantId().equals(merchant.getMerchantId())) {
             throw new ForbiddenException("You do not own this store.");
+        }
+        try {
+            redisTemplate.opsForValue().set(
+                    ownerKey, merchant.getMerchantId().toString(), OWNER_CACHE_TTL);
+        } catch (Exception e) {
+            log.warn("Owner cache put failed for store {}: {}", storeId, e.getMessage());
         }
         return store;
     }
