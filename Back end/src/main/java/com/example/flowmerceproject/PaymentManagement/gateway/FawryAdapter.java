@@ -55,7 +55,7 @@ public class FawryAdapter implements PaymentGatewayAdapter {
     }
 
     @Override
-    public GatewayResult refund(String transactionReference, BigDecimal amount,
+    public GatewayResult refund(Integer orderId, String transactionReference, BigDecimal amount,
                                 String customerEmail) {
         if ("NOT_CONFIGURED".equals(merchantCode)) {
             return GatewayResult.builder()

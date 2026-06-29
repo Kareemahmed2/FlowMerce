@@ -1,9 +1,15 @@
 package com.example.flowmerceproject.NotificationManagement.consumer;
 
+import com.example.flowmerceproject.NotificationManagement.email.PaymentConfirmedEmailTemplate;
 import com.example.flowmerceproject.NotificationManagement.entity.Notification;
 import com.example.flowmerceproject.NotificationManagement.service.NotificationService;
+import com.example.flowmerceproject.OrderManagement.entity.Invoice;
+import com.example.flowmerceproject.OrderManagement.entity.Order;
+import com.example.flowmerceproject.OrderManagement.repository.InvoiceRepository;
+import com.example.flowmerceproject.OrderManagement.repository.OrderRepository;
 import com.example.flowmerceproject.PaymentManagement.config.PaymentRabbitMQConfig;
 import com.example.flowmerceproject.PaymentManagement.event.PaymentEventPublisher.PaymentEvent;
+import com.example.flowmerceproject.UserManagement.service.EmailService;
 import com.example.flowmerceproject.UserManagement.service.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +24,9 @@ public class PaymentNotificationConsumer {
     private final NotificationService notificationService;
     // INT-22: push real-time SSE after persisting the notification.
     private final SseService sseService;
+    private final EmailService emailService;
+    private final InvoiceRepository invoiceRepository;
+    private final OrderRepository orderRepository;
 
     @RabbitListener(queues = PaymentRabbitMQConfig.QUEUE_NOTIFY)
     public void handlePaymentEvent(PaymentEvent event) {
@@ -35,6 +44,7 @@ public class PaymentNotificationConsumer {
                         event.getPaymentId(), Notification.ReferenceType.PAYMENT);
                 sseService.sendAccountActivity(event.getCustomerEmail(),
                         "Payment confirmed for order #" + event.getOrderId() + ".");
+                sendPaymentConfirmedEmail(event);
 
                 notificationService.createForUser(
                         event.getMerchantEmail(), Notification.NotificationType.PAYMENT_SUCCEEDED,
@@ -86,6 +96,36 @@ public class PaymentNotificationConsumer {
                         "Payment pending for order #" + event.getOrderId() + ".");
             }
             default -> log.debug("No notification template for payment status: {}", event.getStatus());
+        }
+    }
+
+    private void sendPaymentConfirmedEmail(PaymentEvent event) {
+        try {
+            Invoice invoice = invoiceRepository.findByOrder_OrderId(event.getOrderId()).orElse(null);
+            Order order = orderRepository.findByIdWithItems(event.getOrderId()).orElse(null);
+
+            if (order == null) {
+                log.warn("Order {} not found for payment confirmed email — skipping", event.getOrderId());
+                return;
+            }
+
+            String invoiceNumber = invoice != null ? invoice.getInvoiceNumber() : "N/A";
+            var issuedAt = invoice != null ? invoice.getIssuedAt() : null;
+
+            emailService.sendTransactionalEmail(event.getCustomerEmail(), new PaymentConfirmedEmailTemplate(
+                    event.getOrderId(),
+                    invoiceNumber,
+                    issuedAt,
+                    event.getAmount(),
+                    event.getCurrency(),
+                    event.getPaymentMethod(),
+                    order.getItems(),
+                    order.getSubtotal(),
+                    order.getShippingCost(),
+                    order.getTax(),
+                    order.getTotal()));
+        } catch (Exception e) {
+            log.error("Failed to send payment confirmed email for order {}: {}", event.getOrderId(), e.getMessage());
         }
     }
 }

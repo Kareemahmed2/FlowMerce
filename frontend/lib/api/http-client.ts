@@ -313,8 +313,8 @@ export const httpClient = {
     return dedupeRequest(key, () => request<T>('GET', path, undefined, headers, timeoutMs))
   },
 
-  post<T>(path: string, body?: unknown, headers?: Record<string, string>): Promise<ApiResult<T>> {
-    return request<T>('POST', path, body, headers)
+  post<T>(path: string, body?: unknown, headers?: Record<string, string>, timeoutMs?: number): Promise<ApiResult<T>> {
+    return request<T>('POST', path, body, headers, timeoutMs)
   },
 
   put<T>(path: string, body?: unknown, headers?: Record<string, string>): Promise<ApiResult<T>> {

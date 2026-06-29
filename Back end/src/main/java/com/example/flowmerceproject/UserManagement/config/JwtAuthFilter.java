@@ -2,11 +2,13 @@ package com.example.flowmerceproject.UserManagement.config;
 
 import com.example.flowmerceproject.UserManagement.repository.SessionRepository;
 import com.example.flowmerceproject.UserManagement.repository.UserRepository;
+import com.example.flowmerceproject.UserManagement.service.SessionCacheService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,29 +18,34 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Two-tier Redis session cache sits in front of the DB checks.
+ *
+ * Tier 1 hit  (within 30 s window):  0 DB queries — role from Redis
+ * Tier 2 hit  (long-lived fallback):  1 DB query  — existsByTokenAndIsRevokedFalse
+ *   └ active → restore Tier 1, authenticate with cached role
+ *   └ revoked / missing → evict Tier 2, reject
+ * Full load   (both misses):          2 DB queries — existing behavior, then populate both tiers
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final SessionRepository sessionRepository;
-    // SEC-10: used for per-request role recheck so a role change takes effect
-    // immediately without waiting for the token to expire (24h window).
+    // SEC-10: live role reload on full-load path so role changes propagate within TTL.
     private final UserRepository userRepository;
+    private final SessionCacheService sessionCacheService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException {
 
-        // SEC-6 / SEC-11: prefer the Authorization header when present — it reflects
-        // exactly which auth context (merchant vs customer) made this specific call,
-        // and stays correct even if the *other* context's cookie was set more recently
-        // in the same browser. Cookies are namespaced per scope via X-Auth-Role so a
-        // merchant dashboard session and a customer storefront session in the same
-        // browser don't clobber each other; fall back to checking both scopes when
-        // there's no hint (e.g. a caller that doesn't send the header).
+        // ── 1. Extract token ─────────────────────────────────────────────────
+        // SEC-6 / SEC-11: prefer Authorization header; fall back to scoped cookies.
         String token = null;
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ") && !authHeader.substring(7).isBlank()) {
@@ -64,35 +71,60 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Validate JWT signature and expiry
+        // ── 2. JWT signature + expiry (in-memory, no DB) ─────────────────────
         if (!jwtUtil.isTokenValid(token)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Check token is not revoked in DB (logout support)
+        String email = jwtUtil.extractEmail(token);
+        String hash  = sessionCacheService.hash(token);
+
+        // ── 3. Tier-1 hit: 0 DB queries ──────────────────────────────────────
+        String cachedRole = sessionCacheService.tryGetRole(hash);
+        if (cachedRole != null) {
+            authenticate(email, cachedRole);
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // ── 4. Tier-2 hit: 1 DB query ────────────────────────────────────────
+        String tier2Role = sessionCacheService.tryGetTier2Role(hash);
+        if (tier2Role != null) {
+            if (!sessionRepository.existsByTokenAndIsRevokedFalse(token)) {
+                sessionCacheService.evictByHash(hash);
+                filterChain.doFilter(request, response);
+                return;
+            }
+            sessionCacheService.restoreTier1(hash, tier2Role);
+            authenticate(email, tier2Role);
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // ── 5. Full load: 2 DB queries (existing behavior) ───────────────────
         if (!sessionRepository.existsByTokenAndIsRevokedFalse(token)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String email = jwtUtil.extractEmail(token);
-
-        // SEC-10: read the live role from the DB rather than trusting the JWT claim —
-        // a role change (e.g. admin revokes merchant status) is enforced on the next
-        // request instead of waiting up to 24h for the token to expire.
+        // SEC-10: read live role from DB so a role change propagates within the cache TTL.
         String role = userRepository.findByEmail(email)
                 .map(u -> u.getRole().name())
                 .orElse(jwtUtil.extractRole(token));
 
-        UsernamePasswordAuthenticationToken authentication =
+        sessionCacheService.store(hash, role);
+        authenticate(email, role);
+        filterChain.doFilter(request, response);
+    }
+
+    private void authenticate(String email, String role) {
+        SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(
                         email,
                         null,
                         List.of(new SimpleGrantedAuthority("ROLE_" + role))
-                );
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        filterChain.doFilter(request, response);
+                )
+        );
     }
 }

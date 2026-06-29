@@ -21,7 +21,7 @@ import { O } from './orders-styles'
 function summaryToRow(s: MerchantOrderSummary): OrderRow {
   return {
     id: `ORD-${s.orderId}`,
-    customer: `Customer #${s.orderId}`,
+    customer: s.customerName ?? `Customer #${s.orderId}`,
     email: '',
     product: s.itemCount === 1 ? '1 item' : `${s.itemCount} items`,
     items: s.itemCount,

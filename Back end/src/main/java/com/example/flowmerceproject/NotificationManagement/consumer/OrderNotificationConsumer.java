@@ -1,9 +1,13 @@
 package com.example.flowmerceproject.NotificationManagement.consumer;
 
 import com.example.flowmerceproject.NotificationManagement.config.NotificationRabbitMQConfig;
+import com.example.flowmerceproject.NotificationManagement.email.*;
 import com.example.flowmerceproject.NotificationManagement.entity.Notification;
 import com.example.flowmerceproject.NotificationManagement.service.NotificationService;
+import com.example.flowmerceproject.OrderManagement.entity.Order;
+import com.example.flowmerceproject.OrderManagement.repository.OrderRepository;
 import com.example.flowmerceproject.OrderManagement.event.OrderEventPublisher.OrderEvent;
+import com.example.flowmerceproject.UserManagement.service.EmailService;
 import com.example.flowmerceproject.UserManagement.service.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +22,8 @@ public class OrderNotificationConsumer {
     private final NotificationService notificationService;
     // INT-22: push real-time SSE after persisting the notification.
     private final SseService sseService;
+    private final EmailService emailService;
+    private final OrderRepository orderRepository;
 
     @RabbitListener(queues = NotificationRabbitMQConfig.ORDER_QUEUE)
     public void handleOrderEvent(OrderEvent event) {
@@ -44,6 +50,7 @@ public class OrderNotificationConsumer {
                         "Your order #" + orderId + " from " + store + " has been confirmed.",
                         orderId, Notification.ReferenceType.ORDER);
                 sseService.sendOrderUpdate(event.getCustomerEmail(), orderId, "CONFIRMED");
+                sendOrderConfirmedEmail(event.getCustomerEmail(), orderId, store);
             }
             case "SHIPPED" -> {
                 notificationService.createForUser(
@@ -52,6 +59,7 @@ public class OrderNotificationConsumer {
                         "Great news! Your order #" + orderId + " from " + store + " is on its way.",
                         orderId, Notification.ReferenceType.ORDER);
                 sseService.sendOrderUpdate(event.getCustomerEmail(), orderId, "SHIPPED");
+                sendOrderShippedEmail(event.getCustomerEmail(), orderId, store);
             }
             case "DELIVERED" -> {
                 notificationService.createForUser(
@@ -60,6 +68,8 @@ public class OrderNotificationConsumer {
                         "Your order #" + orderId + " from " + store + " has been delivered. Enjoy!",
                         orderId, Notification.ReferenceType.ORDER);
                 sseService.sendOrderUpdate(event.getCustomerEmail(), orderId, "DELIVERED");
+                emailService.sendTransactionalEmail(
+                        event.getCustomerEmail(), new OrderDeliveredEmailTemplate(orderId, store));
             }
             case "CANCELLED" -> {
                 notificationService.createForUser(
@@ -68,6 +78,8 @@ public class OrderNotificationConsumer {
                         "Your order #" + orderId + " from " + store + " has been cancelled.",
                         orderId, Notification.ReferenceType.ORDER);
                 sseService.sendOrderUpdate(event.getCustomerEmail(), orderId, "CANCELLED");
+                emailService.sendTransactionalEmail(
+                        event.getCustomerEmail(), new OrderCancelledEmailTemplate(orderId, store));
 
                 notificationService.createForUser(
                         event.getMerchantEmail(), Notification.NotificationType.ORDER_CANCELLED,
@@ -78,6 +90,44 @@ public class OrderNotificationConsumer {
                         "Order #" + orderId + " was cancelled by the customer.");
             }
             default -> log.debug("No notification template for order status: {}", event.getNewStatus());
+        }
+    }
+
+    private void sendOrderConfirmedEmail(String customerEmail, Integer orderId, String storeName) {
+        try {
+            Order order = orderRepository.findByIdWithItems(orderId).orElse(null);
+            if (order == null) {
+                log.warn("Order {} not found for confirmed email — skipping", orderId);
+                return;
+            }
+            String currency = order.getPaymentMethod() != null ? "EGP" : "EGP";
+            emailService.sendTransactionalEmail(customerEmail, new OrderConfirmedEmailTemplate(
+                    orderId, storeName,
+                    order.getShippingAddress(),
+                    order.getItems(),
+                    order.getSubtotal(),
+                    order.getShippingCost(),
+                    order.getTax(),
+                    order.getTotal(),
+                    currency));
+        } catch (Exception e) {
+            log.error("Failed to send order confirmed email for order {}: {}", orderId, e.getMessage());
+        }
+    }
+
+    private void sendOrderShippedEmail(String customerEmail, Integer orderId, String storeName) {
+        try {
+            Order order = orderRepository.findByIdWithItems(orderId).orElse(null);
+            if (order == null) {
+                log.warn("Order {} not found for shipped email — skipping", orderId);
+                return;
+            }
+            emailService.sendTransactionalEmail(customerEmail, new OrderShippedEmailTemplate(
+                    orderId, storeName,
+                    order.getTrackingNumber(),
+                    order.getShippingCarrier()));
+        } catch (Exception e) {
+            log.error("Failed to send order shipped email for order {}: {}", orderId, e.getMessage());
         }
     }
 }

@@ -85,10 +85,14 @@ public class StoreService {
         return toResponse(getStoreAndVerifyOwner(email, storeId));
     }
 
+    /** Public lookup — used to resolve the customer-facing storefront by slug. */
     @Transactional(readOnly = true)
     public StoreDTOs.StoreResponse getBySlug(String slug) {
         Store store = storeRepository.findByStoreUrl(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Store not found: " + slug));
+        if (store.getStatus() == Store.StoreStatus.PAUSED) {
+            throw new ForbiddenException("This store is currently paused and unavailable.");
+        }
         return toResponse(store);
     }
 

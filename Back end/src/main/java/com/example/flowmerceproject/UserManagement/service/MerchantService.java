@@ -23,6 +23,7 @@ public class MerchantService {
     private final MerchantRepository merchantRepository;
     private final UserRepository userRepository;
     private final SessionRepository sessionRepository;
+    private final SessionCacheService sessionCacheService;
 
     @Transactional
     public MerchantDTOs.MerchantResponse createMerchantProfile(String email, MerchantDTOs.MerchantRequest request) {
@@ -32,6 +33,7 @@ public class MerchantService {
         }
         user.setRole(Role.MERCHANT);
         userRepository.save(user);
+        sessionCacheService.evictAllForUser(user.getUserId());
         Merchant merchant = Merchant.builder()
                 .user(user).businessName(request.getBusinessName()).isVerified(false).build();
         merchantRepository.save(merchant);
@@ -51,6 +53,7 @@ public class MerchantService {
         Merchant merchant = merchantRepository.findByUser_UserId(user.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Merchant profile not found"));
         merchantRepository.delete(merchant);
+        sessionCacheService.evictAllForUser(user.getUserId());
         sessionRepository.revokeAllByUserId(user.getUserId());
         userRepository.delete(user);
         return "Merchant account deleted successfully.";
@@ -75,6 +78,7 @@ public class MerchantService {
                 .orElseThrow(() -> new ResourceNotFoundException("Merchant not found with id: " + merchantId));
         User user = merchant.getUser();
         merchantRepository.delete(merchant);
+        sessionCacheService.evictAllForUser(user.getUserId());
         sessionRepository.revokeAllByUserId(user.getUserId());
         userRepository.delete(user);
         return "Merchant deleted successfully.";

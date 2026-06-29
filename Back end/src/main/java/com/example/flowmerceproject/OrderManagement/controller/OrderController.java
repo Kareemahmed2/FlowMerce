@@ -10,6 +10,8 @@ import com.example.flowmerceproject.PaymentManagement.service.PaymentServiceImpl
 import com.example.flowmerceproject.common.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -21,7 +23,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/orders")
 @RequiredArgsConstructor
@@ -35,24 +40,59 @@ public class OrderController {
     // ── BUYER ENDPOINTS ───────────────────────────────────────────────────────
 
     // POST /orders/place
+    //
+    // Order-level idempotency: the same idempotencyKey that gates duplicate
+    // PAYMENTS (PaymentServiceImpl) also gates duplicate ORDERS here. Without
+    // this, a client retry after a false client-side timeout (the backend had
+    // already committed the order, the client just gave up waiting) would create
+    // a second real order — the payment-level dedup alone can't catch that,
+    // since by the time it runs a brand-new order already exists.
     @PostMapping("/place")
     @PreAuthorize("hasRole('BUYER')")
     public ResponseEntity<ApiResponse<PaymentDTOs.OrderPlaceResponse>> placeOrder(
             Principal principal,
             @Valid @RequestBody CartDTOs.CheckoutRequest request) {
 
+        String idempotencyKey = request.getIdempotencyKey() != null
+                ? request.getIdempotencyKey()
+                : UUID.randomUUID().toString();
+        request.setIdempotencyKey(idempotencyKey);
+
+        Optional<OrderDTOs.OrderResponse> existing =
+                orderService.findOrderByIdempotencyKey(idempotencyKey);
+        if (existing.isPresent()) {
+            log.info("Idempotent replay: order already exists for key={}", idempotencyKey);
+            return ResponseEntity.ok(ApiResponse.ok(
+                    buildPlaceOrderResponse(existing.get(), principal.getName()),
+                    "Order already placed"));
+        }
+
         CheckoutService.CheckoutSummary summary =
                 checkoutService.processCheckout(principal.getName(), request);
 
-        OrderDTOs.OrderResponse order =
-                orderService.createOrder(principal.getName(), summary);
+        OrderDTOs.OrderResponse order;
+        try {
+            order = orderService.createOrder(principal.getName(), summary, idempotencyKey);
+        } catch (DataIntegrityViolationException duplicateKey) {
+            // Lost a race to a concurrent request using the same key — undo the
+            // stock this attempt just reserved and return the winner's order.
+            log.info("Lost idempotency race for key={}, releasing stock reserved by this attempt", idempotencyKey);
+            checkoutService.releaseReservedStock(summary.getCartId());
+            OrderDTOs.OrderResponse winner = orderService.findOrderByIdempotencyKey(idempotencyKey)
+                    .orElseThrow(() -> duplicateKey);
+            return ResponseEntity.ok(ApiResponse.ok(
+                    buildPlaceOrderResponse(winner, principal.getName()),
+                    "Order already placed"));
+        }
+
+        orderService.cacheOrderIdempotencyKey(idempotencyKey, order.getOrderId());
 
         PaymentDTOs.InitiatePaymentRequest paymentRequest =
                 PaymentDTOs.InitiatePaymentRequest.builder()
                         .orderId(order.getOrderId())
                         .amount(order.getTotal())
                         .paymentMethod(request.getPaymentMethod())
-                        .idempotencyKey(request.getIdempotencyKey())
+                        .idempotencyKey(idempotencyKey)
                         .build();
 
         PaymentDTOs.PaymentResponse payment =
@@ -65,6 +105,13 @@ public class OrderController {
                                 .payment(payment)
                                 .build(),
                         "Order placed successfully"));
+    }
+
+    private PaymentDTOs.OrderPlaceResponse buildPlaceOrderResponse(OrderDTOs.OrderResponse order, String email) {
+        return PaymentDTOs.OrderPlaceResponse.builder()
+                .order(order)
+                .payment(paymentService.findPaymentByOrderOrNull(order.getOrderId()))
+                .build();
     }
 
     // GET /orders/me

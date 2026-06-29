@@ -51,6 +51,11 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.ok(null, "Merchant deleted successfully."));
     }
 
+    @PutMapping("/users/{userId}/activate")
+    public ResponseEntity<ApiResponse<UserResponse>> activateUser(@PathVariable Integer userId) {
+        return ResponseEntity.ok(ApiResponse.ok(userService.activateUser(userId)));
+    }
+
     @GetMapping("/stores")
     public ResponseEntity<ApiResponse<List<StoreDTOs.StoreResponse>>> getAllStores() {
         return ResponseEntity.ok(ApiResponse.ok(storeService.getAllStores()));

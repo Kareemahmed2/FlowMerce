@@ -26,18 +26,22 @@ import com.example.flowmerceproject.PaymentManagement.dto.PaymentDTOs;
 import com.example.flowmerceproject.PaymentManagement.entity.Payment;
 import com.example.flowmerceproject.PaymentManagement.repository.PaymentRepository;
 import com.example.flowmerceproject.PaymentManagement.service.PaymentServiceImpl;
+import com.example.flowmerceproject.ShippingManagement.service.ShippingService;
 import com.example.flowmerceproject.UserManagement.service.SseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -58,12 +62,24 @@ public class OrderService {
     private final OrderEventPublisher orderEventPublisher;
     private final PaymentRepository paymentRepository;
     private final PaymentServiceImpl paymentService;
+    private final ShippingService shippingService;
+    private final StringRedisTemplate redisTemplate;
+
+    private static final String ORDER_IDEMPOTENCY_PREFIX = "order:idempotency:";
+    private static final Duration ORDER_IDEMPOTENCY_TTL = Duration.ofHours(24);
 
     // ── CREATE ORDER ────────────────────────────────────────────────────────────
     // Called after checkout reserves stock. Stock is confirmed (permanently
     // deducted) exactly once — inside checkoutService.confirmOrder().
+    //
+    // idempotencyKey is persisted with a DB-level UNIQUE constraint: if two
+    // near-simultaneous requests for the same checkout both pass the caller's
+    // Redis fast-path check (findOrderByIdempotencyKey), the second one's
+    // orderRepository.save() below throws DataIntegrityViolationException —
+    // the caller (OrderController.placeOrder) catches that, releases the stock
+    // this attempt just reserved, and returns the winning request's order instead.
     @Transactional
-    public OrderDTOs.OrderResponse createOrder(String email, CheckoutSummary checkoutSummary) {
+    public OrderDTOs.OrderResponse createOrder(String email, CheckoutSummary checkoutSummary, String idempotencyKey) {
         Customer customer = getCustomerByEmail(email);
 
         if (checkoutSummary.getItems().isEmpty()) {
@@ -86,6 +102,7 @@ public class OrderService {
                 .shippingCost(checkoutSummary.getShippingCost())
                 .total(checkoutSummary.getTotal())
                 .paymentMethod(checkoutSummary.getPaymentMethod())
+                .idempotencyKey(idempotencyKey)
                 .build();
 
         orderRepository.save(order);
@@ -121,6 +138,42 @@ public class OrderService {
                 store.getStoreId(), order.getTotal());
 
         return toResponse(order, invoice);
+    }
+
+    // ── ORDER-LEVEL IDEMPOTENCY ──────────────────────────────────────────────────
+    // Fast path: Redis lookup (key -> orderId). Falls back to the DB unique
+    // constraint (findByIdempotencyKey) if the Redis entry expired or was never
+    // written (e.g. the app restarted between the original request and a retry).
+    @Transactional(readOnly = true)
+    public Optional<OrderDTOs.OrderResponse> findOrderByIdempotencyKey(String idempotencyKey) {
+        Integer orderId = null;
+        String cached = redisTemplate.opsForValue().get(ORDER_IDEMPOTENCY_PREFIX + idempotencyKey);
+        if (cached != null) {
+            try {
+                orderId = Integer.parseInt(cached);
+            } catch (NumberFormatException ignored) {
+                // corrupted cache entry — fall through to the DB lookup below
+            }
+        }
+
+        Order order = orderId != null
+                ? orderRepository.findById(orderId).orElse(null)
+                : orderRepository.findByIdempotencyKey(idempotencyKey).orElse(null);
+
+        if (order == null) return Optional.empty();
+
+        cacheOrderIdempotencyKey(idempotencyKey, order.getOrderId());
+        Invoice invoice = invoiceRepository.findByOrder_OrderId(order.getOrderId()).orElse(null);
+        return Optional.of(toResponse(order, invoice));
+    }
+
+    public void cacheOrderIdempotencyKey(String idempotencyKey, Integer orderId) {
+        try {
+            redisTemplate.opsForValue().set(
+                    ORDER_IDEMPOTENCY_PREFIX + idempotencyKey, orderId.toString(), ORDER_IDEMPOTENCY_TTL);
+        } catch (Exception e) {
+            log.warn("Failed to cache order idempotency key: {}", e.getMessage());
+        }
     }
 
     // ── CUSTOMER: MY ORDERS ─────────────────────────────────────────────────────
@@ -229,6 +282,15 @@ public class OrderService {
 
         order.setStatus(request.getStatus());
         orderRepository.save(order);
+
+        // Real shipment creation is opt-in: omitting carrier keeps today's behavior
+        // (mark SHIPPED with no carrier record) for merchants who haven't configured one.
+        if (request.getStatus() == Order.OrderStatus.SHIPPED && request.getCarrier() != null) {
+            var shipment = shippingService.createShipmentForOrder(orderId, request.getCarrier());
+            order.setTrackingNumber(shipment.getTrackingNumber());
+            order.setShippingCarrier(shipment.getCarrier().name());
+            orderRepository.save(order);
+        }
 
         String customerEmail = order.getCustomer().getUser().getEmail();
         String merchantEmail = order.getStore().getMerchant().getUser().getEmail();
@@ -382,7 +444,7 @@ public class OrderService {
         return OrderDTOs.OrderResponse.builder()
                 .orderId(order.getOrderId())
                 .customerId(order.getCustomer().getCustomerId())
-                .customerName(order.getCustomer().getUser().getFullName())
+                .customerName(extractFullName(order.getShippingAddress()))
                 .storeId(order.getStore().getStoreId())
                 .storeName(order.getStore().getStoreName())
                 .status(order.getStatus())
@@ -396,6 +458,8 @@ public class OrderService {
                 .paymentMethod(order.getPaymentMethod())
                 .invoiceNumber(invoice != null ? invoice.getInvoiceNumber() : null)
                 .orderDate(order.getOrderDate())
+                .trackingNumber(order.getTrackingNumber())
+                .shippingCarrier(order.getShippingCarrier())
                 .build();
     }
 
@@ -433,6 +497,25 @@ public class OrderService {
                 .itemCount(order.getItems().size())
                 .orderDate(order.getOrderDate())
                 .storeName(order.getStore().getStoreName())
+                .customerName(extractFullName(order.getShippingAddress()))
                 .build();
+    }
+
+    // Extracts "fullName" from the JSON-encoded shipping address string.
+    // Avoids pulling in ObjectMapper for a single field read.
+    private static String extractFullName(String addressJson) {
+        if (addressJson == null || addressJson.isBlank()) return null;
+        try {
+            int key = addressJson.indexOf("\"fullName\"");
+            if (key < 0) return null;
+            int colon = addressJson.indexOf(':', key);
+            int open  = addressJson.indexOf('"', colon + 1);
+            int close = addressJson.indexOf('"', open + 1);
+            if (colon < 0 || open < 0 || close < 0) return null;
+            String name = addressJson.substring(open + 1, close);
+            return name.isBlank() ? null : name;
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 }
