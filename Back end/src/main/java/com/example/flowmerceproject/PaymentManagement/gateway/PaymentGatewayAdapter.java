@@ -28,9 +28,11 @@ public interface PaymentGatewayAdapter {
     /**
      * Issues a full or partial refund for a previously completed payment.
      *
+     * @param orderId               the order being refunded (needed by adapters that resolve
+     *                              per-store credentials, e.g. PaymobAdapter)
      * @param transactionReference  the gateway's transaction ID
      * @param amount                amount to refund
      * @param customerEmail         the buyer's email
      */
-    GatewayResult refund(String transactionReference, BigDecimal amount, String customerEmail);
+    GatewayResult refund(Integer orderId, String transactionReference, BigDecimal amount, String customerEmail);
 }

@@ -38,7 +38,7 @@ public class CashOnDeliveryAdapter implements PaymentGatewayAdapter {
     }
 
     @Override
-    public GatewayResult refund(String transactionReference, BigDecimal amount,
+    public GatewayResult refund(Integer orderId, String transactionReference, BigDecimal amount,
                                 String customerEmail) {
         // COD refund is handled manually (cash returned to customer)
         return GatewayResult.builder()

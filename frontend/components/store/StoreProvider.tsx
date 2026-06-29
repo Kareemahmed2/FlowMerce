@@ -256,9 +256,9 @@ export default function StoreProvider({ slug, children }: { slug: string; childr
               <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
           </div>
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: '#111', margin: '0 0 8px' }}>Store not found</h2>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: '#111', margin: '0 0 8px' }}>Store unavailable</h2>
           <p style={{ fontSize: 14, color: '#666', margin: '0 0 24px', lineHeight: 1.6 }}>
-            The store you&apos;re looking for doesn&apos;t exist or is unavailable.
+            {storeError || "The store you're looking for doesn't exist or is unavailable."}
           </p>
           <a href="/" style={{ display: 'inline-block', background: '#111', color: '#fff', padding: '10px 24px', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
             Go home

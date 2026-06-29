@@ -193,7 +193,8 @@ public class PaymentServiceImpl {
 
         PaymentGatewayAdapter adapter = resolveAdapter(payment.getPaymentMethod());
         GatewayResult result = adapter.refund(
-                payment.getTransactionReference(), request.getAmount(), callerEmail);
+                payment.getOrder().getOrderId(), payment.getTransactionReference(),
+                request.getAmount(), callerEmail);
 
         // For wallet payments — reverse the wallet transactions
         if ("FLOWMERCE_WALLET".equals(payment.getGateway())
@@ -232,6 +233,18 @@ public class PaymentServiceImpl {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No payment found for order: " + orderId));
         return toResponse(payment);
+    }
+
+    /**
+     * Used by the order-level idempotency path (OrderController.placeOrder) when
+     * returning an already-placed order — the original request's payment step may
+     * not have finished yet, so "no payment found" is a valid, non-error state here.
+     */
+    @Transactional(readOnly = true)
+    public PaymentDTOs.PaymentResponse findPaymentByOrderOrNull(Integer orderId) {
+        return paymentRepository.findByOrder_OrderId(orderId)
+                .map(this::toResponse)
+                .orElse(null);
     }
 
     // ── HELPERS ───────────────────────────────────────────────────────────────

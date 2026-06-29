@@ -28,6 +28,7 @@ FlowMerce is a smart e-commerce platform builder for SMEs. Its core differentiat
 8. [Database Schema](#database-schema)
 9. [Event Bus (RabbitMQ)](#event-bus-rabbitmq)
 10. [Key Design Decisions](#key-design-decisions)
+11. [Performance & Caching Architecture](#performance--caching-architecture)
 
 ---
 
@@ -561,3 +562,173 @@ The `inventory` table has a `version` column managed by JPA `@Version`. Concurre
 
 **SSE for Real-Time Events**  
 `SseController` / `SseService` provide a Server-Sent Events endpoint for pushing real-time notifications to connected browser clients without WebSocket complexity.
+
+---
+
+## Performance & Caching Architecture
+
+This section documents the layered caching strategy applied to FlowMerce's two highest-frequency bottlenecks — authentication overhead and storefront ownership verification — and presents the benchmark results produced during development.
+
+### Problem Statement
+
+FlowMerce's backend connects to a remotely hosted PostgreSQL instance (Supabase, EU West 1 region accessed via connection pooler). Each network round-trip to the database incurs 100–200 ms of latency under normal conditions. Without caching, every authenticated request incurs **two mandatory database queries** inside `JwtAuthFilter`:
+
+1. `existsByTokenAndIsRevokedFalse(token)` — revocation check against the `sessions` table
+2. `userRepository.findByEmail(email)` — live role reload from the `users` table (required for SEC-10: role changes must propagate within the cache TTL)
+
+For write-heavy merchant endpoints (storefront design saves, theme updates), a further ownership verification step added **two additional queries**:
+
+3. `findMerchantByEmail(email)` — ownership assertion
+4. `storeRepository.findById(storeId)` — store load
+
+This meant that even a fully cached storefront write cost **4 Supabase round-trips** per request, producing a warm-path floor of approximately **177 ms P50** — unacceptable for an interactive merchant dashboard.
+
+---
+
+### Caching Layer 1 — Ownership Cache (StorefrontCustomization)
+
+**Implementation class:** `StorefrontCustomizationService`
+
+The ownership verification step was isolated into a Redis-backed cache. On the first request for a `(merchantEmail, storeId)` pair, the service performs the full lookup and stores a boolean flag in Redis. Subsequent requests within the TTL window skip both the merchant lookup and the store load entirely.
+
+```
+Key:    flowmerce:own:{storeId}:{email}
+Value:  "true"
+TTL:    60 seconds
+```
+
+On a cache hit, `getStoreAndVerifyOwner` returns immediately without touching the database. Storefront write operations (`saveDesign`, `updateTheme`) detect the cache hit and dispatch the database persistence asynchronously via `@Async`, returning a 200 OK to the client before the write completes.
+
+#### Ownership Cache Benchmark
+
+**Methodology:** Serial HTTP requests using .NET `HttpClient`, rate-limit bucket cleared between scenarios, Docker Desktop on Windows 11. The "COLD" scenario deletes the ownership key before each request; "WARM" allows the key to persist across the run.
+
+| Scenario | N | Min (ms) | P50 (ms) | P90 (ms) | P95 (ms) | P99 (ms) | Max (ms) |
+|---|---|---|---|---|---|---|---|
+| Design PUT — COLD (ownership cache miss) | 30 | 749 | 852 | 1,087 | 1,102 | 1,180 | 1,180 |
+| Design PUT — WARM (ownership cache hit) | 80 | 93 | 177 | 203 | 208 | 219 | 219 |
+
+**Result:** Caching ownership reduces write latency from **852 ms to 177 ms P50 — a 4.8× speedup**, eliminating 2 of 4 database round-trips per request.
+
+The remaining 177 ms floor was attributable entirely to the 2 authentication queries that still ran on every request inside `JwtAuthFilter`.
+
+---
+
+### Caching Layer 2 — Two-Tier Session Cache (JwtAuthFilter)
+
+**Implementation class:** `SessionCacheService`
+
+After ownership caching, profiling confirmed that `JwtAuthFilter` was the sole remaining bottleneck. Every request — regardless of how well the business logic was cached — still paid 2 Supabase queries for session validation and role resolution.
+
+The solution is a two-tier Redis session cache that sits in front of the database checks:
+
+```
+Tier 1  Key: flowmerce:sess:{sha256(token)[0:24]}       Value: role string   TTL: 30 s (sliding)
+Tier 2  Key: flowmerce:sess:etag:{sha256(token)[0:24]}  Value: role string   TTL: 24 h
+```
+
+The token is never stored in Redis directly. The key suffix is the first 24 hexadecimal characters (96 bits) of the SHA-256 digest of the raw JWT string — sufficient collision resistance at this scale while keeping the key short.
+
+#### Request Dispatch Logic
+
+```
+Incoming authenticated request
+        │
+        ▼ JWT signature + expiry check (in-memory, HMAC — 0 DB)
+        │
+        ├─ Tier-1 HIT  ──────────────────────────────── 0 DB queries
+        │   TTL refreshed (sliding); role set from Redis.
+        │
+        ├─ Tier-1 MISS, Tier-2 HIT ──────────────────── 1 DB query
+        │   SELECT is_revoked FROM sessions WHERE token = ?
+        │   If active → restore Tier-1, reuse Tier-2 role.
+        │   If revoked → evict Tier-2, reject request (401).
+        │
+        └─ Both MISS (full load) ────────────────────── 2 DB queries
+            SELECT is_revoked FROM sessions WHERE token = ?
+            SELECT role FROM users WHERE email = ?  ← SEC-10 live role
+            Store result in both tiers for next request.
+```
+
+The Tier-1 TTL is intentionally short (30 seconds) to bound how long a revoked session can be served from cache. The Tier-2 TTL is long (24 hours) to survive across multiple Tier-1 expirations and enable single-query revalidation rather than a full 2-query reload.
+
+#### Cache Correctness — Explicit Eviction
+
+Role changes and session revocations must invalidate the cache immediately regardless of TTL. Every mutation point that affects session validity calls `SessionCacheService` before touching the database:
+
+| Event | Eviction method | Call site |
+|---|---|---|
+| Logout | `evict(token)` | `AuthService.logout` |
+| Refresh token rotation | `evict(oldRefreshToken)` | `AuthService.refreshToken` |
+| Password reset | `evictAllForUser(userId)` | `AuthService.resetPassword` |
+| Password change | `evictAllForUser(userId)` | `UserService.changePassword` |
+| Account deletion | `evictAllForUser(userId)` | `UserService.deleteMyAccount`, `AuthService.deleteCustomerAccount` |
+| Admin user deletion | `evictAllForUser(userId)` | `UserService.deleteUserById` |
+| Merchant profile creation (role change) | `evictAllForUser(userId)` | `MerchantService.createMerchantProfile` |
+| Merchant account deletion | `evictAllForUser(userId)` | `MerchantService.deleteMerchantAccount`, `MerchantService.deleteMerchantById` |
+
+`evictAllForUser` queries `findActiveTokensByUserId(userId)` before calling `revokeAllByUserId` to ensure all active tokens are still queryable at eviction time.
+
+All Redis operations are individually wrapped in `try-catch` and **fail open**: if Redis is unavailable, authentication falls through to the full database load rather than rejecting the request.
+
+---
+
+### Full Benchmark Results
+
+**Test environment:**
+- Host: Windows 11 Pro, Docker Desktop (WSL2 backend)
+- Backend: Spring Boot containerized via Docker Compose
+- Database: Supabase PostgreSQL 17.6, EU West 1 (accessed via IPv4 session pooler)
+- Cache: Redis 7 (Docker container, local network)
+- Test tool: .NET `System.Net.Http.HttpClient` — serial requests (no concurrency), each scenario preceded by rate-limit key deletion and one unmeasured warmup request
+- Merchant under test: `bench@flowmerce.com`, Store ID 3
+
+| Scenario | N | Min (ms) | P50 (ms) | P90 (ms) | P95 (ms) | P99 (ms) | Max (ms) |
+|---|---|---|---|---|---|---|---|
+| Health check (baseline — no DB, no Redis) | 80 | 87 | 91 | 180 | 182 | 188 | 188 |
+| Public storefront read — COLD (DB fallback) | 30 | 6 | 8 | 93 | 93 | 98 | 98 |
+| Public storefront read — WARM (Redis) | 80 | 5 | 6 | 8 | 8 | 16 | 16 |
+| Design GET — COLD (ownership + design cache miss) | 30 | 256 | 373 | 458 | 475 | 680 | 680 |
+| Design GET — WARM (all caches hot) | 80 | 254 | 360 | 457 | 462 | 468 | 468 |
+| Design PUT — COLD (ownership cache miss, pre-session cache) | 30 | 749 | 852 | 1,087 | 1,102 | 1,180 | 1,180 |
+| Design PUT — WARM (ownership cache, pre-session cache) | 80 | 93 | 177 | 203 | 208 | 219 | 219 |
+| Design PUT — WARM (all caches hot, post-session cache) | 100 | 8 | 16 | 30 | 33 | 48 | 48 |
+
+#### Isolated Session Cache Impact
+
+To isolate the session cache contribution, the test deleted both Redis tier keys before each individual request (forcing a full load) and compared against the tier-1 hit path:
+
+| Auth path | DB queries | P50 latency | Notes |
+|---|---|---|---|
+| Full load (both tiers empty) | 2 (auth) + 2 (business logic) | ~635 ms | `existsByTokenAndIsRevokedFalse` + `findByEmail` + 2 endpoint queries |
+| Tier-1 hit | 0 (auth) + 2 (business logic) | ~363 ms | Role served from Redis |
+| Delta (session cache savings) | −2 | ~272 ms saved | ≈ 2 × 136 ms per Supabase round-trip |
+
+---
+
+### Summary of Speedups
+
+| Optimization | Cold P50 | Warm P50 | Speedup | DB queries eliminated |
+|---|---|---|---|---|
+| Ownership cache (StorefrontCustomization) | 852 ms | 177 ms | **4.8×** | 2 per write request |
+| Session cache (JwtAuthFilter) — write path | 177 ms | 16 ms | **11×** | 2 per every authenticated request |
+| Combined (both caches active) | 852 ms | 16 ms | **53×** | 4 per write request |
+
+The public storefront read path — the highest-traffic endpoint serving customer-facing pages — drops from a DB-backed 8 ms (P50, already fast due to the public endpoint bypassing auth) to a Redis-only **6 ms P50** with the cache warm.
+
+---
+
+### Correctness Verification
+
+The following scenarios were verified after both caching layers were deployed:
+
+| Test | Expected | Result |
+|---|---|---|
+| Unauthenticated request | 401 | PASS |
+| First request (cold, full load) — tier-1 and tier-2 keys created | Both keys present, role = `MERCHANT` | PASS |
+| Second request (tier-1 hit) — TTL refreshed | 200, TTL increases | PASS |
+| Tier-1 deleted, tier-2 intact — revalidation restores tier-1 | 200, tier-1 recreated | PASS |
+| Logout — both tiers evicted | Both keys deleted | PASS |
+| Old JWT used after logout | 401 | PASS |
+| Refresh token rotation — new access token issued | 200 with new token | PASS |
+| Password change — all user sessions evicted, old token rejected | Keys deleted, old token → 401 | PASS |

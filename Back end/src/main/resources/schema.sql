@@ -249,6 +249,9 @@ CREATE TABLE IF NOT EXISTS orders (
     shipping_cost    DECIMAL(10,2),                           -- flat rate, configurable via app.shipping.flat-rate
     total            DECIMAL(10,2),
     payment_method   VARCHAR(50),                             -- STRIPE, MADA, STC_PAY
+    tracking_number  VARCHAR(100),                            -- denormalized copy of shipments.tracking_number
+    shipping_carrier  VARCHAR(20),                             -- denormalized copy of shipments.carrier
+    idempotency_key  VARCHAR(36) UNIQUE,                       -- order-level dedup, mirrors payments.idempotency_key
     FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
     FOREIGN KEY (store_id)    REFERENCES stores(store_id)
     );
@@ -302,6 +305,40 @@ CREATE TABLE IF NOT EXISTS deliveries (
                                           delivery_status VARCHAR(50),
     FOREIGN KEY (order_id) REFERENCES orders(order_id),
     FOREIGN KEY (dsp_id)   REFERENCES delivery_providers(dsp_id)
+    );
+
+-- =========================
+-- PER-STORE PROVIDER INTEGRATIONS (bring-your-own gateway/carrier)
+-- Each merchant supplies their own Paymob/DHL/Aramex/Bosta credentials; FlowMerce
+-- never holds a shared account. See IntegrationManagement / ShippingManagement.
+-- =========================
+
+CREATE TABLE IF NOT EXISTS store_integrations (
+    integration_id        SERIAL PRIMARY KEY,
+    store_id               INT          NOT NULL,
+    provider                VARCHAR(20)  NOT NULL,             -- PAYMOB, DHL, ARAMEX, BOSTA
+    enabled                 BOOLEAN      NOT NULL DEFAULT FALSE,
+    credentials_encrypted   TEXT         NOT NULL,             -- AES-GCM encrypted JSON credential map
+    last_verified_at        TIMESTAMP WITHOUT TIME ZONE,
+    last_verified_status    VARCHAR(20),                       -- UNVERIFIED, SUCCESS, FAILED
+    created_at              TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+    updated_at              TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+    FOREIGN KEY (store_id) REFERENCES stores(store_id),
+    CONSTRAINT uq_store_integration UNIQUE (store_id, provider)
+    );
+
+CREATE TABLE IF NOT EXISTS shipments (
+    shipment_id       SERIAL PRIMARY KEY,
+    order_id          INT          NOT NULL UNIQUE,
+    carrier           VARCHAR(20)  NOT NULL,                   -- DHL, ARAMEX, BOSTA
+    tracking_number   VARCHAR(100),
+    status            VARCHAR(20)  NOT NULL DEFAULT 'CREATED',  -- CREATED, IN_TRANSIT, DELIVERED, FAILED, CANCELLED
+    label_url         TEXT,
+    carrier_response  TEXT,
+    failure_reason    TEXT,
+    created_at        TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+    updated_at        TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+    FOREIGN KEY (order_id) REFERENCES orders(order_id)
     );
 
 -- =========================

@@ -71,6 +71,23 @@ public class Order {
     @Column(name = "payment_method", length = 50)
     private String paymentMethod;
 
+    /** Denormalized convenience copy of Shipment.trackingNumber for list/detail views. */
+    @Column(name = "tracking_number", length = 100)
+    private String trackingNumber;
+
+    /** Denormalized convenience copy of Shipment.carrier ("DHL"/"ARAMEX"/"BOSTA"). */
+    @Column(name = "shipping_carrier", length = 20)
+    private String shippingCarrier;
+
+    /**
+     * Client-supplied (or server-generated) key for the whole place-order request —
+     * same key the payment step dedupes on. Unique constraint is the DB-level safety
+     * net against a duplicate order being created when two near-simultaneous retries
+     * of the same checkout both miss the Redis fast-path check (see OrderService).
+     */
+    @Column(name = "idempotency_key", length = 36, unique = true)
+    private String idempotencyKey;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL,
             orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default

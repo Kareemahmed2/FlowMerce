@@ -51,8 +51,22 @@ export default function CheckoutPage() {
   const enabledWorking = WORKING_METHODS.filter((m) =>
     store.payment.some((p) => toBackendPaymentMethod(p) === m || p === m)
   )
-  // If store has no explicit config, show all working methods
-  const shownMethods = enabledWorking.length > 0 ? enabledWorking : WORKING_METHODS
+  // If store has no explicit config, show all working methods.
+  const baseMethods = enabledWorking.length > 0 ? enabledWorking : WORKING_METHODS
+  // FlowMerce Wallet stays available regardless of the merchant's gateway
+  // toggles — it's the platform's own rail and the main payment method for now.
+  const shownMethods = baseMethods.includes('FLOWMERCE_WALLET')
+    ? baseMethods
+    : ['FLOWMERCE_WALLET' as BackendPaymentMethod, ...baseMethods]
+
+  // Stable per-checkout-attempt idempotency key — generated once and reused on
+  // every submit, so a retry after a false client-side timeout doesn't create
+  // a second real order if the first attempt actually succeeded server-side.
+  const [idempotencyKey] = useState(() =>
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  )
 
   // Load wallet balance when wallet method is selected
   useEffect(() => {
@@ -113,6 +127,7 @@ export default function CheckoutPage() {
         phone: form.phone,
         paymentMethod: toBackendPaymentMethod(form.paymentMethod),
         notes: form.notes || undefined,
+        idempotencyKey,
       },
       auth.getAuthHeader()
     )

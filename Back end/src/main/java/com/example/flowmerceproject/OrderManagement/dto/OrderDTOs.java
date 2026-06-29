@@ -17,6 +17,15 @@ public class OrderDTOs {
     public static class UpdateStatusRequest {
         @NotNull(message = "Status is required")
         private Order.OrderStatus status;
+
+        /**
+         * Optional. Only meaningful when status == SHIPPED — names a carrier
+         * ("DHL"/"ARAMEX"/"BOSTA") that the store has configured and enabled in
+         * Settings → Integrations. When present, a real shipment is created with
+         * that carrier using the store's own credentials. Omit to mark the order
+         * SHIPPED without creating a real shipment (e.g. no carrier configured yet).
+         */
+        private String carrier;
     }
 
     // ── RESPONSES
@@ -53,6 +62,8 @@ public class OrderDTOs {
         private String paymentMethod;
         private String invoiceNumber;
         private LocalDateTime orderDate;
+        private String trackingNumber;
+        private String shippingCarrier;
     }
 
     @Data
@@ -65,6 +76,7 @@ public class OrderDTOs {
         private int itemCount;
         private LocalDateTime orderDate;
         private String storeName;
+        private String customerName;
     }
 
     @Data

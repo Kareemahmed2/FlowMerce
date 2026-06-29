@@ -45,6 +45,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
+    private final SessionCacheService sessionCacheService;
 
     @Value("${jwt.expiration-ms:86400000}")
     private long jwtExpirationMs;
@@ -164,6 +165,7 @@ public class AuthService {
 
         // SEC-8: single-use refresh tokens — revoke the old one immediately
         // so a stolen refresh token can only be used once.
+        sessionCacheService.evict(token);
         refreshSession.setIsRevoked(true);
         sessionRepository.save(refreshSession);
 
@@ -199,6 +201,7 @@ public class AuthService {
         if (!sessionRepository.existsByTokenAndIsRevokedFalse(token)) {
             throw new BadRequestException("Token is already revoked or does not exist.");
         }
+        sessionCacheService.evict(token);
         sessionRepository.revokeByToken(token);
         return "Logged out successfully.";
     }
@@ -270,6 +273,7 @@ public class AuthService {
         vt.setUsed(true);
         tokenRepository.save(vt);
 
+        sessionCacheService.evictAllForUser(user.getUserId());
         sessionRepository.revokeAllByUserId(user.getUserId());
         return "Password reset successfully. Please log in again.";
     }
@@ -329,6 +333,7 @@ public class AuthService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         customerRepository.findByUser_UserId(user.getUserId())
                 .ifPresent(customerRepository::delete);
+        sessionCacheService.evictAllForUser(user.getUserId());
         sessionRepository.revokeAllByUserId(user.getUserId());
         userRepository.delete(user);
         return "Account deleted successfully.";

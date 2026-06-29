@@ -74,7 +74,7 @@ public class WalletSimulationAdapter implements PaymentGatewayAdapter {
     }
 
     @Override
-    public GatewayResult refund(String transactionReference, BigDecimal amount,
+    public GatewayResult refund(Integer orderId, String transactionReference, BigDecimal amount,
                                 String customerEmail) {
         // Refund reverses the wallet transaction — handled by PaymentServiceImpl
         String ref = "WALLET-REFUND-" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();

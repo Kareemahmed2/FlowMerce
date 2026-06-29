@@ -40,7 +40,7 @@ public class BankTransferAdapter implements PaymentGatewayAdapter {
     }
 
     @Override
-    public GatewayResult refund(String transactionReference, BigDecimal amount,
+    public GatewayResult refund(Integer orderId, String transactionReference, BigDecimal amount,
                                 String customerEmail) {
         return GatewayResult.builder()
                 .success(true)
