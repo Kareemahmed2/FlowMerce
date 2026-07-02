@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class VerificationToken {
 
-    public enum TokenType { ACTIVATION, PASSWORD_RESET }
+    public enum TokenType { ACTIVATION, PASSWORD_RESET, MFA_OTP }
 
     @Id
     @Column(name = "token", length = 255)

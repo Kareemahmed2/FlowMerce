@@ -62,6 +62,8 @@ public class SecurityConfig {
                                 "/auth/merchant/forgot-password",
                                 "/auth/merchant/reset-password",
                                 "/auth/merchant/refresh",
+                                "/auth/merchant/2fa/verify",
+                                "/auth/merchant/2fa/resend",
                                 "/auth/customer/register",
                                 "/auth/customer/login",
                                 "/auth/customer/activate",

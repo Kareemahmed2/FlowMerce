@@ -10,6 +10,7 @@ import com.example.flowmerceproject.PaymentManagement.event.PaymentEventPublishe
 import com.example.flowmerceproject.PaymentManagement.gateway.GatewayResult;
 import com.example.flowmerceproject.PaymentManagement.gateway.PaymentGatewayAdapter;
 import com.example.flowmerceproject.PaymentManagement.repository.PaymentRepository;
+import com.example.flowmerceproject.StoreMangement.entity.Store;
 import com.example.flowmerceproject.UserManagement.entity.Customer;
 import com.example.flowmerceproject.UserManagement.entity.User;
 import com.example.flowmerceproject.UserManagement.exception.BadRequestException;
@@ -80,6 +81,9 @@ public class PaymentServiceImpl {
         Order order = orderRepository.findById(request.getOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Order not found: " + request.getOrderId()));
+
+        // Enforce merchant's enabled payment methods — FLOWMERCE_WALLET is always allowed
+        validateMethodEnabledForStore(order.getStore(), request.getPaymentMethod());
 
         // Verify caller owns this order
         Customer customer = resolveCustomer(customerEmail);
@@ -289,6 +293,27 @@ public class PaymentServiceImpl {
                 .stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    private void validateMethodEnabledForStore(Store store, String paymentMethod) {
+        if ("FLOWMERCE_WALLET".equals(paymentMethod)) return;
+        String raw = store.getPaymentMethods();
+        if (raw == null || raw.isBlank()) {
+            throw new BadRequestException(
+                    "No payment methods are configured for this store. Only FLOWMERCE_WALLET is available.");
+        }
+        try {
+            List<String> enabled = objectMapper.readValue(raw,
+                    new com.fasterxml.jackson.core.type.TypeReference<List<String>>() {});
+            if (!enabled.contains(paymentMethod)) {
+                throw new BadRequestException(
+                        "Payment method '" + paymentMethod + "' is not enabled for this store.");
+            }
+        } catch (BadRequestException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("Failed to parse store payment methods for store {}: {}", store.getStoreId(), e.getMessage());
+        }
     }
 
     public PaymentDTOs.PaymentResponse toResponse(Payment p) {

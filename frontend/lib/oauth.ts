@@ -5,8 +5,9 @@
  *  1. User clicks "Log in with Google" → browser navigates to backend redirect endpoint
  *  2. Backend redirects to Google consent, Google redirects back to backend callback
  *  3. Backend exchanges code, issues JWT, and redirects browser to:
- *       /login?accessToken=...&refreshToken=...&expiresIn=...&role=...
- *  4. The /login page detects these params (via handleOAuthCallback) and sets the session
+ *       /login?accessToken=...&refreshToken=...&expiresIn=...&role=...&userId=...&email=...&name=...
+ *  4. The /login page detects these params (via parseOAuthCallback) and builds the session
+ *     directly — no extra /me round-trip needed.
  */
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080/api/v1'
@@ -24,13 +25,16 @@ export function redirectToOAuth(provider: OAuthProvider): void {
 
 /**
  * Parsed OAuth callback params returned by the backend after a successful login.
- * The backend redirects to /login?accessToken=...&refreshToken=...&role=...
+ * The backend redirects to /login?accessToken=...&refreshToken=...&role=...&userId=...&email=...&name=...
  */
 export interface OAuthCallbackResult {
   accessToken: string
   refreshToken: string
   expiresIn: number
   role: string
+  userId: number
+  email: string
+  fullName: string
 }
 
 /**
@@ -48,22 +52,8 @@ export function parseOAuthCallback(
     refreshToken: searchParams.get('refreshToken') ?? '',
     expiresIn: Number(searchParams.get('expiresIn') ?? 86400000),
     role: searchParams.get('role') ?? 'MERCHANT',
-  }
-}
-
-/**
- * Build a minimal AuthResponse-compatible shape from OAuth callback params
- * so buildSession() can consume it. We don't have user profile info in the
- * query params, so we fetch it after session is established.
- */
-export function oauthParamsToAuthShape(
-  params: OAuthCallbackResult,
-  user: { userId: number; email: string; fullName: string; role: string; createdAt: string }
-) {
-  return {
-    accessToken: params.accessToken,
-    refreshToken: params.refreshToken,
-    expiresIn: params.expiresIn,
-    user,
+    userId: Number(searchParams.get('userId') ?? 0),
+    email: searchParams.get('email') ?? '',
+    fullName: searchParams.get('name') ?? '',
   }
 }

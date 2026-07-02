@@ -56,7 +56,7 @@ FlowMerce is a smart e-commerce platform builder for SMEs. Its core differentiat
 | Cache | Redis |
 | Message Queue | RabbitMQ |
 | File Storage | MinIO |
-| AI | Anthropic Claude API (`claude-sonnet-4-20250514`) |
+| AI | Groq API (`llama3-70b-8192`) |
 | Auth | JWT (24h) + Refresh Token (30d) + RBAC |
 | Testing | JUnit 5 · Testcontainers (Postgres, RabbitMQ, Redis) |
 
@@ -74,7 +74,7 @@ FlowMerce is a smart e-commerce platform builder for SMEs. Its core differentiat
         ├── Redis                   — storefront cache, session
         ├── RabbitMQ               — async order/payment events
         ├── MinIO                  — product images, store logos
-        └── Anthropic Claude API   — AI advisor (proxied, server-side)
+        └── Groq API               — AI advisor (proxied, server-side)
 ```
 
 **Module structure:** All modules live in the same Spring Boot application under `com.example.flowmerceproject.*`. They communicate via:
@@ -451,9 +451,9 @@ StorefrontTemplate (1:1 Store)
 
 ### 10. AI Assistant
 
-Proxies requests to the Anthropic Claude API server-side, enriching the system prompt with store context: brand name, hex colors, category names, and WCAG contrast ratios. This prevents the API key from being exposed to the frontend.
+Proxies requests to the Groq API server-side, enriching the system prompt with store context: brand name, hex colors, category names, and WCAG contrast ratios. This prevents the API key from being exposed to the frontend.
 
-**Model:** `claude-sonnet-4-20250514`  
+**Model:** `llama3-70b-8192` (via Groq's OpenAI-compatible endpoint)  
 **Cache:** Redis, TTL 1 hour, for repeated pattern questions.
 
 **Endpoints:**

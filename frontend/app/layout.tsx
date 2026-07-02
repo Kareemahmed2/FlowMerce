@@ -1,18 +1,11 @@
 import React from 'react'
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import { MerchantAuthProvider } from '@/store/auth-store'
 import { LanguageProvider } from '@/lib/i18n/LanguageProvider'
 import { Toaster } from 'sonner'
 import NotificationListener from '@/components/NotificationListener'
 
 import './globals.css'
-
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-inter',
-})
 
 export const metadata: Metadata = {
   title: 'FlowMerce',
@@ -27,7 +20,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" dir="ltr">
-      <body className={`${inter.className} font-sans antialiased`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="font-sans antialiased">
         {/*
           LanguageProvider drives <html lang/dir> for bilingual AR/EN + RTL.
           MerchantAuthProvider lives here so all pages (login, dashboard, onboarding)
