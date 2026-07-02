@@ -189,11 +189,10 @@ function LoginPageContent() {
         </div>
 
         {/* ── Right form panel ──────────────────────────────────────── */}
-        <div style={{ width: '100%', maxWidth: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }} className="auth-form-side">
-          <div style={{
+        <div style={{ width: '100%', maxWidth: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }} className="auth-form-side">
+          <div className="auth-card" style={{
             width: '100%', maxWidth: 440,
             background: '#fff', borderRadius: 20,
-            padding: '40px',
             boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
           }}>
             <p style={{ fontSize: 11, fontWeight: 700, color: '#4f46e5', letterSpacing: '0.12em', textTransform: 'uppercase', margin: '0 0 12px' }}>
@@ -284,7 +283,12 @@ function LoginPageContent() {
 
       <style>{`
         .auth-form-side { max-width: 100% !important; }
-        @media (max-width: 1024px) { .auth-form-side { max-width: 100% !important; } }
+        @media (min-width: 1024px) { .auth-form-side { max-width: 50% !important; } }
+        .auth-card { padding: 40px; }
+        @media (max-width: 480px) {
+          .auth-card { padding: 24px 20px; }
+          .auth-card h1 { font-size: 22px !important; }
+        }
         .auth-social-btn:hover { background: #f7f9fb !important; }
         .auth-link:hover { text-decoration: underline !important; }
       `}</style>

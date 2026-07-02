@@ -108,9 +108,9 @@ export default function Page() {
         </div>
 
         {/* Right Section */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12">
+        <div className="w-full lg:w-1/2 flex items-center justify-center px-4 py-8 sm:px-6 sm:py-12">
         <Card className="w-full max-w-md bg-white rounded-2xl shadow-lg border-0">
-          <div className="p-8">
+          <div className="p-6 sm:p-8">
             <div className="text-sm font-semibold text-gray-600 mb-4 tracking-widest">
               LET'S GET YOU STARTED
             </div>

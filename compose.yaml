@@ -1,22 +1,139 @@
 services:
-  postgres:
-    image: 'postgres:latest'
-    environment:
-      - 'POSTGRES_DB=mydatabase'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=myuser'
-    ports:
-      - '5432'
-  rabbitmq:
-    image: 'rabbitmq:latest'
-    environment:
-      - 'RABBITMQ_DEFAULT_PASS=secret'
-      - 'RABBITMQ_DEFAULT_USER=myuser'
-    ports:
-      - '5672'
+
+  # ── Infrastructure ───────────────────────────────────────────────────────────
+
   redis:
-    image: 'redis/redis-stack:latest'
-    labels:
-      - "org.springframework.boot.service-connection=redis"
+    image: redis/redis-stack:latest
+    restart: unless-stopped
     ports:
-      - '6379'
+      - "6379:6379"
+      - "8001:8001"   # RedisInsight UI
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: myuser
+      RABBITMQ_DEFAULT_PASS: secret
+    ports:
+      - "5672:5672"
+      - "15672:15672"  # Management UI → http://localhost:15672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Console UI → http://localhost:9001
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend (Spring Boot) ────────────────────────────────────────────────────
+
+  backend:
+    build:
+      context: ./Back end
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - "./Back end/.env"   # DB_PASSWORD, JWT_SECRET, INTEGRATION_ENCRYPTION_KEY, MAIL_PASSWORD
+    environment:
+      # Supabase — env_file has DB_URL= (empty), which would override Spring Boot's
+      # default. Explicitly set both here so the correct Supabase URL is always used.
+      DB_URL: jdbc:postgresql://aws-0-eu-west-1.pooler.supabase.com:5432/postgres
+      DB_USERNAME: postgres.jyzpcvosismwilptumpp
+
+      # Redis (container)
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      # RabbitMQ (container)
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: myuser
+      RABBITMQ_PASSWORD: secret
+
+      # MinIO (container)
+      MINIO_URL: http://minio:9000
+
+      # URLs
+      BACKEND_URL: http://localhost:8080
+      FRONTEND_URL: http://localhost:3000
+
+      # Mail sender (env_file has MAIL_USERNAME= empty — set default here)
+      MAIL_USERNAME: ka.mahrous@gmail.com
+
+      # Admin (env_file has ADMIN_EMAIL= empty)
+      ADMIN_EMAIL: admin@flowmerce.com
+
+      # Upload dir inside container
+      UPLOAD_DIR: /app/uploads
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - uploads_data:/app/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/api/v1/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+
+  # ── Frontend (Next.js) ───────────────────────────────────────────────────────
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8080/api/v1
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000 || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+# ── Named volumes ─────────────────────────────────────────────────────────────
+
+volumes:
+  redis_data:
+  rabbitmq_data:
+  minio_data:
+  uploads_data:

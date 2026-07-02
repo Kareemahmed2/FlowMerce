@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { MerchantAuthProvider } from '@/store/auth-store'
 import { LanguageProvider } from '@/lib/i18n/LanguageProvider'
@@ -18,6 +18,12 @@ export const metadata: Metadata = {
   title: 'FlowMerce',
   description:
     'Create and manage your e-commerce store — onboarding, dashboard, and storefront.',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 }
 
 export default function RootLayout({

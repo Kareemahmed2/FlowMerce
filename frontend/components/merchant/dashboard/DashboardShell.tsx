@@ -4,6 +4,7 @@ import { generateStoreUrl } from '@/components/merchant/onboarding/constants'
 import { useMerchantAuth } from '@/store/auth-store'
 import { storeService } from '@/services/store.service'
 import { authService } from '@/services/auth.service'
+import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
@@ -21,6 +22,14 @@ const NAV_ITEMS = [
   { id: 'design',     label: 'Design',     icon: '◑', href: '/dashboard/design' },
   { id: 'analytics',  label: 'Analytics',  icon: '▦', href: '/dashboard/analytics' },
   { id: 'settings',   label: 'Settings',   icon: '⊙', href: '/dashboard/settings' },
+]
+
+const BOTTOM_NAV_ITEMS = [
+  { id: 'overview',   label: 'Home',      icon: '◈', href: '/dashboard' },
+  { id: 'orders',     label: 'Orders',    icon: '◎', href: '/dashboard/orders' },
+  { id: 'products',   label: 'Products',  icon: '⊞', href: '/dashboard/products' },
+  { id: 'customers',  label: 'Customers', icon: '◉', href: '/dashboard/customers' },
+  { id: 'settings',   label: 'Settings',  icon: '⊙', href: '/dashboard/settings' },
 ]
 
 function titleForPath(pathname: string | null): string {
@@ -43,11 +52,18 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const auth = useMerchantAuth()
   const router = useRouter()
+  const isMobile = useIsMobile()
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
   const [period, setPeriod] = useState('7d')
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [storeSlug, setStoreSlug] = useState<string | null>(null)
   const [storeName, setStoreName] = useState<string | null>(null)
+
+  // Close mobile drawer on navigation
+  useEffect(() => {
+    setMobileDrawerOpen(false)
+  }, [pathname])
 
   // P4: load store info from backend instead of localStorage
   useEffect(() => {
@@ -77,141 +93,235 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const avatar = useMemo(() => initialsFromName(displayName), [displayName])
   const plan = 'Merchant'
 
-  return (
-    <div style={S.root} onClick={() => setShowUserMenu(false)}>
-      <aside style={{ ...S.sidebar, ...(sidebarOpen ? {} : S.sidebarCollapsed) }}>
-        <div style={S.sidebarTop}>
-          <div style={S.brandRow}>
-            <div style={S.brandAvatar}>{avatar}</div>
-            {sidebarOpen && (
-              <div style={{ minWidth: 0 }}>
-                <p style={S.brandName}>{displayName}</p>
-                <p style={S.brandUrl}>{host}</p>
-              </div>
-            )}
-          </div>
-          {sidebarOpen && <span style={S.planBadge}>{plan}</span>}
+  const isNavActive = (href: string) =>
+    href === '/dashboard'
+      ? pathname === '/dashboard' || pathname === '/dashboard/'
+      : pathname === href || (pathname?.startsWith(href + '/') ?? false)
+
+  const SidebarInner = ({ inDrawer = false }: { inDrawer?: boolean }) => (
+    <>
+      <div style={S.sidebarTop}>
+        <div style={S.brandRow}>
+          <div style={S.brandAvatar}>{avatar}</div>
+          {(inDrawer || sidebarOpen) && (
+            <div style={{ minWidth: 0 }}>
+              <p style={S.brandName}>{displayName}</p>
+              <p style={S.brandUrl}>{host}</p>
+            </div>
+          )}
         </div>
-
-        <nav style={S.nav}>
-          {NAV_ITEMS.map((item) => {
-            const active =
-              item.href === '/dashboard'
-                ? pathname === '/dashboard' || pathname === '/dashboard/'
-                : pathname === item.href || pathname?.startsWith(item.href + '/')
-            return (
-              <Link
-                key={item.id}
-                href={item.href}
-                style={{ ...S.navItem, ...(active ? S.navItemActive : {}) }}
-                title={!sidebarOpen ? item.label : undefined}
-              >
-                <span style={S.navIcon}>{item.icon}</span>
-                {sidebarOpen && <span style={S.navLabel}>{item.label}</span>}
-                {sidebarOpen && active && <span style={S.navDot} />}
-              </Link>
-            )
-          })}
-        </nav>
-
-        {sidebarOpen && (
-          <div style={S.sidebarFooter}>
-            {hasStore ? (
-              <a href={storeHref} target="_blank" rel="noopener noreferrer" style={S.storeLink}>
-                <span style={{ fontSize: 12 }}>▷</span> View Live Store
-              </a>
-            ) : (
-              <Link href="/onboarding" style={S.storeLink}>
-                <span style={{ fontSize: 12 }}>▷</span> Create Your Store
-              </Link>
-            )}
-          </div>
+        {(inDrawer || sidebarOpen) && <span style={S.planBadge}>{plan}</span>}
+        {inDrawer && (
+          <button
+            type="button"
+            style={S.mobileCloseBtn}
+            onClick={() => setMobileDrawerOpen(false)}
+            aria-label="Close menu"
+          >
+            ✕
+          </button>
         )}
+      </div>
 
+      <nav style={S.nav}>
+        {NAV_ITEMS.map((item) => {
+          const active = isNavActive(item.href)
+          return (
+            <Link
+              key={item.id}
+              href={item.href}
+              style={{ ...S.navItem, ...(active ? S.navItemActive : {}) }}
+              title={!inDrawer && !sidebarOpen ? item.label : undefined}
+            >
+              <span style={S.navIcon}>{item.icon}</span>
+              {(inDrawer || sidebarOpen) && <span style={S.navLabel}>{item.label}</span>}
+              {(inDrawer || sidebarOpen) && active && <span style={S.navDot} />}
+            </Link>
+          )
+        })}
+      </nav>
+
+      {(inDrawer || sidebarOpen) && (
+        <div style={S.sidebarFooter}>
+          {hasStore ? (
+            <a href={storeHref} target="_blank" rel="noopener noreferrer" style={S.storeLink}>
+              <span style={{ fontSize: 12 }}>▷</span> View Live Store
+            </a>
+          ) : (
+            <Link href="/onboarding" style={S.storeLink}>
+              <span style={{ fontSize: 12 }}>▷</span> Create Your Store
+            </Link>
+          )}
+        </div>
+      )}
+    </>
+  )
+
+  const UserDropdown = () =>
+    showUserMenu ? (
+      <div style={{
+        position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+        background: '#fff', border: '1px solid #ede8df', borderRadius: 10,
+        boxShadow: '0 8px 24px rgba(0,0,0,0.12)', minWidth: 180, zIndex: 1002,
+      }}>
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0ece4' }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#0F0E0C', margin: 0 }}>{displayName}</p>
+          <p style={{ fontSize: 11, color: '#999', margin: '2px 0 0' }}>{storeSlug || 'No store yet'}</p>
+        </div>
+        <Link
+          href="/dashboard/settings"
+          style={{ display: 'block', padding: '10px 16px', fontSize: 13, color: '#333', textDecoration: 'none' }}
+          onClick={() => setShowUserMenu(false)}
+        >
+          ⚙ Settings
+        </Link>
         <button
           type="button"
-          style={S.collapseBtn}
-          onClick={() => setSidebarOpen((o) => !o)}
-          aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+          onClick={() => { setShowUserMenu(false); void handleLogout() }}
+          style={{
+            display: 'block', width: '100%', textAlign: 'left',
+            padding: '10px 16px', fontSize: 13, color: '#dc2626',
+            background: 'none', border: 'none', cursor: 'pointer',
+            borderTop: '1px solid #f0ece4',
+          }}
         >
-          {sidebarOpen ? '◁' : '▷'}
+          ⎋ Log Out
         </button>
-      </aside>
+      </div>
+    ) : null
 
+  return (
+    <div style={S.root} onClick={() => setShowUserMenu(false)}>
+
+      {/* ── Mobile: backdrop + drawer ──────────────────────────────── */}
+      {isMobile && (
+        <>
+          {mobileDrawerOpen && (
+            <div
+              style={S.mobileBackdrop}
+              onClick={() => setMobileDrawerOpen(false)}
+              aria-hidden="true"
+            />
+          )}
+          <aside
+            style={{
+              ...S.sidebar,
+              ...S.mobileDrawer,
+              transform: mobileDrawerOpen ? 'translateX(0)' : 'translateX(-100%)',
+            }}
+          >
+            <SidebarInner inDrawer />
+          </aside>
+        </>
+      )}
+
+      {/* ── Desktop: static sidebar ───────────────────────────────── */}
+      {!isMobile && (
+        <aside style={{ ...S.sidebar, ...(sidebarOpen ? {} : S.sidebarCollapsed) }}>
+          <SidebarInner />
+          <button
+            type="button"
+            style={S.collapseBtn}
+            onClick={() => setSidebarOpen((o) => !o)}
+            aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+          >
+            {sidebarOpen ? '◁' : '▷'}
+          </button>
+        </aside>
+      )}
+
+      {/* ── Main area ─────────────────────────────────────────────── */}
       <main style={S.main}>
-        <header style={S.topbar}>
-          <div>
-            <h1 style={S.pageTitle}>{pageTitle}</h1>
-            <p style={S.pageDate}>
-              {new Date().toLocaleDateString('en-EG', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </p>
-          </div>
-          <div style={S.topbarRight}>
-            <StoreSelector />
-            <div style={S.periodToggle}>
-              {(['7d', '30d', '90d'] as const).map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  style={{ ...S.periodBtn, ...(period === p ? S.periodBtnActive : {}) }}
-                  onClick={() => setPeriod(p)}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-            {/* Avatar + logout dropdown */}
-            <div style={{ position: 'relative' }}>
+
+        {/* Mobile topbar */}
+        {isMobile ? (
+          <header style={S.mobileTopbar}>
+            <button
+              type="button"
+              style={S.hamburgerBtn}
+              onClick={(e) => { e.stopPropagation(); setMobileDrawerOpen(true) }}
+              aria-label="Open menu"
+            >
+              ☰
+            </button>
+            <h1 style={S.mobilePageTitle}>{pageTitle}</h1>
+            <div style={{ position: 'relative', flexShrink: 0 }}>
               <button
                 type="button"
                 style={{ ...S.topbarAvatar, cursor: 'pointer', border: 'none' }}
-                onClick={() => setShowUserMenu((v) => !v)}
+                onClick={(e) => { e.stopPropagation(); setShowUserMenu((v) => !v) }}
                 title="Account menu"
               >
                 {avatar}
               </button>
-              {showUserMenu && (
-                <div style={{
-                  position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-                  background: '#fff', border: '1px solid #ede8df', borderRadius: 10,
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)', minWidth: 180, zIndex: 999,
-                }}>
-                  <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0ece4' }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#0F0E0C', margin: 0 }}>{displayName}</p>
-                    <p style={{ fontSize: 11, color: '#999', margin: '2px 0 0' }}>{storeSlug || 'No store yet'}</p>
-                  </div>
-                  <Link
-                    href="/dashboard/settings"
-                    style={{ display: 'block', padding: '10px 16px', fontSize: 13, color: '#333', textDecoration: 'none' }}
-                    onClick={() => setShowUserMenu(false)}
-                  >
-                    ⚙ Settings
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => { setShowUserMenu(false); void handleLogout() }}
-                    style={{
-                      display: 'block', width: '100%', textAlign: 'left',
-                      padding: '10px 16px', fontSize: 13, color: '#dc2626',
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      borderTop: '1px solid #f0ece4',
-                    }}
-                  >
-                    ⎋ Log Out
-                  </button>
-                </div>
-              )}
+              <UserDropdown />
             </div>
-          </div>
-        </header>
+          </header>
+        ) : (
+          /* Desktop topbar */
+          <header style={S.topbar}>
+            <div>
+              <h1 style={S.pageTitle}>{pageTitle}</h1>
+              <p style={S.pageDate}>
+                {new Date().toLocaleDateString('en-EG', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </p>
+            </div>
+            <div style={S.topbarRight}>
+              <StoreSelector />
+              <div style={S.periodToggle}>
+                {(['7d', '30d', '90d'] as const).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    style={{ ...S.periodBtn, ...(period === p ? S.periodBtnActive : {}) }}
+                    onClick={() => setPeriod(p)}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+              <div style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  style={{ ...S.topbarAvatar, cursor: 'pointer', border: 'none' }}
+                  onClick={(e) => { e.stopPropagation(); setShowUserMenu((v) => !v) }}
+                  title="Account menu"
+                >
+                  {avatar}
+                </button>
+                <UserDropdown />
+              </div>
+            </div>
+          </header>
+        )}
 
-        <div style={S.content}>{children}</div>
+        <div style={isMobile ? S.mobileContent : S.content}>{children}</div>
       </main>
+
+      {/* ── Mobile bottom navigation ───────────────────────────────── */}
+      {isMobile && (
+        <nav style={S.mobileBottomNav} aria-label="Main navigation">
+          {BOTTOM_NAV_ITEMS.map((item) => {
+            const active = isNavActive(item.href)
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                style={{ ...S.mobileNavItem, ...(active ? S.mobileNavItemActive : {}) }}
+                aria-current={active ? 'page' : undefined}
+              >
+                <span style={S.mobileNavIcon}>{item.icon}</span>
+                <span style={S.mobileNavLabel}>{item.label}</span>
+              </Link>
+            )
+          })}
+        </nav>
+      )}
     </div>
   )
 }
