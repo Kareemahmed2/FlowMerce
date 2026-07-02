@@ -136,7 +136,7 @@ export default function StoreHome() {
       {/* ══════════════════════════════════════════════════════════════════════
           HERO
       ══════════════════════════════════════════════════════════════════════ */}
-      <section style={{
+      <section className="sf-hero" style={{
         position: 'relative',
         background: headerBg,
         minHeight: 560,
@@ -158,7 +158,7 @@ export default function StoreHome() {
           zIndex: 0,
         }} />
 
-        <div style={{
+        <div className="sf-section" style={{
           position: 'relative', zIndex: 1,
           maxWidth: 1440, margin: '0 auto',
           padding: '80px 32px',
@@ -240,7 +240,7 @@ export default function StoreHome() {
           CATEGORIES — bento grid
       ══════════════════════════════════════════════════════════════════════ */}
       {store.categories.length > 0 && (
-        <section id="categories" style={{ maxWidth: 1440, margin: '0 auto', padding: '64px 32px 0' }}>
+        <section id="categories" className="sf-section" style={{ maxWidth: 1440, margin: '0 auto', padding: '64px 32px 0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 28 }}>
             <div>
               <h2 style={{ fontSize: 26, fontWeight: 700, color: '#1e293b', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
@@ -283,7 +283,7 @@ export default function StoreHome() {
       ══════════════════════════════════════════════════════════════════════ */}
       {featuredProducts.length > 0 && (
         <section id="products" style={{ background: '#eceef0', padding: '64px 0', marginTop: 64 }}>
-          <div style={{ maxWidth: 1440, margin: '0 auto', padding: '0 32px' }}>
+          <div className="sf-section" style={{ maxWidth: 1440, margin: '0 auto', padding: '0 32px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 }}>
               <div>
                 <h2 style={{ fontSize: 26, fontWeight: 700, color: '#1e293b', margin: '0 0 4px', letterSpacing: '-0.02em' }}>
@@ -339,7 +339,7 @@ export default function StoreHome() {
       {/* ══════════════════════════════════════════════════════════════════════
           TRUST BANNER
       ══════════════════════════════════════════════════════════════════════ */}
-      <section style={{ maxWidth: 1440, margin: '0 auto', padding: '56px 32px' }}>
+      <section className="sf-section" style={{ maxWidth: 1440, margin: '0 auto', padding: '56px 32px' }}>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',

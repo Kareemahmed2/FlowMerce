@@ -190,7 +190,7 @@ export default function CheckoutPage() {
 
   return (
     <div style={{ background: '#f7f9fb', color: '#191c1e' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '36px 32px 72px' }}>
+      <div className="sf-section" style={{ maxWidth: 1200, margin: '0 auto', padding: '36px 32px 72px' }}>
         <nav style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 28, fontSize: 13 }}>
           <Link href={base} style={{ color: '#75777d', textDecoration: 'none' }} className="sf-breadcrumb-link">Home</Link>
           <span style={{ color: '#c5c6cd' }}>/</span>
@@ -208,7 +208,7 @@ export default function CheckoutPage() {
             {/* Contact */}
             <section>
               <h2 style={{ fontSize: 17, fontWeight: 600, margin: '0 0 16px' }}>Contact Information</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }} className="sf-two-col">
                 <div>
                   <label style={labelStyle}>First Name *</label>
                   <input value={form.firstName} onChange={(e) => upd('firstName', e.target.value)} style={inputStyle('firstName')} placeholder="Ahmed" />
@@ -220,7 +220,7 @@ export default function CheckoutPage() {
                   {errors.lastName && <span style={{ fontSize: 12, color: '#ef4444', marginTop: 4, display: 'block' }}>{errors.lastName}</span>}
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginTop: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginTop: 14 }} className="sf-two-col">
                 <div>
                   <label style={labelStyle}>Email *</label>
                   <input type="email" value={form.email} onChange={(e) => upd('email', e.target.value)} style={inputStyle('email')} placeholder="ahmed@example.com" />
@@ -242,7 +242,7 @@ export default function CheckoutPage() {
                 <input value={form.address} onChange={(e) => upd('address', e.target.value)} style={inputStyle('address')} placeholder="Street, building, apartment" />
                 {errors.address && <span style={{ fontSize: 12, color: '#ef4444', marginTop: 4, display: 'block' }}>{errors.address}</span>}
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }} className="sf-two-col">
                 <div>
                   <label style={labelStyle}>City *</label>
                   <input value={form.city} onChange={(e) => upd('city', e.target.value)} style={inputStyle('city')} placeholder="Cairo" />

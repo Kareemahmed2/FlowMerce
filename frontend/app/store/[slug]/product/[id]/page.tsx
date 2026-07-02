@@ -86,7 +86,7 @@ export default function ProductDetailPage() {
 
   return (
     <div style={{ background: '#f7f9fb', color: '#191c1e' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 32px 0' }}>
+      <div className="sf-section" style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 32px 0' }}>
 
         {/* ── Breadcrumb ──────────────────────────────────────────────────── */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 32, fontSize: 13 }}>

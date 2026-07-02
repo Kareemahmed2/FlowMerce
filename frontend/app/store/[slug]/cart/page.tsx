@@ -123,7 +123,7 @@ export default function CartPage() {
   // ── Filled cart ─────────────────────────────────────────────────────────────
   return (
     <div style={{ background: '#f7f9fb', color: '#191c1e' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 32px 80px' }}>
+      <div className="sf-section" style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 32px 80px' }}>
         <Breadcrumb items={[{ label: 'Home', href: base }, { label: `Cart (${cart.itemCount})` }]} />
 
         <h1 style={{ fontSize: 28, fontWeight: 800, color: '#1e293b', margin: '0 0 36px', letterSpacing: '-0.02em' }}>

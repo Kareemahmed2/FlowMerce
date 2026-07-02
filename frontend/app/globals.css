@@ -175,3 +175,45 @@
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
+
+/* ── Mobile baseline ─────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* Prevent horizontal overflow / accidental zoom */
+  html, body { overflow-x: hidden; }
+
+  /* Smooth momentum scrolling on iOS */
+  * { -webkit-overflow-scrolling: touch; }
+
+  /* Hide desktop scrollbars on touch devices */
+  ::-webkit-scrollbar { display: none; }
+
+  /* Ensure tap targets are large enough */
+  button, a { min-height: 36px; }
+
+  /* Prevent font size inflation in landscape */
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+  /* ── Storefront layout fixes ─────────────────────────────────────── */
+
+  /* Categories bento: 4-col → 2-col */
+  .sf-bento-grid { grid-template-columns: 1fr 1fr !important; }
+
+  /* Cart: sidebar stacks below items */
+  .cart-grid { grid-template-columns: 1fr !important; }
+
+  /* Checkout: order summary stacks below form */
+  .checkout-grid { grid-template-columns: 1fr !important; }
+
+  /* Checkout inner 2-col form rows → single column */
+  .sf-two-col { grid-template-columns: 1fr !important; }
+
+  /* Reduce section horizontal padding */
+  .sf-section { padding-left: 16px !important; padding-right: 16px !important; }
+
+  /* Hero: reduce tall padding */
+  .sf-hero { padding-top: 48px !important; padding-bottom: 48px !important; }
+
+  /* Auth card: reduce padding on small phones */
+  .auth-card { padding: 24px 20px !important; }
+  .auth-card h1 { font-size: 22px !important; }
+}

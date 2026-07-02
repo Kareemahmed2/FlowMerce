@@ -125,7 +125,7 @@ export default function SignupPage() {
 
         {/* ── Right form ────────────────────────────────────────────── */}
         <div style={{ width: '100%', maxWidth: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }} className="auth-form-side">
-          <div style={{ width: '100%', maxWidth: 440, background: '#fff', borderRadius: 20, padding: '40px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+          <div className="auth-card" style={{ width: '100%', maxWidth: 440, background: '#fff', borderRadius: 20, boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
             <p style={{ fontSize: 11, fontWeight: 700, color: '#4f46e5', letterSpacing: '0.12em', textTransform: 'uppercase', margin: '0 0 12px' }}>
               LET&apos;S GET YOU STARTED
             </p>
