@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -79,6 +80,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
                 .body(ErrorResponse.of(405, "Method Not Allowed",
                         ex.getMessage(), "METHOD_NOT_ALLOWED", request.getRequestURI()));
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleUnsupportedMediaType(
+            HttpMediaTypeNotSupportedException ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                .body(ErrorResponse.of(415, "Unsupported Media Type",
+                        ex.getMessage(), "UNSUPPORTED_MEDIA_TYPE", request.getRequestURI()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

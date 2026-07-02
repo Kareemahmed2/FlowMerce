@@ -29,6 +29,7 @@ FlowMerce is a smart e-commerce platform builder for SMEs. Its core differentiat
 9. [Event Bus (RabbitMQ)](#event-bus-rabbitmq)
 10. [Key Design Decisions](#key-design-decisions)
 11. [Performance & Caching Architecture](#performance--caching-architecture)
+12. [Testing](#testing)
 
 ---
 
@@ -732,3 +733,247 @@ The following scenarios were verified after both caching layers were deployed:
 | Old JWT used after logout | 401 | PASS |
 | Refresh token rotation — new access token issued | 200 with new token | PASS |
 | Password change — all user sessions evicted, old token rejected | Keys deleted, old token → 401 | PASS |
+
+---
+
+## Testing
+
+### Overview
+
+The test suite is structured in three tiers, matching the delivery phases:
+
+1. **Unit Tests** — isolated service logic with all dependencies mocked (JUnit 5 + Mockito)
+2. **Integration Tests** — controller slice tests using `MockMvc standaloneSetup` (no Spring context needed)
+3. **E2E Scenarios** — manual walkthrough scripts for three user personas
+
+---
+
+### Part 1 — Unit Tests (Backend)
+
+**Framework:** JUnit 5 · Mockito · AssertJ
+**Pattern:** `@ExtendWith(MockitoExtension.class)` + `@MockitoSettings(strictness = Strictness.LENIENT)` + `@InjectMocks`
+**Spring Boot 4.0 note:** `@MockBean` / `@WebMvcTest` were removed in Spring Boot 4.x. All controller tests use `MockMvcBuilders.standaloneSetup()` instead.
+
+#### U-ORD — OrderService
+
+| ID | Scenario | Expected Outcome | Actual Outcome |
+|---|---|---|---|
+| U-ORD-01 | Place order with valid checkout summary | Order created, invoice generated, cart confirmed | PASS |
+| U-ORD-02 | Same idempotency key → Redis cache hit | Returns existing order, no duplicate | PASS |
+| U-ORD-03 | Empty cart → BadRequestException | Exception with "empty cart" message | PASS |
+| U-ORD-04 | Cancel PENDING order | Status → CANCELLED, order saved | PASS |
+| U-ORD-05 | Cancel SHIPPED order | BadRequestException with "cannot be cancelled" | PASS |
+| U-ORD-06 | Status transition CONFIRMED → SHIPPED | Status updated, event published | PASS |
+| U-ORD-07 | Invalid transition SHIPPED → PENDING | BadRequestException "Invalid status transition" | PASS |
+| U-ORD-08 | Get order belonging to different customer | ForbiddenException | PASS |
+| U-ORD-09 | getOrderItemsForReorder on own order | Returns list of AddToCartRequest DTOs | PASS |
+| U-ORD-10 | getAllOrders (admin) | Returns paginated OrderSummary page | PASS |
+
+**Result: 10/10 tests passed**
+
+---
+
+#### U-CART — CartService
+
+| ID | Scenario | Expected Outcome | Actual Outcome |
+|---|---|---|---|
+| U-CART-01 | Add item with sufficient stock | Cart item added, total recalculated | PASS |
+| U-CART-02 | Add item exceeding available stock | BadRequestException — insufficient stock | PASS |
+| U-CART-03 | Add item from inactive product | BadRequestException — product not available | PASS |
+| U-CART-04 | Update quantity to valid number | Quantity updated, total recalculated | PASS |
+| U-CART-05 | Update quantity exceeds stock | BadRequestException | PASS |
+| U-CART-06 | Remove item | Item deleted, cart total decremented | PASS |
+| U-CART-07 | Get cart for known customer+store | Returns CartResponse with items | PASS |
+| U-CART-08 | Get cart — cart not found | ResourceNotFoundException | PASS |
+| U-CART-09 | Clear cart | Cart emptied, success message returned | PASS |
+
+**Result: 9/9 tests passed**
+
+---
+
+#### U-INV — InventoryServiceImpl
+
+| ID | Scenario | Expected Outcome | Actual Outcome |
+|---|---|---|---|
+| U-INV-01 | adjustStock — valid quantity | Stock updated, transaction logged, event published | PASS |
+| U-INV-02 | adjustStock — optimistic lock conflict | BadRequestException containing "conflict" | PASS |
+| U-INV-03 | reserveStock — sufficient stock | true returned, reservedQuantity incremented | PASS |
+| U-INV-04 | reserveStock — insufficient stock | false returned, Redis key restored | PASS |
+| U-INV-05 | releaseStock — valid release | reservedQuantity decremented, Redis incremented | PASS |
+| U-INV-06 | releaseStock — more than reserved | BadRequestException "Cannot release more than reserved" | PASS |
+| U-INV-07 | checkAvailability — sufficient | true | PASS |
+| U-INV-08 | checkAvailability — insufficient | false | PASS |
+| U-INV-09 | adjustStock — inventory not found | ResourceNotFoundException | PASS |
+
+**Result: 9/9 tests passed**
+
+---
+
+#### U-AUTH — AuthService
+
+| ID | Scenario | Expected Outcome | Actual Outcome |
+|---|---|---|---|
+| U-AUTH-01 | Register with new email | User created, merchant profile saved, activation email sent | PASS |
+| U-AUTH-02 | Register with duplicate email | ConflictException "already registered" | PASS |
+| U-AUTH-03 | Activate with valid token | User isActive becomes true, token used becomes true | PASS |
+| U-AUTH-04 | Activate with expired token | BadRequestException "expired" | PASS |
+| U-AUTH-05 | Activate with invalid/unknown token | BadRequestException | PASS |
+| U-AUTH-06 | Forgot password — registered email | Reset token created, password reset email sent | PASS |
+| U-AUTH-07 | Forgot password — unknown email | Returns silently (no enumeration), no email sent | PASS |
+| U-AUTH-08 | Reset password with valid token | Password hash updated, token marked used | PASS |
+
+**Result: 8/8 tests passed**
+
+---
+
+#### U-PAY — PaymentServiceImpl
+
+| ID | Scenario | Expected Outcome | Actual Outcome |
+|---|---|---|---|
+| U-PAY-01 | Initiate COD payment | PENDING payment created, COD adapter invoked | PASS |
+| U-PAY-02 | Idempotency cache hit | Returns cached payment, no adapter invoked | PASS |
+| U-PAY-03 | Confirm PENDING payment | Status becomes COMPLETED, event published | PASS |
+| U-PAY-04 | Full refund on COMPLETED payment | Status becomes REFUNDED, refund event published | PASS |
+| U-PAY-05 | Partial refund | Status becomes PARTIALLY_REFUNDED | PASS |
+| U-PAY-06 | Refund on PENDING payment | BadRequestException "Only completed payments" | PASS |
+| U-PAY-07 | Refund amount exceeds payment | BadRequestException "exceeds payment amount" | PASS |
+| U-PAY-08 | Confirm already-COMPLETED payment | BadRequestException "cannot be confirmed" | PASS |
+
+**Result: 8/8 tests passed**
+
+---
+
+### Part 2 — Integration Tests (Controller Slice)
+
+**Framework:** JUnit 5 · Mockito · Spring MockMvc (`MockMvcBuilders.standaloneSetup`)
+**Setup:** Each controller is instantiated directly. `GlobalExceptionHandler` is registered via `.setControllerAdvice()`.
+**No Spring context required.** Services are mocked with `@Mock`.
+
+#### CartController Slice Tests
+
+| ID | Scenario | Expected HTTP | Actual Outcome |
+|---|---|---|---|
+| I-CART-01 | GET /cart/{storeId} — authenticated buyer | 200 + cart data | PASS |
+| I-CART-02 | POST /cart/items — valid payload | 200 + cart data | PASS |
+| I-CART-03 | DELETE /cart/items/{id} — item not found | 404 | PASS |
+| I-CART-04 | POST /cart/items — inactive product | 400 | PASS |
+| I-CART-05 | PUT /cart/items/{id} — update quantity | 200 + cart data | PASS |
+| I-CART-06 | DELETE /cart/{storeId} — clear cart | 200 + success message | PASS |
+| I-CART-07 | POST /cart/items with text/plain Content-Type | 415 | PASS |
+
+**Result: 7/7 tests passed**
+
+---
+
+#### OrderController Slice Tests
+
+| ID | Scenario | Expected HTTP | Actual Outcome |
+|---|---|---|---|
+| I-ORD-01 | GET /orders/me — buyer | 200 + array | PASS |
+| I-ORD-02 | GET /orders/{id} — own order | 200 + order detail | PASS |
+| I-ORD-03 | GET /orders/{id} — not found | 404 | PASS |
+| I-ORD-04 | GET /orders/{id} — another customer | 403 | PASS |
+| I-ORD-05 | POST /orders/{id}/cancel — pending order | 200 + CANCELLED status | PASS |
+| I-ORD-06 | POST /orders/{id}/cancel — shipped order | 400 | PASS |
+| I-ORD-07 | PUT /orders/{id}/status — merchant updates | 200 + new status | PASS |
+| I-ORD-08 | GET /orders/store/{storeId} — merchant role | 200 + array | PASS |
+
+**Result: 8/8 tests passed**
+
+---
+
+### Summary
+
+| Tier | Tests Run | Passed | Failed |
+|---|---|---|---|
+| Unit — OrderService | 10 | 10 | 0 |
+| Unit — CartService | 9 | 9 | 0 |
+| Unit — InventoryServiceImpl | 9 | 9 | 0 |
+| Unit — AuthService | 8 | 8 | 0 |
+| Unit — PaymentServiceImpl | 8 | 8 | 0 |
+| Integration — CartController | 7 | 7 | 0 |
+| Integration — OrderController | 8 | 8 | 0 |
+| **Total** | **59** | **59** | **0** |
+
+---
+
+### Part 3 — E2E Scenarios (Manual)
+
+Run against the live Docker stack: frontend `http://localhost:3000`, backend `http://localhost:8080/api/v1`.
+
+#### Persona 1 — Merchant Journey
+
+**Pre-condition:** Fresh environment, no existing account.
+
+1. Navigate to `http://localhost:3000` — signup page loads
+2. Fill name, email, password → click GET STARTED → confirm "check your email" message
+3. Open inbox → click activation link → "Account activated" shown
+4. Navigate to `/login` → log in → redirect to `/dashboard`
+5. Complete onboarding: store name, logo, payment methods (Wallet + COD) → save
+6. Create product: name, price = 150 EGP, stock = 10, category → confirm appears in product list
+7. Upload product image → thumbnail shown
+8. Go to store settings → click Publish store
+9. Click View Live Store → `/store/{slug}` loads with branding and product visible
+10. Navigate to `/dashboard/analytics` → charts render
+11. Navigate to `/dashboard/settings` → change store name → save → verify updated
+12. Navigate to `/dashboard/design` → add banner component → save
+13. Log out → redirect to `/login`
+
+**Expected:** Complete merchant lifecycle — registered, store live, product visible, design customised.
+
+---
+
+#### Persona 2 — Customer Journey
+
+**Pre-condition:** Persona 1 complete; store published with at least one product in stock.
+
+1. Navigate to `/store/{slug}` → store homepage visible
+2. Click product → product detail page shows image, name, price, stock status
+3. Click Add to Cart → cart badge increments to 1
+4. Proceed to checkout without login → redirect to `/store/{slug}/login`
+5. Register as customer (new email) → activate via email link
+6. Log in → return to store cart (items preserved or re-add)
+7. Go to checkout → fill in delivery address
+8. Select Wallet payment → wallet balance shows 0
+9. Navigate to `/store/{slug}/account/wallet` → top up 500 EGP
+10. Return to checkout → complete order → redirect to `/store/{slug}/confirmation`
+11. Confirm order ID visible on confirmation page
+12. Navigate to `/store/{slug}/account/orders` → order appears with PENDING status
+13. Open order detail → items, total, payment method correct
+14. Submit product review: 4 stars + comment → review appears on product page
+15. Add product to wishlist → visible in `/store/{slug}/wishlist`
+16. Move wishlist item to cart → cart updated
+17. Cancel the order → status becomes CANCELLED
+18. Verify wallet balance restored to 500 EGP
+
+**Expected:** Complete customer journey — discovered product, purchased, reviewed, and cancelled.
+
+---
+
+#### Persona 3 — Admin Journey
+
+**Pre-condition:** Admin credentials available. Personas 1 & 2 complete.
+
+1. Log in as admin → redirect to `/admin`
+2. `/admin/users` → merchant and customer from Personas 1 & 2 visible
+3. Deactivate customer account → status changes; re-activate → access restored
+4. `/admin/merchants` → merchant from Persona 1 listed → click Verify merchant
+5. `/admin/stores` → published store visible
+6. `/admin/orders` → order from Persona 2 visible with details
+7. `/admin/categories` → create global category "Electronics"
+8. Switch to merchant login → product creation form includes "Electronics"
+9. Log out → redirect to `/login`
+
+**Expected:** Admin can manage all platform actors and platform-wide entities.
+
+---
+
+#### Cross-Persona Verification Checklist
+
+- [ ] Merchant wallet shows credited amount equal to order total
+- [ ] Product stock = 10 (restored after cancellation)
+- [ ] Product review visible on public product detail page
+- [ ] Merchant dashboard shows new-order notification
+- [ ] Customer account shows order status update notification
+- [ ] Admin user list shows all 3 accounts (merchant, customer, admin)
+- [ ] New "Electronics" category visible to merchant in product form
