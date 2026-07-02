@@ -9,6 +9,7 @@ public class AuthResponse {
     private String refreshToken;
     private long expiresIn;
     private UserInfo user;
+    private Boolean mfaRequired;
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class UserInfo {

@@ -3,6 +3,7 @@ package com.example.flowmerceproject.UserManagement.service;
 import com.example.flowmerceproject.UserManagement.config.JwtUtil;
 import com.example.flowmerceproject.UserManagement.dto.AuthResponse;
 import com.example.flowmerceproject.UserManagement.dto.LoginRequest;
+import com.example.flowmerceproject.UserManagement.dto.MfaVerifyRequest;
 import com.example.flowmerceproject.UserManagement.dto.PasswordDTOs;
 import com.example.flowmerceproject.UserManagement.dto.RegisterRequest;
 import com.example.flowmerceproject.UserManagement.dto.UserResponse;
@@ -29,12 +30,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+
+    private static final SecureRandom RNG = new SecureRandom();
 
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
@@ -128,26 +132,95 @@ public class AuthService {
                 "Account is not activated. Please check your email for the activation link.");
         }
 
+        if (Boolean.TRUE.equals(user.getIsMfaEnabled())) {
+            sendMfaOtp(user.getEmail());
+            return AuthResponse.builder().mfaRequired(true).build();
+        }
+
+        return issueTokensFor(user);
+    }
+
+    // ── MFA OTP ───────────────────────────────────────────────────────────────
+
+    @Transactional
+    public void sendMfaOtp(String email) {
+        String sixDigit = String.format("%06d", RNG.nextInt(1_000_000));
+        // PK = "email:otp" so it is globally unique even if two users get the same digits
+        String tokenKey = email + ":" + sixDigit;
+        tokenRepository.deleteByEmailAndType(email, VerificationToken.TokenType.MFA_OTP);
+        tokenRepository.save(VerificationToken.builder()
+                .token(tokenKey)
+                .email(email)
+                .type(VerificationToken.TokenType.MFA_OTP)
+                .expiresAt(LocalDateTime.now().plusMinutes(10))
+                .build());
+        emailService.sendMfaOtpEmail(email, sixDigit);
+    }
+
+    @Transactional
+    public AuthResponse verifyMfaOtp(MfaVerifyRequest request) {
+        User user = validateAndConsumeOtp(request.getEmail(), request.getOtp());
+        return issueTokensFor(user);
+    }
+
+    @Transactional
+    public String enableMfa(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        if (Boolean.TRUE.equals(user.getIsMfaEnabled())) {
+            throw new BadRequestException("Two-factor authentication is already enabled.");
+        }
+        user.setIsMfaEnabled(true);
+        userRepository.save(user);
+        return "Two-factor authentication has been enabled.";
+    }
+
+    @Transactional
+    public String disableMfa(String email, String otp) {
+        validateAndConsumeOtp(email, otp);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        user.setIsMfaEnabled(false);
+        userRepository.save(user);
+        return "Two-factor authentication has been disabled.";
+    }
+
+    private User validateAndConsumeOtp(String email, String otp) {
+        String tokenKey = email + ":" + otp;
+        VerificationToken vt = tokenRepository
+                .findByTokenAndTypeAndUsedFalse(tokenKey, VerificationToken.TokenType.MFA_OTP)
+                .orElseThrow(() -> new BadRequestException("Invalid or expired verification code."));
+
+        if (vt.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Verification code has expired.");
+        }
+
+        vt.setUsed(true);
+        tokenRepository.save(vt);
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
+    private AuthResponse issueTokensFor(User user) {
         String accessToken = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
 
-        Session accessSession = Session.builder()
+        sessionRepository.save(Session.builder()
                 .user(user)
                 .token(accessToken)
                 .isRevoked(false)
                 .createdAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plusSeconds(jwtExpirationMs / 1000))
-                .build();
-        sessionRepository.save(accessSession);
+                .build());
 
         String refreshToken = UUID.randomUUID().toString();
-        Session refreshSession = Session.builder()
+        sessionRepository.save(Session.builder()
                 .user(user)
                 .token(refreshToken)
                 .isRevoked(false)
                 .createdAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plusDays(30))
-                .build();
-        sessionRepository.save(refreshSession);
+                .build());
 
         return buildAuthResponse(user, accessToken, refreshToken);
     }

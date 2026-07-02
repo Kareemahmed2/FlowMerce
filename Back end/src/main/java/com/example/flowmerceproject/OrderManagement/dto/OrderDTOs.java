@@ -77,6 +77,7 @@ public class OrderDTOs {
         private LocalDateTime orderDate;
         private String storeName;
         private String customerName;
+        private String paymentMethod;
     }
 
     @Data

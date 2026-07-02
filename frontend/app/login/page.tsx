@@ -44,54 +44,49 @@ function LoginPageContent() {
 
   // ── OAuth2 callback handler ────────────────────────────────────────────────
   // After Google/Facebook redirects back, the backend appends
-  //   ?accessToken=...&refreshToken=...&role=...
-  // to this page's URL. We detect that and establish the session.
+  //   ?accessToken=...&refreshToken=...&role=...&userId=...&email=...&name=...
+  // to this page's URL. We detect that and establish the session directly
+  // without an extra /me round-trip (user data is already in the URL params).
   useEffect(() => {
     const params = parseOAuthCallback(new URLSearchParams(window.location.search))
     if (!params) return
 
     setLoading(true)
-    // Fetch the user's full profile with the new token, then build a proper session.
-    authService.getMerchantMe({ Authorization: `Bearer ${params.accessToken}` })
-      .then(async (result) => {
-        if (!result.ok) {
-          setError('Social login succeeded but could not fetch profile. Please try again.')
-          setLoading(false)
-          return
-        }
-        const u = result.data
-        const session = buildSession({
-          accessToken: params.accessToken,
-          refreshToken: params.refreshToken,
-          expiresIn: params.expiresIn,
-          user: {
-            userId: u.userId,
-            email: u.email,
-            fullName: u.fullName ?? '',
-            role: params.role,
-            createdAt: u.createdAt ?? new Date().toISOString(),
-          },
-        })
-        auth.setSession(session)
 
-        // Fetch storeId
-        const storesR = await storeService.getMyStores({ Authorization: `Bearer ${params.accessToken}` })
-        if (storesR.ok && storesR.data.length > 0) {
-          auth.patchStoreId(storesR.data[0].storeId)
-        }
+    const run = async () => {
+      const session = buildSession({
+        accessToken: params.accessToken,
+        refreshToken: params.refreshToken,
+        expiresIn: params.expiresIn,
+        user: {
+          userId: params.userId,
+          email: params.email,
+          fullName: params.fullName,
+          role: params.role,
+          createdAt: new Date().toISOString(),
+        },
+      })
+      auth.setSession(session)
 
-        // Clean the token params from the URL then navigate
-        window.history.replaceState({}, '', '/login')
-        if (params.role === 'ADMIN') {
-          router.push('/admin')
-        } else {
-          router.push('/dashboard')
-        }
-      })
-      .catch(() => {
-        setError('Social login failed. Please try again.')
-        setLoading(false)
-      })
+      // Fetch storeId
+      const storesR = await storeService.getMyStores({ Authorization: `Bearer ${params.accessToken}` })
+      if (storesR.ok && storesR.data.length > 0) {
+        auth.patchStoreId(storesR.data[0].storeId)
+      }
+
+      // Clean the token params from the URL then navigate
+      window.history.replaceState({}, '', '/login')
+      if (params.role === 'ADMIN') {
+        router.push('/admin')
+      } else {
+        router.push('/dashboard')
+      }
+    }
+
+    run().catch(() => {
+      setError('Social login failed. Please try again.')
+      setLoading(false)
+    })
   // Only run once on mount
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

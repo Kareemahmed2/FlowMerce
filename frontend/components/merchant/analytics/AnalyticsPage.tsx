@@ -36,9 +36,9 @@ export function AnalyticsPage() {
       if (cancelled || !r.ok) return
       import('@/types/order.types').then(() => {
         const rows = (r.data as import('@/types/order.types').MerchantOrderSummary[]).map((o) => ({
-          id: String(o.orderId), customer: '', email: '', product: '', items: o.itemCount ?? 0,
+          id: String(o.orderId), customer: o.customerName ?? '', email: '', product: '', items: o.itemCount ?? 0,
           amount: o.total, status: (o.status?.toLowerCase() ?? 'pending') as 'pending',
-          payment: 'cod' as const,
+          payment: o.paymentMethod?.toLowerCase() ?? 'cod',
           date: o.orderDate ? new Date(o.orderDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
           address: '',
         }))

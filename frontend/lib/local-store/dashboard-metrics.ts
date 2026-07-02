@@ -1,5 +1,6 @@
 import type { CatalogCategory } from '@/components/merchant/onboarding/types'
 import type { OrderRow } from '@/components/merchant/orders/orders-data'
+import { periodChangePct } from './analytics-from-orders'
 
 export type MetricComputed = {
   value: number
@@ -18,16 +19,15 @@ export function computeMetrics(orders: OrderRow[]): Record<string, MetricCompute
     .reduce((s, o) => s + o.amount, 0)
   const orderCount = orders.length
   const customers = new Set(orders.map((o) => o.email)).size
+
+  const revenueChange = Math.round((periodChangePct(orders, 7, 'revenue') ?? 0) * 10) / 10
+  const ordersChange = Math.round((periodChangePct(orders, 7, 'orders') ?? 0) * 10) / 10
+
   return {
-    revenue: { value: revenue, change: 0, label: 'Total Revenue', unit: 'EGP' },
-    orders: { value: orderCount, change: 0, label: 'Total Orders', unit: '' },
+    revenue: { value: revenue, change: revenueChange, label: 'Total Revenue', unit: 'EGP' },
+    orders: { value: orderCount, change: ordersChange, label: 'Total Orders', unit: '' },
     customers: { value: customers, change: 0, label: 'Customers', unit: '' },
-    conversion: {
-      value: orderCount ? 0 : 0,
-      change: 0,
-      label: 'Conversion Rate',
-      unit: '%',
-    },
+    conversion: { value: 0, change: 0, label: 'Conversion Rate', unit: '%' },
   }
 }
 

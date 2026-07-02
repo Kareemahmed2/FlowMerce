@@ -66,6 +66,19 @@ public class EmailService {
     }
 
     @Async
+    public void sendMfaOtpEmail(String toEmail, String otp) {
+        String subject = "Your FlowMerce login verification code";
+        String body = """
+                <h2>Verification Code</h2>
+                <p>Use the code below to complete your sign-in:</p>
+                <h1 style="letter-spacing:8px;font-size:36px;">%s</h1>
+                <p>This code expires in <strong>10 minutes</strong>.</p>
+                <p>If you did not attempt to sign in, please secure your account immediately.</p>
+                """.formatted(otp);
+        sendHtmlEmail(toEmail, subject, body);
+    }
+
+    @Async
     public void sendPasswordResetEmail(String toEmail, String token) {
         String resetLink = frontendUrl + "/reset-password?token=" + token;
         String subject = "Reset your FlowMerce password";

@@ -64,15 +64,14 @@ export function DashboardOverview() {
       // Map backend MerchantOrderSummary[] → OrderRow[] for metric/chart helpers
       const rows: OrderRow[] = (result.data as import('@/types/order.types').MerchantOrderSummary[]).map((o) => ({
         id: String(o.orderId),
-        customer: o.storeName ?? 'Customer',
+        customer: o.customerName ?? 'Customer',
         email: '',
         product: '',
         amount: o.total,
-        total: o.total,
         status: (o.status?.toLowerCase() ?? 'pending') as OrderRow['status'],
         date: o.orderDate ? new Date(o.orderDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         items: o.itemCount ?? 0,
-        payment: 'cod',
+        payment: o.paymentMethod?.toLowerCase() ?? 'cod',
         address: '',
       }))
       setLiveOrders(rows)
