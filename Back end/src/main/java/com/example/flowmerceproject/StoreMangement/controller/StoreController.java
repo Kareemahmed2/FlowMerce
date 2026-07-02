@@ -51,14 +51,6 @@ public class StoreController {
         return ResponseEntity.ok(ApiResponse.ok(storeService.getBySlug(slug)));
     }
 
-    /** Public — checkout UI calls this to know which methods to present to the customer. */
-    @GetMapping("/{storeId}/payment-methods")
-    public ResponseEntity<ApiResponse<List<String>>> getPaymentMethods(
-            @PathVariable Integer storeId) {
-        return ResponseEntity.ok(ApiResponse.ok(
-                storeService.getEnabledPaymentMethods(storeId)));
-    }
-
     @PutMapping("/{storeId}")
     @PreAuthorize("hasRole('MERCHANT')")
     public ResponseEntity<ApiResponse<StoreResponse>> updateStore(

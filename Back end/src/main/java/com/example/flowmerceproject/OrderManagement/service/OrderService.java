@@ -498,7 +498,6 @@ public class OrderService {
                 .orderDate(order.getOrderDate())
                 .storeName(order.getStore().getStoreName())
                 .customerName(extractFullName(order.getShippingAddress()))
-                .paymentMethod(order.getPaymentMethod())
                 .build();
     }
 

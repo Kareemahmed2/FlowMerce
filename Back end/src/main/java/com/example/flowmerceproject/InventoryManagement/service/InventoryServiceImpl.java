@@ -172,9 +172,6 @@ public class InventoryServiceImpl implements InventoryService {
             return true;
 
         } catch (OptimisticLockingFailureException e) {
-            // DB write lost the race — undo the Redis decrement so the cache stays
-            // consistent with DB (otherwise stock is phantom-reserved in Redis forever).
-            redisTemplate.opsForValue().increment(key(productId), quantity);
             throw new BadRequestException(
                     "Reservation conflict on product: " + productId + ". Please retry.");
         }
@@ -260,8 +257,7 @@ public class InventoryServiceImpl implements InventoryService {
     @Transactional(readOnly = true)
     public InventoryResponse getInventoryDetails(Long productId) {
         Inventory inv = getOrThrow(productId);
-        // Use Redis-first path so pending reservations are reflected
-        int available = getAvailableQuantity(productId);
+        int available = inv.getQuantity() - inv.getReservedQuantity();
         return InventoryResponse.builder()
                 .productId(productId)
                 .storeId(inv.getStoreId())
@@ -278,17 +274,19 @@ public class InventoryServiceImpl implements InventoryService {
     @Transactional(readOnly = true)
     public List<InventoryResponse> getStoreInventory(Integer storeId) {
         return inventoryRepository.findByStoreId(storeId).stream()
-                .map(inv -> InventoryResponse.builder()
-                        .productId((long) inv.getProductId())
-                        .storeId(inv.getStoreId())
-                        // Redis-first so pending reservations are reflected
-                        .availableQuantity(getAvailableQuantity((long) inv.getProductId()))
-                        .reservedQuantity(inv.getReservedQuantity())
-                        .totalQuantity(inv.getQuantity())
-                        .stockStatus(resolveStockStatus(inv))
-                        .lowStockThreshold(inv.getLowStockThreshold())
-                        .lastUpdated(inv.getUpdatedAt())
-                        .build())
+                .map(inv -> {
+                    InventoryResponse r = InventoryResponse.builder()
+                            .productId((long) inv.getProductId())
+                            .storeId(inv.getStoreId())
+                            .availableQuantity(inv.getQuantity() - inv.getReservedQuantity())
+                            .reservedQuantity(inv.getReservedQuantity())
+                            .totalQuantity(inv.getQuantity())
+                            .stockStatus(resolveStockStatus(inv))
+                            .lowStockThreshold(inv.getLowStockThreshold())
+                            .lastUpdated(inv.getUpdatedAt())
+                            .build();
+                    return r;
+                })
                 .collect(Collectors.toList());
     }
 

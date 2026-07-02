@@ -233,7 +233,6 @@ export interface MerchantOrderSummary {
   orderDate: string
   storeName: string
   customerName?: string
-  paymentMethod?: string
 }
 
 /** Returned by GET /orders/store/{storeId}/customers — one row per distinct customer. */

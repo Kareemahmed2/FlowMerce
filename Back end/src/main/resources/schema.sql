@@ -194,8 +194,8 @@ CREATE TABLE IF NOT EXISTS shopping_carts (
                                               created_at  TIMESTAMP WITHOUT TIME ZONE,
                                               expires_at  TIMESTAMP WITHOUT TIME ZONE,
                                               UNIQUE (customer_id, store_id),
-                                              FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE,
-                                              FOREIGN KEY (store_id)    REFERENCES stores(store_id) ON DELETE CASCADE
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE,
+    FOREIGN KEY (store_id)    REFERENCES stores(store_id) ON DELETE CASCADE
     );
 
 CREATE TABLE IF NOT EXISTS cart_items (
@@ -314,9 +314,9 @@ CREATE TABLE IF NOT EXISTS deliveries (
 -- =========================
 
 CREATE TABLE IF NOT EXISTS store_integrations (
-    integration_id        SERIAL PRIMARY KEY,
-    store_id               INT          NOT NULL,
-    provider                VARCHAR(20)  NOT NULL,             -- PAYMOB, DHL, ARAMEX, BOSTA
+                                                  integration_id        SERIAL PRIMARY KEY,
+                                                  store_id               INT          NOT NULL,
+                                                  provider                VARCHAR(20)  NOT NULL,             -- PAYMOB, DHL, ARAMEX, BOSTA
     enabled                 BOOLEAN      NOT NULL DEFAULT FALSE,
     credentials_encrypted   TEXT         NOT NULL,             -- AES-GCM encrypted JSON credential map
     last_verified_at        TIMESTAMP WITHOUT TIME ZONE,
@@ -328,9 +328,9 @@ CREATE TABLE IF NOT EXISTS store_integrations (
     );
 
 CREATE TABLE IF NOT EXISTS shipments (
-    shipment_id       SERIAL PRIMARY KEY,
-    order_id          INT          NOT NULL UNIQUE,
-    carrier           VARCHAR(20)  NOT NULL,                   -- DHL, ARAMEX, BOSTA
+                                         shipment_id       SERIAL PRIMARY KEY,
+                                         order_id          INT          NOT NULL UNIQUE,
+                                         carrier           VARCHAR(20)  NOT NULL,                   -- DHL, ARAMEX, BOSTA
     tracking_number   VARCHAR(100),
     status            VARCHAR(20)  NOT NULL DEFAULT 'CREATED',  -- CREATED, IN_TRANSIT, DELIVERED, FAILED, CANCELLED
     label_url         TEXT,

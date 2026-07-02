@@ -43,13 +43,13 @@ public class SecurityConfig {
                 // Fix: return 401 (Unauthorized) for unauthenticated requests,
                 // not 403 (Forbidden). Spring Security defaults to 403 for both.
                 .exceptionHandling(ex -> ex
-                    .authenticationEntryPoint((request, response, authException) -> {
-                        response.setStatus(401);
-                        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                        response.getWriter().write(
-                            "{\"success\":false,\"message\":\"Authentication required.\",\"status\":401,\"code\":\"UNAUTHORIZED\"}"
-                        );
-                    })
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(401);
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            response.getWriter().write(
+                                    "{\"success\":false,\"message\":\"Authentication required.\",\"status\":401,\"code\":\"UNAUTHORIZED\"}"
+                            );
+                        })
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -62,8 +62,6 @@ public class SecurityConfig {
                                 "/auth/merchant/forgot-password",
                                 "/auth/merchant/reset-password",
                                 "/auth/merchant/refresh",
-                                "/auth/merchant/2fa/verify",
-                                "/auth/merchant/2fa/resend",
                                 "/auth/customer/register",
                                 "/auth/customer/login",
                                 "/auth/customer/activate",
@@ -96,12 +94,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // DOC-6: always allow the configured frontend origin + *.flowmerce.io.
+        // DOC-6: always allow the configured frontend origin + *.flowmerce.tech.
         // In dev frontendUrl = http://localhost:3000; in prod override via FRONTEND_URL.
         config.setAllowedOriginPatterns(List.of(
                 frontendUrl,
                 "http://localhost:[*]",
-                "https://*.flowmerce.io"
+                "https://*.flowmerce.tech"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));

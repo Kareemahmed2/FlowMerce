@@ -3,7 +3,6 @@ package com.example.flowmerceproject.UserManagement.controller;
 import com.example.flowmerceproject.UserManagement.config.CookieUtil;
 import com.example.flowmerceproject.UserManagement.dto.*;
 import com.example.flowmerceproject.UserManagement.service.AuthService;
-import com.example.flowmerceproject.UserManagement.dto.MfaVerifyRequest;
 import com.example.flowmerceproject.common.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -100,46 +99,5 @@ public class AuthController {
     public ResponseEntity<ApiResponse<String>> resetPassword(
             @Valid @RequestBody PasswordDTOs.ResetPasswordRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(authService.resetPassword(request)));
-    }
-
-    // ── 2FA ENDPOINTS ─────────────────────────────────────────────────────────
-
-    @PostMapping("/2fa/verify")
-    public ResponseEntity<ApiResponse<AuthResponse>> verifyMfa(
-            @Valid @RequestBody MfaVerifyRequest request,
-            HttpServletResponse response) {
-        AuthResponse auth = authService.verifyMfaOtp(request);
-        cookieUtil.setAuthCookies(response, CookieUtil.MERCHANT_SCOPE, auth.getAccessToken(), auth.getRefreshToken(),
-                jwtExpirationMs / 1000, 30L * 24 * 3600);
-        return ResponseEntity.ok(ApiResponse.ok(auth, "Login successful"));
-    }
-
-    @PostMapping("/2fa/resend")
-    public ResponseEntity<ApiResponse<String>> resendMfa(
-            @RequestBody java.util.Map<String, String> body) {
-        String email = body.get("email");
-        if (email == null || email.isBlank()) {
-            throw new BadRequestException("Email is required");
-        }
-        authService.sendMfaOtp(email);
-        return ResponseEntity.ok(ApiResponse.ok("Verification code resent."));
-    }
-
-    @PostMapping("/2fa/setup")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<String>> setupMfa(Principal principal) {
-        return ResponseEntity.ok(ApiResponse.ok(authService.enableMfa(principal.getName())));
-    }
-
-    @PostMapping("/2fa/disable")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ApiResponse<String>> disableMfa(
-            @RequestBody java.util.Map<String, String> body,
-            Principal principal) {
-        String otp = body.get("otp");
-        if (otp == null || otp.isBlank()) {
-            throw new BadRequestException("OTP is required");
-        }
-        return ResponseEntity.ok(ApiResponse.ok(authService.disableMfa(principal.getName(), otp)));
     }
 }

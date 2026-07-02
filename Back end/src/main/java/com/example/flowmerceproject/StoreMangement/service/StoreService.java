@@ -20,10 +20,7 @@ import com.example.flowmerceproject.UserManagement.exception.ForbiddenException;
 import com.example.flowmerceproject.UserManagement.exception.ResourceNotFoundException;
 import com.example.flowmerceproject.UserManagement.repository.MerchantRepository;
 import com.example.flowmerceproject.UserManagement.repository.UserRepository;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +28,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StoreService {
@@ -45,7 +41,6 @@ public class StoreService {
     private final CategoryService categoryService;
     private final ProductService productService;
     private final InventoryRepository inventoryRepository;
-    private final ObjectMapper objectMapper;
 
     @Transactional
     public StoreDTOs.StoreResponse createStore(String email, StoreDTOs.CreateStoreRequest request) {
@@ -143,12 +138,11 @@ public class StoreService {
     public StoreDTOs.StoreResponse updatePaymentMethods(String email, Integer storeId,
                                                         StoreDTOs.PaymentMethodsRequest request) {
         Store store = getStoreAndVerifyOwner(email, storeId);
-        try {
-            store.setPaymentMethods(objectMapper.writeValueAsString(request.getMethods()));
-        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-            throw new com.example.flowmerceproject.UserManagement.exception.BadRequestException(
-                    "Invalid payment methods: " + e.getMessage());
-        }
+        // Serialize list as JSON array string
+        String json = "[" + request.getMethods().stream()
+                .map(m -> "\"" + m + "\"")
+                .collect(Collectors.joining(",")) + "]";
+        store.setPaymentMethods(json);
         storeRepository.save(store);
         return toResponse(store);
     }
@@ -194,31 +188,6 @@ public class StoreService {
 
         settingsRepository.save(settings);
         return toSettingsResponse(settings);
-    }
-
-    /**
-     * Returns the payment methods enabled by the merchant for a store.
-     * FLOWMERCE_WALLET is always included as the first entry (fixed simulation method).
-     */
-    @Transactional(readOnly = true)
-    public List<String> getEnabledPaymentMethods(Integer storeId) {
-        Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Store not found: " + storeId));
-        List<String> methods = new java.util.ArrayList<>(parsePaymentMethods(store.getPaymentMethods()));
-        if (!methods.contains("FLOWMERCE_WALLET")) {
-            methods.add(0, "FLOWMERCE_WALLET");
-        }
-        return methods;
-    }
-
-    private List<String> parsePaymentMethods(String json) {
-        if (json == null || json.isBlank()) return List.of();
-        try {
-            return objectMapper.readValue(json, new TypeReference<List<String>>() {});
-        } catch (Exception e) {
-            log.warn("Failed to parse paymentMethods JSON: {}", e.getMessage());
-            return List.of();
-        }
     }
 
     @Transactional(readOnly = true)

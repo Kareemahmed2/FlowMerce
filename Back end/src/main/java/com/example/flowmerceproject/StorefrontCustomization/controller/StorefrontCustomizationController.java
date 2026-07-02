@@ -89,21 +89,8 @@ public class StorefrontCustomizationController {
     @PreAuthorize("hasRole('MERCHANT')")
     public ResponseEntity<ApiResponse<ThemeResponse>> getTheme(
             Principal principal, @PathVariable Integer storeId) {
-        // Use getDesign() so the Redis write-behind cache is checked first.
-        // getStorefront() goes straight to DB and would return stale colors
-        // whenever the async write-behind hasn't committed yet.
-        DesignResponse design = service.getDesign(principal.getName(), storeId);
-        ThemeResponse theme = ThemeResponse.builder()
-                .themeId(design.getThemeId())
-                .background(design.getBackground())
-                .header(design.getHeader())
-                .footer(design.getFooter())
-                .accent(design.getAccent())
-                .text(design.getText())
-                .card(design.getCard())
-                .updatedAt(design.getUpdatedAt())
-                .build();
-        return ResponseEntity.ok(ApiResponse.ok(theme));
+        StorefrontTemplateResponse sf = service.getStorefront(principal.getName(), storeId);
+        return ResponseEntity.ok(ApiResponse.ok(sf.getTheme()));
     }
 
     @PutMapping("/colors")

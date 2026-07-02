@@ -102,23 +102,14 @@ public class SocialAuthService {
 
     /** Frontend redirect URL after successful social login. */
     public String buildFrontendRedirect(AuthResponse auth) {
-        AuthResponse.UserInfo u = auth.getUser();
-        try {
-            return String.format(
-                "%s/login?accessToken=%s&refreshToken=%s&expiresIn=%s&role=%s&userId=%s&email=%s&name=%s",
-                frontendUrl,
-                auth.getAccessToken(),
-                auth.getRefreshToken(),
-                auth.getExpiresIn(),
-                u.getRole(),
-                u.getUserId(),
-                java.net.URLEncoder.encode(u.getEmail() != null ? u.getEmail() : "", "UTF-8"),
-                java.net.URLEncoder.encode(u.getFullName() != null ? u.getFullName() : "", "UTF-8")
-            );
-        } catch (java.io.UnsupportedEncodingException e) {
-            // UTF-8 is always supported
-            throw new RuntimeException(e);
-        }
+        return String.format(
+            "%s/login?accessToken=%s&refreshToken=%s&expiresIn=%s&role=%s",
+            frontendUrl,
+            auth.getAccessToken(),
+            auth.getRefreshToken(),
+            auth.getExpiresIn(),
+            auth.getUser().getRole()
+        );
     }
 
     // ── Google ─────────────────────────────────────────────────────────────────
