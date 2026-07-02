@@ -30,7 +30,9 @@ jobs:
           JWT_SECRET: dummy-secret-for-ci-only-not-real
           MAIL_PASSWORD: dummy
           INTEGRATION_ENCRYPTION_KEY: I9Dpyy5v5ErZ3gFlsxbx2g7vs6Vq8fPmId3L0fM5CKs=
-        run: ./mvnw -q -DskipTests package
+        run: |
+          chmod +x mvnw
+          ./mvnw -q -DskipTests package
 
   # ── Job 2: Frontend Build ─────────────────────────────────────────────────────
   frontend:
