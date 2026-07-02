@@ -14,6 +14,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { useMerchantAuth } from '@/store/auth-store'
 import { productService } from '@/services/product.service'
 import { categoryService } from '@/services/category.service'
@@ -402,6 +403,7 @@ function DeleteConfirm({
 export function ProductsPage() {
   const auth = useMerchantAuth()
   const storeId = auth.storeId
+  const isMobile = useIsMobile()
 
   const [products, setProducts] = useState<ProductRow[]>([])
   const [categories, setCategories] = useState<CategoryRow[]>([])
@@ -667,16 +669,30 @@ export function ProductsPage() {
         ))}
       </div>
 
-      <div style={P.body}>
-        <div style={P.catSidebar}>
-          <div style={P.catSidebarHeader}>
-            <p style={P.sidebarTitle}>Categories</p>
-          </div>
+      <div style={{ ...P.body, ...(isMobile ? { flexDirection: 'column' as const } : {}) }}>
+        <div style={{
+          ...P.catSidebar,
+          ...(isMobile ? {
+            width: '100%',
+            flexShrink: 1,
+            position: 'static' as const,
+            flexDirection: 'row' as const,
+            overflowX: 'auto' as const,
+            padding: '4px 6px',
+            gap: 4,
+            height: 'auto',
+          } : {})
+        }}>
+          {!isMobile && (
+            <div style={P.catSidebarHeader}>
+              <p style={P.sidebarTitle}>Categories</p>
+            </div>
+          )}
 
-          <div style={P.catList}>
+          <div style={{ ...P.catList, ...(isMobile ? { flexDirection: 'row' as const, gap: 4, alignItems: 'center' } : {}) }}>
             <button
               type="button"
-              style={{ ...P.catItem, ...(activeCat === 'all' ? P.catItemActive : {}) }}
+              style={{ ...P.catItem, ...(activeCat === 'all' ? P.catItemActive : {}), ...(isMobile ? { width: 'auto', flexShrink: 0, whiteSpace: 'nowrap' as const } : {}) }}
               onClick={() => setActiveCat('all')}
             >
               <span>All Products</span>
@@ -688,7 +704,7 @@ export function ProductsPage() {
                 <button
                   key={c.id}
                   type="button"
-                  style={{ ...P.catItem, ...(activeCat === c.id ? P.catItemActive : {}) }}
+                  style={{ ...P.catItem, ...(activeCat === c.id ? P.catItemActive : {}), ...(isMobile ? { width: 'auto', flexShrink: 0, whiteSpace: 'nowrap' as const } : {}) }}
                   onClick={() => setActiveCat(c.id)}
                 >
                   <span style={P.catItemName}>{c.name}</span>
@@ -696,9 +712,11 @@ export function ProductsPage() {
                 </button>
               )
             })}
-            <p style={{ fontSize: 11, color: '#aaa', marginTop: 12, paddingLeft: 8 }}>
-              Categories are managed by admin via /categories.
-            </p>
+            {!isMobile && (
+              <p style={{ fontSize: 11, color: '#aaa', marginTop: 12, paddingLeft: 8 }}>
+                Categories are managed by admin via /categories.
+              </p>
+            )}
           </div>
         </div>
 
@@ -844,6 +862,7 @@ export function ProductsPage() {
 
           {viewMode === 'list' && filtered.length > 0 && (
             <div style={P.listWrap}>
+              <div style={{ overflowX: 'auto' }}>
               <table style={P.table}>
                 <thead>
                   <tr style={P.thead}>
@@ -934,6 +953,7 @@ export function ProductsPage() {
                   })}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </div>

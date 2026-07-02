@@ -51,8 +51,8 @@ export const S: Record<string, CSSProperties> = {
     fontSize: 13, background: c.surface, color: c.navy,
     cursor: 'pointer', fontFamily: f, width: '100%',
   },
-  twoCol: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0,1fr))', gap: 12 },
-  threeCol: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 12 },
+  twoCol: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 },
+  threeCol: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 },
   infoBox: {
     background: c.successSoft, border: `1px solid #a7f3d0`,
     borderRadius: r.md, padding: '10px 14px', fontSize: 12, color: c.success, lineHeight: 1.5,

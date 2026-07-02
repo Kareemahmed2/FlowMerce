@@ -8,7 +8,7 @@ const f = tokens.font.sans
 export const P: Record<string, CSSProperties> = {
   page: { display: 'flex', flexDirection: 'column', gap: 16, fontFamily: f, color: c.text, position: 'relative' },
 
-  statsStrip: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: 12 },
+  statsStrip: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 },
   statCard: {
     background: c.surface, border: `1px solid ${c.border}`,
     borderRadius: r.lg, padding: '14px 16px', boxShadow: tokens.shadow.card,

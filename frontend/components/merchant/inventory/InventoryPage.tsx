@@ -16,6 +16,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { inventoryService } from '@/services/inventory.service'
 import { productService } from '@/services/product.service'
 import { computeInventorySummary, isLowStock, isOutOfStock } from '@/types/inventory.types'
@@ -45,7 +46,7 @@ const S = {
   badge: (bg: string, color: string) => ({ display: 'inline-block', padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, background: bg, color }),
   actionBtn: { background: 'none', border: '1px solid #e8e3d8', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', color: '#444', transition: 'background 0.15s' } as const,
   backdrop: { position: 'fixed' as const, inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200 },
-  modal: { position: 'fixed' as const, top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: '#fff', borderRadius: 16, padding: 32, width: '100%', maxWidth: 440, zIndex: 201, boxShadow: '0 20px 60px rgba(0,0,0,0.15)' },
+  modal: { position: 'fixed' as const, top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: '#fff', borderRadius: 16, padding: 32, width: '100%', maxWidth: 440, zIndex: 201, boxShadow: '0 20px 60px rgba(0,0,0,0.15)', maxHeight: '90vh', overflowY: 'auto' as const },
   drawer: { position: 'fixed' as const, top: 0, right: 0, bottom: 0, width: 420, background: '#fff', zIndex: 201, boxShadow: '-4px 0 24px rgba(0,0,0,0.1)', overflowY: 'auto' as const, padding: 24 },
 }
 
@@ -275,6 +276,7 @@ function HistoryDrawer({
   loading: boolean
   onClose: () => void
 }) {
+  const isMobile = useIsMobile()
   const typeColors: Record<string, string> = {
     RESTOCK: '#16a34a', ADJUSTMENT: '#2563eb', SALE: '#dc2626',
     RETURN: '#7c3aed', DAMAGE: '#6b7280',
@@ -283,7 +285,7 @@ function HistoryDrawer({
   return (
     <>
       <div style={S.backdrop} onClick={onClose} />
-      <div style={S.drawer}>
+      <div style={{ ...S.drawer, ...(isMobile ? { width: '100vw', left: 0 } : {}) }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
           <div>
             <h2 style={{ fontSize: 17, fontWeight: 700, margin: '0 0 4px' }}>Stock History</h2>

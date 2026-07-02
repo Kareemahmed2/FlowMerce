@@ -14,6 +14,7 @@ import {
   saveMerchantSettings,
 } from '@/lib/local-store/settings-storage'
 import { useEffect, useRef, useState } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { SETTINGS_SECTIONS, type SettingsSectionId } from './settings-constants'
 import { S } from './settings-styles'
 import { useMerchantAuth } from '@/store/auth-store'
@@ -731,6 +732,7 @@ function DangerSection({
 
 export function SettingsPage() {
   const auth = useMerchantAuth()
+  const isMobile = useIsMobile()
   const [activeSection, setActiveSection] = useState<SettingsSectionId>('store')
   const [settings, setSettings] = useState<MerchantSettingsState | null>(null)
   const [saved, setSaved] = useState<MerchantSettingsState | null>(null)
@@ -914,8 +916,24 @@ export function SettingsPage() {
 
   return (
     <div style={S.page}>
-      <div style={S.layout}>
-        <nav style={S.nav} aria-label="Settings sections">
+      <div style={{ ...S.layout, ...(isMobile ? { flexDirection: 'column' as const, gap: 0 } : {}) }}>
+        <nav
+          style={{
+            ...S.nav,
+            ...(isMobile ? {
+              width: '100%',
+              flexDirection: 'row' as const,
+              overflowX: 'auto' as const,
+              flexWrap: 'nowrap' as const,
+              position: 'static' as const,
+              gap: 2,
+              paddingBottom: 8,
+              borderBottom: '1px solid #ede8df',
+              marginBottom: 12,
+            } : {}),
+          }}
+          aria-label="Settings sections"
+        >
           {SETTINGS_SECTIONS.map((sec) => (
             <button
               key={sec.id}
@@ -925,6 +943,7 @@ export function SettingsPage() {
                 ...(activeSection === sec.id ? S.navItemActive : {}),
                 ...(sec.id === 'danger' ? S.navItemDanger : {}),
                 ...(sec.id === 'danger' && activeSection === 'danger' ? S.navItemDangerActive : {}),
+                ...(isMobile ? { flexShrink: 0, whiteSpace: 'nowrap' as const, marginTop: 0 } : {}),
               }}
               onClick={() => setActiveSection(sec.id)}
             >

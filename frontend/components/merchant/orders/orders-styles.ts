@@ -15,7 +15,7 @@ export const O: Record<string, CSSProperties> = {
     fontFamily: f, color: c.text, position: 'relative',
   },
 
-  summaryStrip: { display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: 12 },
+  summaryStrip: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 },
   summaryCard: {
     background: c.surface, border: `1px solid ${c.border}`,
     borderRadius: r.lg, padding: '14px 16px',
@@ -29,7 +29,7 @@ export const O: Record<string, CSSProperties> = {
   summaryUnit: { fontSize: 12, fontWeight: 400, color: c.textFaint },
 
   toolbar: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' },
-  filterTabs: { display: 'flex', gap: 2, background: c.surfaceLow, borderRadius: r.md, padding: 3 },
+  filterTabs: { display: 'flex', gap: 2, background: c.surfaceLow, borderRadius: r.md, padding: 3, overflowX: 'auto' as const },
   filterTab: {
     padding: '6px 12px', borderRadius: r.sm, border: 'none',
     background: 'transparent', cursor: 'pointer', fontSize: 12,
@@ -45,7 +45,7 @@ export const O: Record<string, CSSProperties> = {
   searchInput: {
     padding: '8px 14px', borderRadius: r.md, border: `1.5px solid ${c.border}`,
     fontSize: 13, background: c.surface, color: c.navy, outline: 'none',
-    width: 260, fontFamily: f, transition: 'border-color 0.15s',
+    minWidth: 160, flex: 1, maxWidth: 260, fontFamily: f, transition: 'border-color 0.15s',
   },
 
   tableWrap: {

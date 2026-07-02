@@ -7,6 +7,7 @@ import {
 } from '@/lib/local-store/dashboard-metrics'
 import { useMerchantAuth } from '@/store/auth-store'
 import { orderService } from '@/services/order.service'
+import { useIsMobile } from '@/hooks/use-mobile'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import type { OrderRow } from '../orders/orders-data'
@@ -52,6 +53,7 @@ function recentOrdersForOverview(orders: OrderRow[]): OrderRow[] {
 
 export function DashboardOverview() {
   const auth = useMerchantAuth()
+  const isMobile = useIsMobile()
   const [liveOrders, setLiveOrders] = useState<OrderRow[] | null>(null)
   const [activeMetric, setActiveMetric] = useState<string>('revenue')
 
@@ -95,9 +97,14 @@ export function DashboardOverview() {
 
   const maxTopRev = Math.max(1, ...topProducts.map((x) => x.revenue))
 
+  const mobileGridOverride = isMobile
+    ? { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }
+    : {}
+  const mobileStackOverride = isMobile ? { gridTemplateColumns: '1fr' } : {}
+
   return (
     <>
-      <div style={S.metricsGrid}>
+      <div style={{ ...S.metricsGrid, ...mobileGridOverride }}>
         {Object.entries(metrics).map(([key, m]) => (
           <MetricCard
             key={key}
@@ -111,7 +118,7 @@ export function DashboardOverview() {
         ))}
       </div>
 
-      <div style={S.middleRow}>
+      <div style={{ ...S.middleRow, ...mobileStackOverride }}>
         <div style={S.chartCard}>
           <div style={S.chartHeader}>
             <div>
@@ -143,7 +150,7 @@ export function DashboardOverview() {
         </div>
       </div>
 
-      <div style={S.bottomRow}>
+      <div style={{ ...S.bottomRow, ...mobileStackOverride }}>
         <div style={S.ordersCard}>
           <div style={S.sectionHeader}>
             <p style={S.cardTitle}>Recent Orders</p>
@@ -151,6 +158,7 @@ export function DashboardOverview() {
               View all →
             </Link>
           </div>
+          <div style={{ overflowX: 'auto' }}>
           <table style={S.table}>
             <thead>
               <tr>
@@ -188,6 +196,7 @@ export function DashboardOverview() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
 
         <div style={S.productsCard}>

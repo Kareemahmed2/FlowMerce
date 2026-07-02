@@ -3,6 +3,7 @@
 import { buildCustomersFromSummaries } from '@/lib/local-store/customers-from-summaries'
 import { useMerchantAuth } from '@/store/auth-store'
 import { orderService } from '@/services/order.service'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { useEffect, useMemo, useState } from 'react'
 import type { MerchantCustomerSummary } from '@/types/order.types'
 import {
@@ -42,6 +43,7 @@ function CustomerDrawer({
   customer: CustomerRow | null
   onClose: () => void
 }) {
+  const isMobile = useIsMobile()
   if (!customer) return null
   const seg = SEGMENT_CONFIG[customer.segment]
   const sta = STATUS_CONFIG[customer.status]
@@ -55,7 +57,7 @@ function CustomerDrawer({
   return (
     <>
       <div style={C.backdrop} onClick={onClose} role="presentation" />
-      <div style={C.drawer}>
+      <div style={{ ...C.drawer, ...(isMobile ? { width: '100vw', left: 0 } : {}) }}>
         <div style={C.drawerHead}>
           <div style={C.drawerAvatar}>{initials}</div>
           <div style={{ flex: 1 }}>
@@ -254,6 +256,7 @@ export function CustomersPage() {
       </div>
 
       <div style={C.tableWrap}>
+        <div style={{ overflowX: 'auto' }}>
         <table style={C.table}>
           <thead>
             <tr style={C.thead}>
@@ -319,6 +322,7 @@ export function CustomersPage() {
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       <CustomerDrawer customer={selected} onClose={() => setSelected(null)} />

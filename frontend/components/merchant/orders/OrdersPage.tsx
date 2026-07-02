@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { useMerchantAuth } from '@/store/auth-store'
 import { orderService } from '@/services/order.service'
 import type { MerchantOrderResponse, MerchantOrderSummary } from '@/types/order.types'
@@ -71,6 +72,7 @@ function OrderDrawer({
   onClose: () => void
   onStatusChange: (orderId: string, newStatus: OrderStatus) => void
 }) {
+  const isMobile = useIsMobile()
   if (!order) return null
   const st = STATUS_CONFIG[order.status]
   const next = NEXT_STATUS[order.status]
@@ -78,7 +80,7 @@ function OrderDrawer({
   return (
     <>
       <div style={O.backdrop} onClick={onClose} role="presentation" />
-      <div style={O.drawer}>
+      <div style={{ ...O.drawer, ...(isMobile ? { width: '100vw', left: 0 } : {}) }}>
         <div style={O.drawerHeader}>
           <div>
             <p style={O.drawerOrderId}>{order.id}</p>
@@ -440,6 +442,7 @@ export function OrdersPage() {
       </div>
 
       <div style={O.tableWrap}>
+        <div style={{ overflowX: 'auto' }}>
         <table style={O.table}>
           <thead>
             <tr style={O.thead}>
@@ -532,6 +535,7 @@ export function OrdersPage() {
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       {totalPages > 1 && (

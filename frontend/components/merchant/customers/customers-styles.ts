@@ -7,7 +7,7 @@ const f = tokens.font.sans
 
 export const C: Record<string, CSSProperties> = {
   page: { display: 'flex', flexDirection: 'column', gap: 16, fontFamily: f, color: c.text, position: 'relative' },
-  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0,1fr))', gap: 12 },
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12 },
   statCard: { background: c.surface, border: `1px solid ${c.border}`, borderRadius: r.lg, padding: '14px 16px', boxShadow: tokens.shadow.card },
   statLabel: { fontSize: 11, color: c.textMuted, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 500 },
   statValue: { fontSize: 20, fontWeight: 700, margin: 0, letterSpacing: '-0.02em', color: c.navy },
@@ -17,7 +17,7 @@ export const C: Record<string, CSSProperties> = {
     border: `1.5px solid ${c.border}`, fontSize: 13, background: c.surface,
     color: c.navy, outline: 'none', fontFamily: f, transition: 'border-color 0.15s',
   },
-  segTabs: { display: 'flex', gap: 2, background: c.surfaceLow, borderRadius: r.md, padding: 3 },
+  segTabs: { display: 'flex', gap: 2, background: c.surfaceLow, borderRadius: r.md, padding: 3, overflowX: 'auto' as const },
   segTab: {
     padding: '6px 12px', borderRadius: r.sm, border: 'none',
     background: 'transparent', cursor: 'pointer', fontSize: 12,

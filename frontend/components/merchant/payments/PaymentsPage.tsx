@@ -48,7 +48,7 @@ const S = {
     return { ...styles[variant], borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'opacity 0.15s' }
   },
   backdrop: { position: 'fixed' as const, inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 200 },
-  modal: { position: 'fixed' as const, top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: '#fff', borderRadius: 16, padding: 32, width: '100%', maxWidth: 440, zIndex: 201, boxShadow: '0 20px 60px rgba(0,0,0,0.15)' },
+  modal: { position: 'fixed' as const, top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: '#fff', borderRadius: 16, padding: 32, width: '100%', maxWidth: 440, zIndex: 201, boxShadow: '0 20px 60px rgba(0,0,0,0.15)', maxHeight: '90vh', overflowY: 'auto' as const },
   drawer: { position: 'fixed' as const, top: 0, right: 0, bottom: 0, width: 420, background: '#fff', zIndex: 201, boxShadow: '-4px 0 24px rgba(0,0,0,0.1)', overflowY: 'auto' as const, padding: 28 },
 }
 

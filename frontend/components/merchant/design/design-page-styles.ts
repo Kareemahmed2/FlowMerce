@@ -25,7 +25,7 @@ export const S: Record<string, CSSProperties> = {
 
   mainLayout: {
     display: 'grid',
-    gridTemplateColumns: 'minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 1fr)',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
     gap: 16, alignItems: 'flex-start',
   },
 
