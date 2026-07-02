@@ -2,9 +2,9 @@ name: FlowMerce CI
 
 on:
   push:
-    branches: [Deployment, master]
+    branches: [master]
   pull_request:
-    branches: [Deployment, master]
+    branches: [master]
 
 jobs:
   # ── Job 1: Backend Build & Test ──────────────────────────────────────────────
