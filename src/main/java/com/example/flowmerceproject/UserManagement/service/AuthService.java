@@ -206,18 +206,19 @@ public class AuthService {
 
     @Transactional
     public String forgotPassword(String email) {
-        userRepository.findByEmail(email).ifPresent(user -> {
-            String resetToken = UUID.randomUUID().toString();
-            tokenRepository.deleteByEmailAndType(email, VerificationToken.TokenType.PASSWORD_RESET);
-            tokenRepository.save(VerificationToken.builder()
-                    .token(resetToken)
-                    .email(email)
-                    .type(VerificationToken.TokenType.PASSWORD_RESET)
-                    .expiresAt(LocalDateTime.now().plusHours(1))
-                    .build());
-            emailService.sendPasswordResetEmail(email, resetToken);
-        });
-        return "If this email is registered, a password reset link has been sent.";
+        if (userRepository.findByEmail(email).isEmpty()) {
+            throw new BadRequestException("No account found with this email address.");
+        }
+        String resetToken = UUID.randomUUID().toString();
+        tokenRepository.deleteByEmailAndType(email, VerificationToken.TokenType.PASSWORD_RESET);
+        tokenRepository.save(VerificationToken.builder()
+                .token(resetToken)
+                .email(email)
+                .type(VerificationToken.TokenType.PASSWORD_RESET)
+                .expiresAt(LocalDateTime.now().plusHours(1))
+                .build());
+        emailService.sendPasswordResetEmail(email, resetToken);
+        return "Password reset link has been sent to your email.";
     }
 
     // ── RESET PASSWORD ────────────────────────────────────────────────────────

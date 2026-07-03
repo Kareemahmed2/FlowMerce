@@ -3,17 +3,6 @@
 /**
  * Merchant forgot-password page.
  * URL: /forgot-password
- *
- * Linked from: /login ("Forgot Password?" link — already present in the login page)
- *
- * Flow:
- *   1. User enters their email
- *   2. Service call fires (mock → always succeeds)
- *   3. UI always shows the "check your inbox" state regardless of whether
- *      the email exists — prevents email enumeration
- *
- * TODO(BACKEND-INTEGRATION): Replace service call with real httpClient:
- *   POST /auth/merchant/forgot-password  { email }
  */
 
 import { useState } from 'react'
