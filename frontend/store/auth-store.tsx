@@ -110,6 +110,10 @@ export function MerchantAuthProvider({ children }: { children: React.ReactNode }
   const [session, setSessionState] = useState<AuthSession | null>(null)
   const [isHydrated, setIsHydrated] = useState(false)
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Prevents a stale silent-refresh callback from overwriting a session that
+  // was explicitly set via setSession() (e.g. admin login while merchant
+  // refresh was in flight). Flipped to true on every explicit setSession call.
+  const silentRefreshAbortedRef = useRef(false)
 
   // ── Token refresh scheduler ────────────────────────────────────────────────
   const scheduleRefresh = useCallback((sess: AuthSession) => {
@@ -144,8 +148,13 @@ export function MerchantAuthProvider({ children }: { children: React.ReactNode }
         // Page refresh: access token is not persisted (SEC-6); silently re-auth
         // with the refresh token before marking hydration complete so that any
         // protected page (dashboard, onboarding publish) has a live JWT ready.
+        silentRefreshAbortedRef.current = false
         authService.refreshMerchantToken(saved.refreshToken)
           .then((result) => {
+            // If setSession() was called while this request was in flight
+            // (e.g. admin logging in before the merchant refresh resolved),
+            // discard the stale result to avoid overwriting the new session.
+            if (silentRefreshAbortedRef.current) return
             if (result.ok) {
               const newSession = { ...buildSession(result.data), storeId: saved.storeId ?? null }
               writeSession(newSession)
@@ -156,6 +165,7 @@ export function MerchantAuthProvider({ children }: { children: React.ReactNode }
             }
           })
           .catch(() => {
+            if (silentRefreshAbortedRef.current) return
             // Network error — preserve session metadata without access token;
             // the 401 interceptor will handle it when an API call fails.
             setSessionState(saved)
@@ -175,6 +185,7 @@ export function MerchantAuthProvider({ children }: { children: React.ReactNode }
   }, [scheduleRefresh])
 
   const setSession = useCallback((newSession: AuthSession) => {
+    silentRefreshAbortedRef.current = true
     writeSession(newSession)
     setSessionState(newSession)
     scheduleRefresh(newSession)

@@ -83,7 +83,7 @@ FlowMerce is a smart e-commerce platform builder for SMEs. Its core differentiat
 - Direct service calls (synchronous, within the same JVM)
 - RabbitMQ exchanges (asynchronous, for order and payment events)
 
-**Roles:** `ADMIN` · `MERCHANT` · `CUSTOMER`
+**Roles:** `ADMIN` · `MERCHANT` · `BUYER` (Spring Security role name for customers)
 
 ---
 
@@ -91,7 +91,7 @@ FlowMerce is a smart e-commerce platform builder for SMEs. Its core differentiat
 
 ### Prerequisites
 - Java 17+
-- Docker (for local Postgres, RabbitMQ, Redis via `compose.yaml`)
+- Docker (for local RabbitMQ, Redis, MinIO via `compose.yaml`)
 
 ### Steps
 
