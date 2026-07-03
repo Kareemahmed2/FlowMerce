@@ -1,0 +1,75 @@
+@startuml Product_Browsing
+title Product Browsing Flow
+
+actor "Customer / Guest" as User
+participant "Store Storefront\n(Next.js)" as UI
+participant "Product Service\n(Spring Boot)" as PS
+participant "Cache\n(Redis)" as Cache
+participant "Product DB\n(PostgreSQL)" as DB
+
+== Load Store & Categories ==
+
+User -> UI : Open store page\n(store.flowmerce.com)
+UI -> PS : GET /stores/slug/{slug}
+PS -> Cache : Check store data in cache
+Cache --> PS : Cache HIT → return store info
+
+UI -> PS : GET /categories/{storeId}
+PS -> Cache : Check categories in cache
+
+alt Cache HIT
+    Cache --> PS : Return categories
+else Cache MISS
+    PS -> DB : Query categories by storeId
+    DB --> PS : Return categories
+    PS -> Cache : Store in cache
+end
+
+PS --> UI : Store info + categories
+UI --> User : Render store homepage\nwith category navigation
+
+== Browse & Filter Products ==
+
+User -> UI : Apply filters\n(category, price range,\nin-stock, sort order)
+UI -> PS : GET /stores/{storeId}/products/public\n?category=X&minPrice=Y\n&maxPrice=Z&inStock=true\n&sort=price_asc
+
+PS -> Cache : Check cache for\nthis exact query key
+
+alt Cache HIT
+    Cache --> PS : Return cached results
+else Cache MISS
+    PS -> DB : Query products with filters\n+ pagination
+    DB --> PS : Return matching products
+    PS -> Cache : Cache results\n(short TTL ~60s)
+end
+
+PS --> UI : Paginated product list\n{products, totalCount, page}
+UI --> User : Display product grid\nwith prices, images, stock badges
+
+== Search by Name ==
+
+User -> UI : Type in search bar
+UI -> PS : GET /stores/{storeId}/products/search\n?keyword=value
+PS -> DB : Full-text search query
+DB --> PS : Return matching products
+PS --> UI : Search results
+UI --> User : Display filtered results
+
+== View Product Details ==
+
+User -> UI : Click on a product
+UI -> PS : GET /stores/{storeId}/products/{productId}
+PS -> Cache : Check product detail cache
+
+alt Cache HIT
+    Cache --> PS : Return product detail
+else Cache MISS
+    PS -> DB : Query product by ID\n(name, description, images,\nprice, stock, category)
+    DB --> PS : Return product detail
+    PS -> Cache : Cache product detail
+end
+
+PS --> UI : Full product details
+UI --> User : Render product detail page\n(images, description, price,\nstock status, add to cart)
+
+@enduml

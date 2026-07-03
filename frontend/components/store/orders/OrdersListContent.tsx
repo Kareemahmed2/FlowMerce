@@ -7,8 +7,9 @@
  */
 
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useStore } from '@/components/store/StoreProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import { useCustomerAuth } from '@/components/store/CustomerAuthProvider'
 import { useCustomerOrders } from '@/hooks/useCustomerOrders'
 import OrderCard from './OrderCard'
@@ -18,7 +19,6 @@ import EmptyOrdersState from './EmptyOrdersState'
 import { textOnBg } from '@/components/store/store-types'
 
 export default function OrdersListContent() {
-  const { slug } = useParams<{ slug: string }>()
   const router = useRouter()
   const store = useStore()
   const auth = useCustomerAuth()
@@ -29,7 +29,7 @@ export default function OrdersListContent() {
     cancelOrder, reorder,
   } = useCustomerOrders()
 
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const accent = store.colors.accent
   const bg = store.colors.background
   const text = store.colors.text

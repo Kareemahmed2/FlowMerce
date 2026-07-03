@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useStore, useCart } from './StoreProvider'
 import { useCustomerAuth } from './CustomerAuthProvider'
@@ -9,6 +9,7 @@ import { useRealtime } from './RealtimeProvider'
 import { useWishlistSafe } from '@/store/wishlist-store'
 import { notificationService } from '@/services/notification.service'
 import { textOnBg } from './store-types'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 
 // ── Icon helpers ──────────────────────────────────────────────────────────────
 function SearchIcon({ size = 20 }: { size?: number }) {
@@ -94,7 +95,6 @@ function IconBtn({
 
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function StoreHeader() {
-  const { slug } = useParams<{ slug: string }>()
   const router = useRouter()
   const store = useStore()
   const cart = useCart()
@@ -142,7 +142,7 @@ export default function StoreHeader() {
     if (searchOpen) setTimeout(() => searchRef.current?.focus(), 10)
   }, [searchOpen])
 
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const headerBg = store.colors.header    // Merchant's chosen header color
   const fg = textOnBg(headerBg)
   const accent = store.colors.accent      // Merchant's chosen accent / CTA color

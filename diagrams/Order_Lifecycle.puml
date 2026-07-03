@@ -1,0 +1,90 @@
+@startuml Order_Lifecycle
+title Order Lifecycle Flow
+
+actor "Customer" as Customer
+actor "Merchant" as Merchant
+participant "Merchant Dashboard\n(Next.js)" as MUI
+participant "Customer Storefront\n(Next.js)" as CUI
+participant "Order Service\n(Spring Boot)" as OS
+participant "PostgreSQL DB" as DB
+participant "Notification Service" as Notify
+
+== Order Created (from Checkout) ==
+
+note over OS, DB
+  Order created during checkout with status PENDING.
+  Paymob/Wallet orders move to CONFIRMED immediately.
+  COD orders remain PENDING until merchant confirms.
+end note
+
+OS -> Notify : Notify Merchant\n"New order received #{orderId}"
+OS -> Notify : Notify Customer\n"Order placed successfully #{orderId}"
+
+== Merchant Reviews Order ==
+
+Merchant -> MUI : Open Orders panel
+MUI -> OS : GET /orders/store/{storeId}\n+ Bearer Token
+OS -> DB : Query orders for this store
+DB --> OS : Return orders list
+OS --> MUI : Orders list
+MUI --> Merchant : Display orders
+
+Merchant -> MUI : Open order #{orderId}
+MUI -> OS : GET /orders/{orderId}
+OS -> DB : Query full order details\n{items, customer, address,\npayment method, total, tracking}
+DB --> OS : Return order details
+OS --> MUI : Full order details
+MUI --> Merchant : Show order details page
+
+== Merchant Confirms Order ==
+
+Merchant -> MUI : Click "Confirm Order"
+MUI -> OS : PUT /orders/{orderId}/status\n{status: CONFIRMED}
+OS -> DB : Update order {status: CONFIRMED}
+OS -> Notify : Notify Customer\n"Your order has been confirmed"
+OS --> MUI : 200 OK
+MUI --> Merchant : Order marked as CONFIRMED ✅
+
+== Merchant Ships Order ==
+
+Merchant -> MUI : Click "Mark as Shipped"\n+ enter tracking details
+MUI -> OS : PUT /orders/{orderId}/status\n{status: SHIPPED,\n trackingNumber, shippingCarrier}
+OS -> DB : Update order\n{status: SHIPPED,\n trackingNumber, shippingCarrier}
+OS -> Notify : Notify Customer\n"Your order has been shipped"
+OS --> MUI : 200 OK
+MUI --> Merchant : Order marked as SHIPPED 🚚
+
+== Customer Tracks Order ==
+
+Customer -> CUI : Open "My Orders"
+CUI -> OS : GET /orders/me + Bearer Token
+OS -> DB : Query customer orders
+DB --> OS : Return orders with tracking info
+OS --> CUI : Orders list including tracking details
+CUI --> Customer : Show orders with current status\n& tracking number
+
+== Merchant Marks as Delivered ==
+
+Merchant -> MUI : Click "Mark as Delivered"
+MUI -> OS : PUT /orders/{orderId}/status\n{status: DELIVERED}
+OS -> DB : Update order {status: DELIVERED}
+OS -> Notify : Notify Customer\n"Your order has been delivered! 🎉"
+OS -> Notify : Notify Merchant\n"Order #{orderId} marked as delivered"
+OS --> MUI : 200 OK
+MUI --> Merchant : Order marked as DELIVERED ✅
+
+== COD Payment Confirmation (COD only) ==
+
+note over Merchant, OS
+  Merchant collects cash on delivery,
+  then confirms payment received.
+end note
+
+Merchant -> MUI : Click "Confirm Payment Received"
+MUI -> OS : POST /payments/{paymentId}/confirm
+OS -> DB : Update payment status
+OS -> Notify : Notify Customer\n"COD payment confirmed"
+OS --> MUI : 200 OK
+MUI --> Merchant : Payment marked as collected 💰
+
+@enduml

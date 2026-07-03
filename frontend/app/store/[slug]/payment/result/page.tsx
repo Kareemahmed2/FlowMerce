@@ -11,9 +11,10 @@
 
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from '@/components/store/StoreProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import { useCustomerAuth } from '@/components/store/CustomerAuthProvider'
 import { textOnBg, formatPrice } from '@/components/store/store-types'
 import { paymentService } from '@/services/payment.service'
@@ -28,7 +29,6 @@ const MANUAL_METHODS = ['COD', 'BANK_TRANSFER', 'INSTAPAY', 'FAWRY_PAY']
 type PageState = 'polling' | 'loading_ref' | 'success' | 'failed' | 'pending_confirmation' | 'error'
 
 function PaymentResultContent() {
-  const { slug } = useParams<{ slug: string }>()
   const searchParams = useSearchParams()
   const store = useStore()
   const auth = useCustomerAuth()
@@ -36,7 +36,7 @@ function PaymentResultContent() {
   const orderId    = searchParams.get('orderId')
   const method     = searchParams.get('method') ?? 'COD'
   const totalParam = searchParams.get('total')
-  const base       = `/store/${slug}`
+  const base       = useStoreBase()
   const accent     = store.colors.accent
 
   const isManual = MANUAL_METHODS.includes(method)

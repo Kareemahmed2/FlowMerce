@@ -16,9 +16,10 @@
  */
 
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useStore } from '@/components/store/StoreProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import { useCustomerAuth } from '@/components/store/CustomerAuthProvider'
 import { textOnBg, formatPrice } from '@/components/store/store-types'
 import { useWallet } from '@/hooks/useWallet'
@@ -27,7 +28,6 @@ import { TRANSACTION_TYPE_CONFIG } from '@/types/wallet.types'
 const TOP_UP_AMOUNTS = [100, 250, 500, 1000, 2000, 5000]
 
 export default function WalletPage() {
-  const { slug } = useParams<{ slug: string }>()
   const router = useRouter()
   const store = useStore()
   const auth = useCustomerAuth()
@@ -37,7 +37,7 @@ export default function WalletPage() {
     auth.isLoggedIn ? auth.getAuthHeader : undefined
   )
 
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const accent = store.colors.accent
 
   const [showTopUp, setShowTopUp] = useState(false)

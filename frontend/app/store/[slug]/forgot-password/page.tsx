@@ -11,13 +11,13 @@
  */
 
 import { useState } from 'react'
-import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Loader2, ArrowLeft, CheckCircle } from 'lucide-react'
 import { useStore } from '@/components/store/StoreProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import { textOnBg } from '@/components/store/store-types'
 import { authService } from '@/services/auth.service'
 
@@ -41,9 +41,8 @@ const baseInputStyle: React.CSSProperties = {
 }
 
 export default function CustomerForgotPasswordPage() {
-  const { slug } = useParams<{ slug: string }>()
   const store = useStore()
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const accent = store.colors.accent
 
   const [submitted, setSubmitted] = useState(false)

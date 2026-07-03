@@ -1,0 +1,62 @@
+@startuml Admin_Merchant_Login
+title Admin / Merchant Login Flow
+
+actor "Admin / Merchant" as User
+participant "Login Page\n(Shared)" as UI
+participant "Auth Service" as Auth
+participant "User DB" as DB
+participant "Email Service" as Email
+participant "Frontend" as FE
+
+User -> UI : Enter email + password
+UI -> Auth : POST /auth/merchant/login\n{email, password}
+Auth -> DB : Find user by email
+DB --> Auth : Return user record
+
+alt Invalid credentials
+    Auth --> UI : 401 Unauthorized\n"Invalid email or password"
+    UI --> User : Show error message
+
+else Valid credentials
+    Auth -> DB : Check email_verified flag
+    DB --> Auth : Return verified status
+
+    alt Email not verified
+        Auth --> UI : 403 Forbidden\n"Please verify your email first"
+        UI --> User : Show verification reminder
+
+    else Email verified
+        Auth -> Email : Send OTP code\n(6-digit, expires in 5 min)
+        Email --> User : OTP email delivered
+
+        UI --> User : Redirect to 2FA screen
+        User -> UI : Enter OTP code
+        UI -> Auth : POST /auth/verify-otp\n{email, otp}
+        Auth -> DB : Validate OTP + expiry
+
+        alt OTP invalid or expired
+            Auth --> UI : 401 Unauthorized\n"Invalid or expired OTP"
+            UI --> User : Show error message
+
+        else OTP valid
+            Auth -> DB : Fetch user role\n(ADMIN / MERCHANT)
+            Auth -> DB : Generate refresh token\n& store it
+            Auth --> UI : 200 OK\n{accessToken, refreshToken, role}
+
+            UI -> FE : Store tokens\n(memory + httpOnly cookie)
+
+            alt Role = ADMIN
+                FE --> User : Redirect to Admin Panel
+            else Role = MERCHANT
+                FE --> User : Redirect to Merchant Dashboard
+            end
+        end
+    end
+end
+
+== Token Refresh (background) ==
+FE -> Auth : POST /auth/merchant/refresh\n{refreshToken}
+Auth -> DB : Validate refresh token
+Auth --> FE : New accessToken
+
+@enduml

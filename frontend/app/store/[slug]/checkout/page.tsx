@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useStore, useCart } from '@/components/store/StoreProvider'
 import { useCustomerAuth } from '@/components/store/CustomerAuthProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import { textOnBg, formatPrice, EMPTY_CHECKOUT } from '@/components/store/store-types'
 import type { CheckoutForm } from '@/components/store/store-types'
 import { orderService } from '@/services/order.service'
@@ -25,7 +26,6 @@ const WORKING_METHODS: BackendPaymentMethod[] = [
 const STUB_METHODS: BackendPaymentMethod[] = ['STRIPE', 'PAYMOB']
 
 export default function CheckoutPage() {
-  const { slug } = useParams<{ slug: string }>()
   const router = useRouter()
   const store = useStore()
   const cart = useCart()
@@ -44,7 +44,7 @@ export default function CheckoutPage() {
   const [confirmedTotal, setConfirmedTotal] = useState<number | null>(null)
   const [confirmedShipping, setConfirmedShipping] = useState<number | null>(null)
 
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const accent = store.colors.accent
 
   // Which methods the store owner has enabled (intersect with working methods)

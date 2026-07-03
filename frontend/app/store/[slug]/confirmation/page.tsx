@@ -1,21 +1,21 @@
 'use client'
 
 import Link from 'next/link'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useEffect, useState, Suspense } from 'react'
 import { useStore } from '@/components/store/StoreProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import { useCustomerAuth } from '@/components/store/CustomerAuthProvider'
 import { orderService } from '@/services/order.service'
 import { textOnBg, formatPrice } from '@/components/store/store-types'
 
 function ConfirmationContent() {
-  const { slug } = useParams<{ slug: string }>()
   const searchParams = useSearchParams()
   const store = useStore()
   const auth = useCustomerAuth()
 
   const name = searchParams.get('name') || 'there'
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const accent = store.colors.accent
   const rawOrderId = searchParams.get('orderId')
   const orderId = rawOrderId

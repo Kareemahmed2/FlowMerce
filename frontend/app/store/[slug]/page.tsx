@@ -1,10 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
 import { useStore, useCart } from '@/components/store/StoreProvider'
 import ProductCard from '@/components/store/ProductCard'
 import { StorefrontRenderer } from '@/components/store/StorefrontRenderer'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import { getAllProducts, textOnBg } from '@/components/store/store-types'
 
 // ── Trust feature data ─────────────────────────────────────────────────────────
@@ -110,8 +110,8 @@ function CategoryBentoCard({
 
 // ── Main page ───────────────────────────────────────────────────────────────────
 export default function StoreHome() {
-  const { slug } = useParams<{ slug: string }>()
   const store = useStore()
+  const base = useStoreBase()
 
   const allProducts = getAllProducts(store.categories)
   const featuredProducts = allProducts.slice(0, 8)
@@ -127,8 +127,6 @@ export default function StoreHome() {
       (p.components?.some((c) => c.isVisible !== false) ?? false),
   )
   if (homePage) return <StorefrontRenderer components={homePage.components} />
-
-  const base = `/store/${slug}`
 
   return (
     <div style={{ background: '#f7f9fb', color: '#191c1e' }}>

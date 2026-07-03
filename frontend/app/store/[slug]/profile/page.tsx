@@ -1,18 +1,18 @@
 'use client'
 
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useStore } from '@/components/store/StoreProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import { useCustomerAuth } from '@/components/store/CustomerAuthProvider'
 import { textOnBg } from '@/components/store/store-types'
 
 export default function StoreProfilePage() {
-  const { slug } = useParams<{ slug: string }>()
   const router = useRouter()
   const store = useStore()
   const auth = useCustomerAuth()
 
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const accent = store.colors.accent
 
   if (!auth.isLoggedIn || !auth.customer) {

@@ -1,15 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
 import { useStore } from './StoreProvider'
 import { textOnBg } from './store-types'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 
 export default function StoreFooter() {
-  const { slug } = useParams<{ slug: string }>()
   const store = useStore()
 
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const bg = store.colors.footer
   const fg = textOnBg(bg)
   const accent = store.colors.accent

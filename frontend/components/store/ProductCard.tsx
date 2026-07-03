@@ -1,9 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
 import type { CatalogProduct } from '@/components/merchant/onboarding/types'
 import { useStore, useCart } from './StoreProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import WishlistButton from './WishlistButton'
 import { textOnBg, formatPrice } from './store-types'
 
@@ -15,14 +15,14 @@ type Props = {
 }
 
 export default function ProductCard({ product, categoryName, isNew }: Props) {
-  const { slug } = useParams<{ slug: string }>()
   const store = useStore()
   const cart = useCart()
+  const base = useStoreBase()
 
   const accent = store.colors.accent
   const textColor = store.colors.text
   const imgSrc = product.images?.[0] ?? null
-  const href = `/store/${slug}/product/${product.id}`
+  const href = `${base}/product/${product.id}`
 
   const isOutOfStock = product.stock !== undefined && product.stock <= 0
 

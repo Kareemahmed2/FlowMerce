@@ -115,11 +115,12 @@ The app starts on `http://localhost:8080`. All routes are prefixed with `/api/v1
 |---------|-------|-------|
 | redis | `redis/redis-stack:latest` | 6379 (API) · 8001 (RedisInsight UI) |
 | rabbitmq | `rabbitmq:3-management` | 5672 (AMQP) · 15672 (Management UI) |
-| minio | `minio/minio:latest` | 9000 (S3 API) · 9001 (Console UI) |
 | backend | Spring Boot (Dockerfile) | 8080 |
 | frontend | Next.js (Dockerfile) | 3000 |
 
 > The live application connects to **Supabase** (configured in `application.properties`). The compose stack does not include a local Postgres — use the Supabase connection string for all environments.
+>
+> MinIO is **not** run by `compose.yaml` — it runs on a separate host. Set `MINIO_URL` (and `MINIO_ACCESS_KEY`/`MINIO_SECRET_KEY`/`MINIO_BUCKET`/`MINIO_PUBLIC_URL` as needed) in `.env` to point the backend at it.
 
 ---
 
@@ -137,7 +138,11 @@ All values have defaults for local development. Override for production.
 | `RABBITMQ_PORT` | `5672` | RabbitMQ port |
 | `RABBITMQ_USERNAME` | `guest` | RabbitMQ user |
 | `RABBITMQ_PASSWORD` | `guest` | RabbitMQ password |
-| `MINIO_URL` | `http://localhost:9000` | MinIO S3 API endpoint — set to `http://minio:9000` when running via Docker Compose |
+| `MINIO_URL` | `http://minio:9000` | MinIO S3 API endpoint the backend connects to — MinIO runs on a separate host, point this at wherever it's reachable |
+| `MINIO_PUBLIC_URL` | _(= `MINIO_URL`)_ | Public URL used when building links returned to the browser, if different from `MINIO_URL` |
+| `MINIO_ACCESS_KEY` | `minioadmin` | MinIO access key |
+| `MINIO_SECRET_KEY` | `minioadmin` | MinIO secret key |
+| `MINIO_BUCKET` | `flowmerce` | MinIO bucket name (created automatically, public-read policy applied automatically) |
 | `SF_CACHE_TTL_MINUTES` | `30` | Storefront Redis cache TTL |
 | `INVENTORY_LOW_STOCK_THRESHOLD` | `5` | Threshold for low-stock events |
 | `SHIPPING_FLAT_RATE` | `25.00` | Flat shipping cost (EGP) |

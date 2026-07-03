@@ -14,10 +14,11 @@
  */
 
 import { Suspense, useEffect, useRef, useState } from 'react'
-import { useParams, useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, XCircle, Loader2, Mail } from 'lucide-react'
 import { useStore } from '@/components/store/StoreProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import { textOnBg } from '@/components/store/store-types'
 import { authService } from '@/services/auth.service'
 
@@ -36,13 +37,12 @@ export default function CustomerActivatePage() {
 }
 
 function CustomerActivatePageContent() {
-  const { slug } = useParams<{ slug: string }>()
   const searchParams = useSearchParams()
   const router = useRouter()
   const store = useStore()
 
   const token = searchParams.get('token') ?? ''
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const accent = store.colors.accent
 
   const [state, setState] = useState<ActivationState>(token ? 'loading' : 'no-token')

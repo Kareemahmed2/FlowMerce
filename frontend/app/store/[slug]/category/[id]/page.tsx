@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useState } from 'react'
 import { useStore } from '@/components/store/StoreProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import ProductCard from '@/components/store/ProductCard'
 
 type SortKey = 'default' | 'price_asc' | 'price_desc' | 'name_asc'
@@ -16,13 +17,13 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 ]
 
 export default function CategoryPage() {
-  const { slug, id } = useParams<{ slug: string; id: string }>()
+  const { id } = useParams<{ id: string }>()
   const store = useStore()
+  const base = useStoreBase()
   const [sort, setSort] = useState<SortKey>('default')
 
   const catId = parseInt(id, 10)
   const category = store.categories.find((c) => c.id === catId)
-  const base = `/store/${slug}`
 
   // ── Not found ───────────────────────────────────────────────────────────────
   if (!category) {

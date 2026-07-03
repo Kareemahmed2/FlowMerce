@@ -16,8 +16,8 @@
  */
 
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
 import { useStore } from '@/components/store/StoreProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import { useCustomerAuth } from '@/components/store/CustomerAuthProvider'
 import { textOnBg } from '@/components/store/store-types'
 import { useNotifications } from '@/hooks/useNotifications'
@@ -110,7 +110,6 @@ function NotificationCard({
 }
 
 export default function NotificationsPage() {
-  const { slug } = useParams<{ slug: string }>()
   const store = useStore()
   const auth = useCustomerAuth()
   const {
@@ -125,7 +124,7 @@ export default function NotificationsPage() {
     markAllRead,
   } = useNotifications()
 
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const accent = store.colors.accent
 
   // Auth guard

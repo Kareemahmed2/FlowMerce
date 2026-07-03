@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import { useStore } from '@/components/store/StoreProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import { useCustomerAuth } from '@/components/store/CustomerAuthProvider'
 import { textOnBg } from '@/components/store/store-types'
 
@@ -18,7 +19,6 @@ export default function StoreLoginPage() {
 }
 
 function StoreLoginPageContent() {
-  const { slug } = useParams<{ slug: string }>()
   const router = useRouter()
   const searchParams = useSearchParams()
   const store = useStore()
@@ -34,7 +34,7 @@ function StoreLoginPageContent() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const accent = store.colors.accent
 
   // Redirect if already logged in

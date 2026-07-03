@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useStore, useCart } from '@/components/store/StoreProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import { useWishlist } from '@/store/wishlist-store'
 import { findProduct, textOnBg, formatPrice } from '@/components/store/store-types'
 import type { WishlistItemResponse } from '@/types/wishlist.types'
@@ -22,7 +23,7 @@ export default function WishlistPage() {
     }
   }
 
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const accent = store.colors.accent
 
   // ── Loading skeleton ─────────────────────────────────────────────────────────

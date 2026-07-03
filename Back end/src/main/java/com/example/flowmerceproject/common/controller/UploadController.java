@@ -1,5 +1,8 @@
 package com.example.flowmerceproject.common.controller;
 
+import com.example.flowmerceproject.FileStorage.entity.FileMetadata;
+import com.example.flowmerceproject.FileStorage.service.FileStorageService;
+import com.example.flowmerceproject.FileStorage.util.StorageFolder;
 import com.example.flowmerceproject.common.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,30 +19,29 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.security.Principal;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/uploads")
 @RequiredArgsConstructor
 public class UploadController {
 
+    private final FileStorageService fileStorageService;
+
     @Value("${app.upload.dir:uploads}")
     private String uploadDir;
 
-    @Value("${app.base-url:http://localhost:8080}")
-    private String baseUrl;
-
     /**
      * POST /api/v1/uploads
-     * Accepts multipart/form-data with field "file".
-     * Returns { data: { url: "http://localhost:8080/api/v1/uploads/{filename}" } }
-     * Requires authentication (any logged-in user).
+     * Accepts multipart/form-data with field "file". Stored in MinIO.
+     * Returns { data: { url: "<minio public url>/flowmerce/uploads/..." } }
+     * Public endpoint (see SecurityConfig /uploads/** permitAll) — principal may be null.
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Map<String, String>>> upload(
-            @RequestPart("file") MultipartFile file) throws IOException {
+            Principal principal,
+            @RequestPart("file") MultipartFile file) {
 
         if (file.isEmpty()) {
             return ResponseEntity.badRequest()
@@ -65,30 +67,16 @@ public class UploadController {
                     .body(ApiResponse.<Map<String, String>>ok(null, "File size must not exceed 10 MB"));
         }
 
-        // Ensure uploads directory exists
-        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-        Files.createDirectories(uploadPath);
+        FileMetadata meta = fileStorageService.uploadFile(
+                file,
+                StorageFolder.UPLOADS,
+                "misc",
+                FileMetadata.EntityType.ATTACHMENT,
+                null,
+                principal != null ? principal.getName() : null
+        );
 
-        // SEC-11: derive extension from the MIME type, not the user-supplied filename
-        // (prevents .svg/.html/.php disguised as image/jpeg).
-        String safeExtension = switch (contentType.toLowerCase()) {
-            case "image/jpeg" -> ".jpg";
-            case "image/png"  -> ".png";
-            case "image/gif"  -> ".gif";
-            case "image/webp" -> ".webp";
-            case "image/avif" -> ".avif";
-            default           -> ".bin";  // fallback for edge cases; MIME already validated above
-        };
-        String filename = UUID.randomUUID().toString().replace("-", "") + safeExtension;
-
-        // Save file
-        Path targetPath = uploadPath.resolve(filename);
-        Files.copy(file.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-
-        // Build public URL
-        String url = baseUrl + "/api/v1/uploads/" + filename;
-
-        return ResponseEntity.ok(ApiResponse.ok(Map.of("url", url), "File uploaded successfully"));
+        return ResponseEntity.ok(ApiResponse.ok(Map.of("url", meta.getFileUrl()), "File uploaded successfully"));
     }
 
     /**

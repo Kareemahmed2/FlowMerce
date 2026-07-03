@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useStore } from '@/components/store/StoreProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import { useCustomerAuth } from '@/components/store/CustomerAuthProvider'
 import { textOnBg } from '@/components/store/store-types'
 import { orderService } from '@/services/order.service'
@@ -20,7 +21,6 @@ const STATUS_COLORS: Record<string, { bg: string; color: string; label: string }
 }
 
 export default function CustomerOrdersPage() {
-  const { slug } = useParams<{ slug: string }>()
   const router = useRouter()
   const store = useStore()
   const auth = useCustomerAuth()
@@ -29,7 +29,7 @@ export default function CustomerOrdersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const accent = store.colors.accent
   const bg = store.colors.background
   const text = store.colors.text

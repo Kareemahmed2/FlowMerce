@@ -10,6 +10,7 @@ import ReviewList from '@/components/store/reviews/ReviewList'
 import RecentlyViewed from '@/components/store/RecentlyViewed'
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed'
 import { findProduct, textOnBg, formatPrice } from '@/components/store/store-types'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 
 // ── Quantity stepper (reused from cart style) ────────────────────────────────
 function Stepper({ value, onMinus, onPlus }: { value: number; onMinus: () => void; onPlus: () => void }) {
@@ -46,7 +47,7 @@ export default function ProductDetailPage() {
   const [addedAnim, setAddedAnim] = useState(false)
 
   const recentlyViewed = useRecentlyViewed(slug)
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const accent = store.colors.accent
 
   // ── Not found ──────────────────────────────────────────────────────────────

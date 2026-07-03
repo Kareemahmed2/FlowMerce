@@ -1,0 +1,43 @@
+@startuml Customer_Login
+title Customer Login Flow (Store-Specific Page)
+
+actor "Customer" as User
+participant "Store Login Page\n(store.flowmerce.com/login)" as UI
+participant "Auth Service" as Auth
+participant "User DB" as DB
+participant "Email Service" as Email
+participant "Frontend" as FE
+
+User -> UI : Enter email + password
+UI -> Auth : POST /auth/customer/login\n{email, password}
+Auth -> DB : Find customer by email\n& verify password
+DB --> Auth : Return customer record
+
+alt Invalid credentials
+    Auth --> UI : 401 Unauthorized\n"Invalid email or password"
+    UI --> User : Show error message
+
+else Valid credentials
+    Auth -> DB : Check email_verified flag
+    DB --> Auth : Return verified status
+
+    alt Email not verified
+        Auth -> Email : Resend verification email
+        Auth --> UI : 403 Forbidden\n"Please verify your email"
+        UI --> User : Show verify email prompt
+
+    else Email verified
+        Auth -> DB : Generate refresh token\n& store it
+        Auth --> UI : 200 OK\n{accessToken, refreshToken}
+
+        UI -> FE : Store tokens
+        FE --> User : Redirect to Store Homepage
+    end
+end
+
+== Token Refresh (background) ==
+FE -> Auth : POST /auth/customer/refresh\n{refreshToken}
+Auth -> DB : Validate refresh token
+Auth --> FE : New accessToken
+
+@enduml

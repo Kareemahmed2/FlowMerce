@@ -33,23 +33,9 @@ services:
       timeout: 10s
       retries: 5
 
-  minio:
-    image: minio/minio:latest
-    restart: unless-stopped
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    ports:
-      - "9000:9000"   # S3 API
-      - "9001:9001"   # Console UI → http://localhost:9001
-    volumes:
-      - minio_data:/data
-    healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
+  # MinIO is NOT run by this file — it runs on a separate host. Point the
+  # backend at it via MINIO_URL / MINIO_ACCESS_KEY / MINIO_SECRET_KEY / MINIO_BUCKET
+  # in the backend's .env (see Back end/.env.example).
 
   # ── Backend (Spring Boot) ────────────────────────────────────────────────────
 
@@ -78,8 +64,10 @@ services:
       RABBITMQ_USERNAME: myuser
       RABBITMQ_PASSWORD: secret
 
-      # MinIO (container)
-      MINIO_URL: http://minio:9000
+      # MinIO — runs on a separate host, not in this compose file. MINIO_URL
+      # (and MINIO_ACCESS_KEY/MINIO_SECRET_KEY/MINIO_BUCKET, MINIO_PUBLIC_URL if
+      # needed) come from ./Back end/.env via env_file above — do not hardcode
+      # a value here, it would override the real one.
 
       # URLs
       BACKEND_URL: https://api.flowmerce.tech
@@ -135,5 +123,4 @@ services:
 volumes:
   redis_data:
   rabbitmq_data:
-  minio_data:
   uploads_data:

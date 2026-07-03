@@ -7,9 +7,9 @@
  */
 
 import { useState } from 'react'
-import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useStore } from '@/components/store/StoreProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import { useProductSearch } from '@/hooks/useProductSearch'
 import SearchBar from './SearchBar'
 import SearchFilters from './SearchFilters'
@@ -20,7 +20,6 @@ import ActiveFilters from './ActiveFilters'
 import EmptySearchState from './EmptySearchState'
 
 export default function SearchPageContent() {
-  const { slug } = useParams<{ slug: string }>()
   const store = useStore()
   const {
     draftQuery,
@@ -41,7 +40,7 @@ export default function SearchPageContent() {
 
   const [filtersOpen, setFiltersOpen] = useState(false)
 
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const accent = store.colors.accent
   const bg = store.colors.background
   const text = store.colors.text

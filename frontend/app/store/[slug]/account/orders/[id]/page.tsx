@@ -11,6 +11,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useStore, useCart } from '@/components/store/StoreProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import { useCustomerAuth } from '@/components/store/CustomerAuthProvider'
 import { orderService } from '@/services/order.service'
 import { parseAuthError } from '@/lib/errors'
@@ -22,13 +23,13 @@ import OrderSummary from '@/components/store/orders/OrderSummary'
 import type { CustomerOrder } from '@/types/order.types'
 
 export default function OrderDetailPage() {
-  const { slug, id } = useParams<{ slug: string; id: string }>()
+  const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const store = useStore()
   const cart = useCart()
   const auth = useCustomerAuth()
 
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const accent = store.colors.accent
   const bg = store.colors.background
   const text = store.colors.text

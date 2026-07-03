@@ -15,8 +15,8 @@
  */
 
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
 import { useStore } from '@/components/store/StoreProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import ProductCard from '@/components/store/ProductCard'
 import { getAllProducts, textOnBg } from '@/components/store/store-types'
 import type { ComponentResponse } from '@/types/storefront.types'
@@ -35,9 +35,8 @@ const num = (v: unknown, fallback = 0): number =>
   typeof v === 'number' && Number.isFinite(v) ? v : fallback
 
 export function StorefrontRenderer({ components }: { components: ComponentResponse[] }) {
-  const { slug } = useParams<{ slug: string }>()
   const store = useStore()
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const accent = store.colors.accent
 
   const visible = [...components]

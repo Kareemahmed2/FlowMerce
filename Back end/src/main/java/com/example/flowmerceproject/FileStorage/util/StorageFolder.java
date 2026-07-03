@@ -10,7 +10,8 @@ public enum StorageFolder {
     INVOICES("invoices"),
     STOREFRONT("storefront"),
     ATTACHMENTS("attachments"),  // notification attachments: PDFs, coupons, offers
-    AI_ASSETS("ai-assets");      // AI generated banners, reports, layouts
+    AI_ASSETS("ai-assets"),      // AI generated banners, reports, layouts
+    UPLOADS("uploads");          // generic uploads via the /uploads endpoint
 
     private final String path;
 

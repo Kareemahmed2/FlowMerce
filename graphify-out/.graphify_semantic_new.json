@@ -1,0 +1,2159 @@
+{
+  "nodes": [
+    {
+      "id": "cartcontroller",
+      "label": "CartController",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/controller/CartController.java",
+      "source_location": "line 18",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "cartservice",
+      "label": "CartService",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CartService.java",
+      "source_location": "line 33",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "checkoutservice",
+      "label": "CheckoutService",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CheckoutService.java",
+      "source_location": "line 29",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "cartdtos",
+      "label": "CartDTOs",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/dto/CartDTOs.java",
+      "source_location": "line 12",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "shoppingcart",
+      "label": "ShoppingCart Entity",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/entity/ShoppingCart.java",
+      "source_location": "line 18",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "shoppingcartrepository",
+      "label": "ShoppingCartRepository",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/repository/ShoppingCartRepository.java",
+      "source_location": "line 14",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "notificationrabbitconfig",
+      "label": "NotificationRabbitMQConfig",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/config/NotificationRabbitMQConfig.java",
+      "source_location": "line 8",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ordernotificationconsumer",
+      "label": "OrderNotificationConsumer",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/consumer/OrderNotificationConsumer.java",
+      "source_location": "line 15",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paymentnotificationconsumer",
+      "label": "PaymentNotificationConsumer",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/consumer/PaymentNotificationConsumer.java",
+      "source_location": "line 15",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "notificationcontroller",
+      "label": "NotificationController",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/controller/NotificationController.java",
+      "source_location": "line 20",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "notificationdtos",
+      "label": "NotificationDTOs",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/dto/NotificationDTOs.java",
+      "source_location": "line 9",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "notification_entity",
+      "label": "Notification Entity",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/entity/Notification.java",
+      "source_location": "line 16",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "notificationrepository",
+      "label": "NotificationRepository",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/repository/NotificationRepository.java",
+      "source_location": "line 11",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "notificationservice",
+      "label": "NotificationService",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/service/NotificationService.java",
+      "source_location": "line 20",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "test_apis",
+      "label": "test_apis.py Payment and Delivery Integration Tests",
+      "file_type": "code",
+      "source_file": "test_apis.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "test_full",
+      "label": "test_full.py Full E2E Integration Tests",
+      "file_type": "code",
+      "source_file": "test_full.py",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "postman_collection",
+      "label": "FlowMerce Postman Collection",
+      "file_type": "document",
+      "source_file": "FlowMerce.postman_collection.json",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "inventory_service_ext",
+      "label": "InventoryService cross-module dependency",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CartService.java",
+      "source_location": "line 8",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "rabbitmq_order_exchange",
+      "label": "RabbitMQ Order TopicExchange flowmerce.order",
+      "file_type": "rationale",
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/config/NotificationRabbitMQConfig.java",
+      "source_location": "line 10",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "rabbitmq_payment_queue",
+      "label": "RabbitMQ Payment Notify Queue",
+      "file_type": "rationale",
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/consumer/PaymentNotificationConsumer.java",
+      "source_location": "line 19",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "stock_reservation_pattern",
+      "label": "Stock Reservation and Rollback Saga Pattern",
+      "file_type": "rationale",
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CheckoutService.java",
+      "source_location": "lines 83-97",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "checkout_summary",
+      "label": "CheckoutSummary inner DTO class",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CheckoutService.java",
+      "source_location": "line 161",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "cart_scoped_to_store",
+      "label": "Cart Scoped Per Store Design Constraint",
+      "file_type": "rationale",
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CartService.java",
+      "source_location": "line 64",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ordercontroller_OrderController",
+      "label": "OrderController",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/OrderManagement/controller/OrderController.java",
+      "source_location": "class OrderController",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ordereventpublisher_OrderEventPublisher",
+      "label": "OrderEventPublisher",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/OrderManagement/event/OrderEventPublisher.java",
+      "source_location": "class OrderEventPublisher",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "ordereventpublisher_OrderEvent",
+      "label": "OrderEvent",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/OrderManagement/event/OrderEventPublisher.java",
+      "source_location": "static class OrderEvent",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "orderservice_OrderService",
+      "label": "OrderService",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/OrderManagement/service/OrderService.java",
+      "source_location": "class OrderService",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paymentrabbitconfig_PaymentRabbitMQConfig",
+      "label": "PaymentRabbitMQConfig",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/config/PaymentRabbitMQConfig.java",
+      "source_location": "class PaymentRabbitMQConfig",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paymentcontroller_PaymentController",
+      "label": "PaymentController",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/controller/PaymentController.java",
+      "source_location": "class PaymentController",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "walletcontroller_WalletController",
+      "label": "WalletController",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/controller/WalletController.java",
+      "source_location": "class WalletController",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paymentdtos_PaymentDTOs",
+      "label": "PaymentDTOs",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/dto/PaymentDTOs.java",
+      "source_location": "class PaymentDTOs",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paymentdtos_InitiatePaymentRequest",
+      "label": "InitiatePaymentRequest",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/dto/PaymentDTOs.java",
+      "source_location": "static class InitiatePaymentRequest",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paymentdtos_PaymentResponse",
+      "label": "PaymentResponse",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/dto/PaymentDTOs.java",
+      "source_location": "static class PaymentResponse",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paymentdtos_WalletResponse",
+      "label": "WalletResponse",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/dto/PaymentDTOs.java",
+      "source_location": "static class WalletResponse",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paymentdtos_WalletTransactionResponse",
+      "label": "WalletTransactionResponse",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/dto/PaymentDTOs.java",
+      "source_location": "static class WalletTransactionResponse",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paymentdtos_OrderPlaceResponse",
+      "label": "OrderPlaceResponse",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/dto/PaymentDTOs.java",
+      "source_location": "static class OrderPlaceResponse",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "payment_Payment",
+      "label": "Payment",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/entity/Payment.java",
+      "source_location": "class Payment",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "wallet_Wallet",
+      "label": "Wallet",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/entity/Wallet.java",
+      "source_location": "class Wallet",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "wallettransaction_WalletTransaction",
+      "label": "WalletTransaction",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/entity/WalletTransaction.java",
+      "source_location": "class WalletTransaction",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paymenteventpublisher_PaymentEventPublisher",
+      "label": "PaymentEventPublisher",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/event/PaymentEventPublisher.java",
+      "source_location": "class PaymentEventPublisher",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paymenteventpublisher_PaymentEvent",
+      "label": "PaymentEvent",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/event/PaymentEventPublisher.java",
+      "source_location": "static class PaymentEvent",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "banktransferadapter_BankTransferAdapter",
+      "label": "BankTransferAdapter",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/BankTransferAdapter.java",
+      "source_location": "class BankTransferAdapter",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "codadapter_CashOnDeliveryAdapter",
+      "label": "CashOnDeliveryAdapter",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/CashOnDeliveryAdapter.java",
+      "source_location": "class CashOnDeliveryAdapter",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fawryadapter_FawryAdapter",
+      "label": "FawryAdapter",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/FawryAdapter.java",
+      "source_location": "class FawryAdapter",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "gateway_GatewayResult",
+      "label": "GatewayResult",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/GatewayResult.java",
+      "source_location": "class GatewayResult",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "gateway_PaymentGatewayAdapter",
+      "label": "PaymentGatewayAdapter",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/PaymentGatewayAdapter.java",
+      "source_location": "interface PaymentGatewayAdapter",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paymoabadapter_PaymobAdapter",
+      "label": "PaymobAdapter",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/PaymobAdapter.java",
+      "source_location": "class PaymobAdapter",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "stripeadapter_StripeAdapter",
+      "label": "StripeAdapter",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/StripeAdapter.java",
+      "source_location": "class StripeAdapter",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "rationale_gateway_strategy_pattern",
+      "label": "Payment Gateway Strategy Pattern",
+      "file_type": "rationale",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/PaymentGatewayAdapter.java",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "rationale_order_status_machine",
+      "label": "Order Status State Machine",
+      "file_type": "rationale",
+      "source_file": "src/main/java/com/example/flowmerceproject/OrderManagement/service/OrderService.java",
+      "source_location": "validateStatusTransition",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "rationale_idempotency_payment",
+      "label": "Payment Idempotency via idempotencyKey",
+      "file_type": "rationale",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/entity/Payment.java",
+      "source_location": "idempotencyKey column",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "walletsimulationadapter_WalletSimulationAdapter",
+      "label": "WalletSimulationAdapter",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/WalletSimulationAdapter.java",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paymentrepository_PaymentRepository",
+      "label": "PaymentRepository",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/repository/PaymentRepository.java",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "walletrepository_WalletRepository",
+      "label": "WalletRepository",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/repository/WalletRepository.java",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "wallettransactionrepository_WalletTransactionRepository",
+      "label": "WalletTransactionRepository",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/repository/WalletTransactionRepository.java",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paymentserviceimpl_PaymentServiceImpl",
+      "label": "PaymentServiceImpl",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/service/PaymentServiceImpl.java",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "walletservice_WalletService",
+      "label": "WalletService",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/service/WalletService.java",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "redisconfig_RedisConfig",
+      "label": "RedisConfig",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/StorefrontCustomization/config/RedisConfig.java",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "storefrontcustomizationcontroller_StorefrontCustomizationController",
+      "label": "StorefrontCustomizationController",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/StorefrontCustomization/controller/StorefrontCustomizationController.java",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "securityconfig_SecurityConfig",
+      "label": "SecurityConfig",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/UserManagement/config/SecurityConfig.java",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "unifiedauthcontroller_UnifiedAuthController",
+      "label": "UnifiedAuthController",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/UserManagement/controller/UnifiedAuthController.java",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "registerrequest_RegisterRequest",
+      "label": "RegisterRequest",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/UserManagement/dto/RegisterRequest.java",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "globalexceptionhandler_GlobalExceptionHandler",
+      "label": "GlobalExceptionHandler",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/UserManagement/exception/GlobalExceptionHandler.java",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "authservice_AuthService",
+      "label": "AuthService",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/UserManagement/service/AuthService.java",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "emailservice_EmailService",
+      "label": "EmailService",
+      "file_type": "code",
+      "source_file": "src/main/java/com/example/flowmerceproject/UserManagement/service/EmailService.java",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "schema_sql",
+      "label": "Database Schema (schema.sql)",
+      "file_type": "document",
+      "source_file": "src/main/resources/schema.sql",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "orderfix_report",
+      "label": "Order Management Bug Fix Report",
+      "file_type": "document",
+      "source_file": "ORDER_MANAGEMENT_FIX_REPORT.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "paymentreport_PaymentServiceReport",
+      "label": "Payment Service Development Report",
+      "file_type": "document",
+      "source_file": "PAYMENT_SERVICE_REPORT.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "pdf_FlowMerceMidyearDoc",
+      "label": "FlowMerce Midyear Documentation (FCI-CU GP 2025)",
+      "file_type": "paper",
+      "source_file": "Copy of FCI-CU-GP-Midyear-Document-2025.pdf",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": "Kareem Ahmed Mahrous, Jana Mohamed Salem, Farah Mahmoud Hassaan, Bahaa Mohamed Akl, Hana Abdelbari Elsayed",
+      "contributor": "Prof. Khaled Wassif, Dr. Rasha ElBanna, TA. Menna Youssef"
+    },
+    {
+      "id": "rationale_gateway_strategy",
+      "label": "Gateway Adapter Strategy Pattern Rationale",
+      "file_type": "rationale",
+      "source_file": "PAYMENT_SERVICE_REPORT.md",
+      "source_location": "Section 2.1",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Six adapters implement PaymentGatewayAdapter via the Strategy pattern. Spring injects List<PaymentGatewayAdapter>; service calls adapter.supports(). Adding a new gateway requires only implementing the interface — no service changes. Ensures loose coupling and open/closed principle."
+    },
+    {
+      "id": "rationale_idempotency_redis",
+      "label": "Redis Idempotency Key Rationale",
+      "file_type": "rationale",
+      "source_file": "PAYMENT_SERVICE_REPORT.md",
+      "source_location": "Section 2.2",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Payment requests carry an idempotencyKey (UUID). Redis caches {paymentId, status} for 24h TTL. DB has UNIQUE constraint as second safety net. Prevents double charges on network retries without distributed locking overhead."
+    },
+    {
+      "id": "rationale_perstore_cart",
+      "label": "Per-Store Cart Architecture Rationale",
+      "file_type": "rationale",
+      "source_file": "ORDER_MANAGEMENT_FIX_REPORT.md",
+      "source_location": "Fix #3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Carts are now scoped per (customer, store) pair. Cross-store mixing is impossible by construction. Schema changed: shopping_carts UNIQUE (customer_id, store_id). Prevents incorrect orders being assigned to wrong merchants."
+    },
+    {
+      "id": "rationale_cancel_no_stock_release",
+      "label": "Cancel Order Without Releasing Stock Rationale",
+      "file_type": "rationale",
+      "source_file": "ORDER_MANAGEMENT_FIX_REPORT.md",
+      "source_location": "Fix #2",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "After order confirmation, stock is committed (quantity decremented, reservedQuantity=0). Calling releaseStock() on cancel threw exceptions or corrupted counts. Fix: mark CANCELLED only; merchant manually restocks via inventory API — merchant decides if returned goods are fit to relist."
+    },
+    {
+      "id": "rationale_microservices_arch",
+      "label": "Microservices Architecture Rationale",
+      "file_type": "rationale",
+      "source_file": "Copy of FCI-CU-GP-Midyear-Document-2025.pdf",
+      "source_location": "Page 5, System Architecture",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "FlowMerce uses microservices for security isolation, scalability, and reliability. Each service owns its business logic and data (loose coupling, high cohesion). API Gateway handles JWT validation, routing, rate limiting, and hides internal services."
+    },
+    {
+      "id": "rationale_wallet_simulation",
+      "label": "Wallet Simulation for Demo Rationale",
+      "file_type": "rationale",
+      "source_file": "PAYMENT_SERVICE_REPORT.md",
+      "source_location": "Section 2.3",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Customer wallet seeded with 100,000 EGP; merchant wallet starts at 0. Used for demo/presentation purposes. Eliminates need to configure real payment gateways during development while fully exercising the payment flow."
+    },
+    {
+      "id": "concept_rbac",
+      "label": "Role-Based Access Control (RBAC)",
+      "file_type": "rationale",
+      "source_file": "Copy of FCI-CU-GP-Midyear-Document-2025.pdf",
+      "source_location": "Page 3, Main Techniques",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "RBAC manages permissions for users, merchants, admins, and system services. Roles: MERCHANT, BUYER (CUSTOMER), ADMIN. Enforced via Spring Security @PreAuthorize and JWT claims."
+    },
+    {
+      "id": "concept_jwt_auth",
+      "label": "JWT-Based Authentication",
+      "file_type": "rationale",
+      "source_file": "Copy of FCI-CU-GP-Midyear-Document-2025.pdf",
+      "source_location": "Page 3, Main Techniques",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "JWT ensures secure stateless user sessions. Access tokens + refresh tokens stored in sessions table with revocation support. JwtAuthFilter validates tokens on every request before UsernamePasswordAuthenticationFilter."
+    },
+    {
+      "id": "concept_ai_assistant",
+      "label": "AI-Powered UX/UI Advisor",
+      "file_type": "rationale",
+      "source_file": "Copy of FCI-CU-GP-Midyear-Document-2025.pdf",
+      "source_location": "Page 7, Requirement 6",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Core differentiator: AI assistant analyzes storefront layout and provides explainable, optional recommendations for color palette, visual hierarchy, typography, accessibility. Integrates with OpenAI/DeepSeek API. Merchants can accept or reject suggestions."
+    },
+    {
+      "id": "concept_rabbitmq_events",
+      "label": "RabbitMQ Asynchronous Event Bus",
+      "file_type": "rationale",
+      "source_file": "PAYMENT_SERVICE_REPORT.md",
+      "source_location": "Section 2.4",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "Exchange: flowmerce.payment (topic). Queues: payment.notifications (binds payment.* and wallet.*) and payment.webhooks. Publish failure is non-critical — logs warning but does not roll back transaction. Decouples payment processing from notification delivery."
+    }
+  ],
+  "edges": [
+    {
+      "source": "cartcontroller",
+      "target": "cartservice",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/controller/CartController.java",
+      "source_location": "lines 30,40,50,58,68",
+      "weight": 1.0
+    },
+    {
+      "source": "cartcontroller",
+      "target": "checkoutservice",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/controller/CartController.java",
+      "source_location": "line 79",
+      "weight": 1.0
+    },
+    {
+      "source": "cartcontroller",
+      "target": "cartdtos",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/controller/CartController.java",
+      "source_location": "lines 26,37,45,55,76",
+      "weight": 1.0
+    },
+    {
+      "source": "cartservice",
+      "target": "shoppingcartrepository",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CartService.java",
+      "source_location": "lines 46,161,186,194",
+      "weight": 1.0
+    },
+    {
+      "source": "cartservice",
+      "target": "inventory_service_ext",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CartService.java",
+      "source_location": "lines 69,74,85,88,203",
+      "weight": 1.0
+    },
+    {
+      "source": "cartservice",
+      "target": "shoppingcart",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CartService.java",
+      "source_location": "lines 48,66,134,154",
+      "weight": 1.0
+    },
+    {
+      "source": "cartservice",
+      "target": "cartdtos",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CartService.java",
+      "source_location": "lines 44,53,110,139",
+      "weight": 1.0
+    },
+    {
+      "source": "cartservice",
+      "target": "cart_scoped_to_store",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CartService.java",
+      "source_location": "line 64",
+      "weight": 1.0
+    },
+    {
+      "source": "checkoutservice",
+      "target": "shoppingcartrepository",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CheckoutService.java",
+      "source_location": "lines 52,128,134",
+      "weight": 1.0
+    },
+    {
+      "source": "checkoutservice",
+      "target": "inventory_service_ext",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CheckoutService.java",
+      "source_location": "lines 67,70,85,90,133",
+      "weight": 1.0
+    },
+    {
+      "source": "checkoutservice",
+      "target": "cartservice",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CheckoutService.java",
+      "source_location": "lines 99,111",
+      "weight": 1.0
+    },
+    {
+      "source": "checkoutservice",
+      "target": "cartdtos",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CheckoutService.java",
+      "source_location": "lines 45,165",
+      "weight": 1.0
+    },
+    {
+      "source": "checkoutservice",
+      "target": "checkout_summary",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CheckoutService.java",
+      "source_location": "line 107",
+      "weight": 1.0
+    },
+    {
+      "source": "checkoutservice",
+      "target": "stock_reservation_pattern",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CheckoutService.java",
+      "source_location": "lines 83-97",
+      "weight": 1.0
+    },
+    {
+      "source": "shoppingcart",
+      "target": "shoppingcartrepository",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/entity/ShoppingCart.java",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "ordernotificationconsumer",
+      "target": "notificationservice",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/consumer/OrderNotificationConsumer.java",
+      "source_location": "lines 27,33,40,48,56,63,65",
+      "weight": 1.0
+    },
+    {
+      "source": "ordernotificationconsumer",
+      "target": "notificationrabbitconfig",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/consumer/OrderNotificationConsumer.java",
+      "source_location": "line 19",
+      "weight": 1.0
+    },
+    {
+      "source": "ordernotificationconsumer",
+      "target": "notification_entity",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/consumer/OrderNotificationConsumer.java",
+      "source_location": "lines 27,33,40,48,56,63",
+      "weight": 1.0
+    },
+    {
+      "source": "ordernotificationconsumer",
+      "target": "rabbitmq_order_exchange",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/consumer/OrderNotificationConsumer.java",
+      "source_location": "line 19",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentnotificationconsumer",
+      "target": "notificationservice",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/consumer/PaymentNotificationConsumer.java",
+      "source_location": "lines 27,32,38,43,50,55,61,68",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentnotificationconsumer",
+      "target": "notification_entity",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/consumer/PaymentNotificationConsumer.java",
+      "source_location": "lines 27,32,38",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentnotificationconsumer",
+      "target": "rabbitmq_payment_queue",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/consumer/PaymentNotificationConsumer.java",
+      "source_location": "line 19",
+      "weight": 1.0
+    },
+    {
+      "source": "notificationcontroller",
+      "target": "notificationservice",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/controller/NotificationController.java",
+      "source_location": "lines 32,39,49,57",
+      "weight": 1.0
+    },
+    {
+      "source": "notificationcontroller",
+      "target": "notificationdtos",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/controller/NotificationController.java",
+      "source_location": "line 27",
+      "weight": 1.0
+    },
+    {
+      "source": "notificationservice",
+      "target": "notificationrepository",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/service/NotificationService.java",
+      "source_location": "lines 33,49,56,62,68,74",
+      "weight": 1.0
+    },
+    {
+      "source": "notificationservice",
+      "target": "notification_entity",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/service/NotificationService.java",
+      "source_location": "lines 26,27,33,82",
+      "weight": 1.0
+    },
+    {
+      "source": "notificationservice",
+      "target": "notificationdtos",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/service/NotificationService.java",
+      "source_location": "lines 46,82",
+      "weight": 1.0
+    },
+    {
+      "source": "notificationdtos",
+      "target": "notification_entity",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/dto/NotificationDTOs.java",
+      "source_location": "lines 15,18",
+      "weight": 1.0
+    },
+    {
+      "source": "test_apis",
+      "target": "cartcontroller",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "test_apis.py",
+      "source_location": "lines 43,74,97",
+      "weight": 1.0
+    },
+    {
+      "source": "test_apis",
+      "target": "notificationcontroller",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "test_apis.py",
+      "source_location": "lines 203,207,216,219,223",
+      "weight": 1.0
+    },
+    {
+      "source": "test_full",
+      "target": "cartcontroller",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "test_full.py",
+      "source_location": "lines 191,197,201,214,228",
+      "weight": 1.0
+    },
+    {
+      "source": "test_full",
+      "target": "checkoutservice",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "test_full.py",
+      "source_location": "line 233",
+      "weight": 1.0
+    },
+    {
+      "source": "postman_collection",
+      "target": "cartcontroller",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FlowMerce.postman_collection.json",
+      "source_location": "variable cartItemId",
+      "weight": 1.0
+    },
+    {
+      "source": "postman_collection",
+      "target": "notificationcontroller",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FlowMerce.postman_collection.json",
+      "source_location": "variable notificationId",
+      "weight": 1.0
+    },
+    {
+      "source": "test_apis",
+      "target": "test_full",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "test_apis.py",
+      "source_location": null,
+      "weight": 0.85
+    },
+    {
+      "source": "ordernotificationconsumer",
+      "target": "paymentnotificationconsumer",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/consumer/OrderNotificationConsumer.java",
+      "source_location": null,
+      "weight": 0.9
+    },
+    {
+      "source": "cartservice",
+      "target": "checkoutservice",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.65,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CartService.java",
+      "source_location": null,
+      "weight": 0.65
+    },
+    {
+      "source": "ordercontroller_OrderController",
+      "target": "orderservice_OrderService",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/OrderManagement/controller/OrderController.java",
+      "source_location": "line 46, 72, 83, 92, 105, 116, 127",
+      "weight": 1.0
+    },
+    {
+      "source": "ordercontroller_OrderController",
+      "target": "paymentdtos_InitiatePaymentRequest",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/OrderManagement/controller/OrderController.java",
+      "source_location": "line 48",
+      "weight": 1.0
+    },
+    {
+      "source": "ordercontroller_OrderController",
+      "target": "paymentdtos_PaymentResponse",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/OrderManagement/controller/OrderController.java",
+      "source_location": "line 56",
+      "weight": 1.0
+    },
+    {
+      "source": "ordercontroller_OrderController",
+      "target": "paymentdtos_OrderPlaceResponse",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/OrderManagement/controller/OrderController.java",
+      "source_location": "line 62",
+      "weight": 1.0
+    },
+    {
+      "source": "ordereventpublisher_OrderEventPublisher",
+      "target": "ordereventpublisher_OrderEvent",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/OrderManagement/event/OrderEventPublisher.java",
+      "source_location": "line 34",
+      "weight": 1.0
+    },
+    {
+      "source": "orderservice_OrderService",
+      "target": "ordereventpublisher_OrderEventPublisher",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/OrderManagement/service/OrderService.java",
+      "source_location": "line 188, 218",
+      "weight": 1.0
+    },
+    {
+      "source": "orderservice_OrderService",
+      "target": "rationale_order_status_machine",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/OrderManagement/service/OrderService.java",
+      "source_location": "validateStatusTransition method",
+      "weight": 1.0
+    },
+    {
+      "source": "paymenteventpublisher_PaymentEventPublisher",
+      "target": "paymentrabbitconfig_PaymentRabbitMQConfig",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/event/PaymentEventPublisher.java",
+      "source_location": "line 41, 46, 51, 56, 78",
+      "weight": 1.0
+    },
+    {
+      "source": "paymenteventpublisher_PaymentEventPublisher",
+      "target": "paymenteventpublisher_PaymentEvent",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/event/PaymentEventPublisher.java",
+      "source_location": "line 62",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentcontroller_PaymentController",
+      "target": "paymentdtos_InitiatePaymentRequest",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/controller/PaymentController.java",
+      "source_location": "line 27",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentcontroller_PaymentController",
+      "target": "paymentdtos_PaymentResponse",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/controller/PaymentController.java",
+      "source_location": "line 25, 37, 57, 68",
+      "weight": 1.0
+    },
+    {
+      "source": "walletcontroller_WalletController",
+      "target": "paymentdtos_WalletResponse",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/controller/WalletController.java",
+      "source_location": "line 25, 34, 54",
+      "weight": 1.0
+    },
+    {
+      "source": "walletcontroller_WalletController",
+      "target": "paymentdtos_WalletTransactionResponse",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/controller/WalletController.java",
+      "source_location": "line 45, 64",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentdtos_OrderPlaceResponse",
+      "target": "paymentdtos_PaymentResponse",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/dto/PaymentDTOs.java",
+      "source_location": "line 103-104",
+      "weight": 1.0
+    },
+    {
+      "source": "banktransferadapter_BankTransferAdapter",
+      "target": "gateway_PaymentGatewayAdapter",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/BankTransferAdapter.java",
+      "source_location": "class BankTransferAdapter implements PaymentGatewayAdapter",
+      "weight": 1.0
+    },
+    {
+      "source": "banktransferadapter_BankTransferAdapter",
+      "target": "gateway_GatewayResult",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/BankTransferAdapter.java",
+      "source_location": "process and refund methods",
+      "weight": 1.0
+    },
+    {
+      "source": "codadapter_CashOnDeliveryAdapter",
+      "target": "gateway_PaymentGatewayAdapter",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/CashOnDeliveryAdapter.java",
+      "source_location": "class CashOnDeliveryAdapter implements PaymentGatewayAdapter",
+      "weight": 1.0
+    },
+    {
+      "source": "codadapter_CashOnDeliveryAdapter",
+      "target": "gateway_GatewayResult",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/CashOnDeliveryAdapter.java",
+      "source_location": "process and refund methods",
+      "weight": 1.0
+    },
+    {
+      "source": "fawryadapter_FawryAdapter",
+      "target": "gateway_PaymentGatewayAdapter",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/FawryAdapter.java",
+      "source_location": "class FawryAdapter implements PaymentGatewayAdapter",
+      "weight": 1.0
+    },
+    {
+      "source": "fawryadapter_FawryAdapter",
+      "target": "gateway_GatewayResult",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/FawryAdapter.java",
+      "source_location": "process and refund methods",
+      "weight": 1.0
+    },
+    {
+      "source": "paymoabadapter_PaymobAdapter",
+      "target": "gateway_PaymentGatewayAdapter",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/PaymobAdapter.java",
+      "source_location": "class PaymobAdapter implements PaymentGatewayAdapter",
+      "weight": 1.0
+    },
+    {
+      "source": "paymoabadapter_PaymobAdapter",
+      "target": "gateway_GatewayResult",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/PaymobAdapter.java",
+      "source_location": "process and refund methods",
+      "weight": 1.0
+    },
+    {
+      "source": "stripeadapter_StripeAdapter",
+      "target": "gateway_PaymentGatewayAdapter",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/StripeAdapter.java",
+      "source_location": "class StripeAdapter implements PaymentGatewayAdapter",
+      "weight": 1.0
+    },
+    {
+      "source": "stripeadapter_StripeAdapter",
+      "target": "gateway_GatewayResult",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/StripeAdapter.java",
+      "source_location": "process and refund methods",
+      "weight": 1.0
+    },
+    {
+      "source": "wallettransaction_WalletTransaction",
+      "target": "wallet_Wallet",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/entity/WalletTransaction.java",
+      "source_location": "@ManyToOne wallet field",
+      "weight": 1.0
+    },
+    {
+      "source": "payment_Payment",
+      "target": "rationale_idempotency_payment",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/entity/Payment.java",
+      "source_location": "idempotencyKey column",
+      "weight": 1.0
+    },
+    {
+      "source": "rationale_gateway_strategy_pattern",
+      "target": "gateway_PaymentGatewayAdapter",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/PaymentGatewayAdapter.java",
+      "source_location": "interface javadoc",
+      "weight": 1.0
+    },
+    {
+      "source": "ordereventpublisher_OrderEventPublisher",
+      "target": "paymenteventpublisher_PaymentEventPublisher",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "src/main/java/com/example/flowmerceproject/OrderManagement/event/OrderEventPublisher.java",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "paymentdtos_InitiatePaymentRequest",
+      "target": "payment_Payment",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/dto/PaymentDTOs.java",
+      "source_location": "orderId, amount, paymentMethod, idempotencyKey",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentdtos_PaymentResponse",
+      "target": "payment_Payment",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/dto/PaymentDTOs.java",
+      "source_location": "paymentId, orderId, status, amount, currency, gateway, transactionReference",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentdtos_WalletResponse",
+      "target": "wallet_Wallet",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/dto/PaymentDTOs.java",
+      "source_location": "walletId, ownerType, balance, currency, isActive",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentdtos_WalletTransactionResponse",
+      "target": "wallettransaction_WalletTransaction",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/dto/PaymentDTOs.java",
+      "source_location": "transactionId, amount, type, referenceType, referenceId, balanceAfter",
+      "weight": 1.0
+    },
+    {
+      "source": "fawryadapter_FawryAdapter",
+      "target": "paymoabadapter_PaymobAdapter",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/FawryAdapter.java",
+      "source_location": "both are Egyptian payment stubs with NOT_CONFIGURED guard",
+      "weight": 1.0
+    },
+    {
+      "source": "stripeadapter_StripeAdapter",
+      "target": "paymoabadapter_PaymobAdapter",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/StripeAdapter.java",
+      "source_location": "both are stub adapters pending API key configuration",
+      "weight": 1.0
+    },
+    {
+      "source": "ordercontroller_OrderController",
+      "target": "paymentcontroller_PaymentController",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.65,
+      "source_file": "src/main/java/com/example/flowmerceproject/OrderManagement/controller/OrderController.java",
+      "source_location": "OrderController embeds payment initiation logic at /orders/place duplicating PaymentController /payments/initiate",
+      "weight": 1.0
+    },
+    {
+      "source": "walletsimulationadapter_WalletSimulationAdapter",
+      "target": "walletservice_WalletService",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/WalletSimulationAdapter.java",
+      "source_location": "lines 48,59,63",
+      "weight": 1.0
+    },
+    {
+      "source": "walletsimulationadapter_WalletSimulationAdapter",
+      "target": "rationale_wallet_simulation",
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/WalletSimulationAdapter.java",
+      "source_location": "javadoc line 16-20",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentserviceimpl_PaymentServiceImpl",
+      "target": "paymentrepository_PaymentRepository",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/service/PaymentServiceImpl.java",
+      "source_location": "lines 91,102,125",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentserviceimpl_PaymentServiceImpl",
+      "target": "walletservice_WalletService",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/service/PaymentServiceImpl.java",
+      "source_location": "lines 47,203,206",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentserviceimpl_PaymentServiceImpl",
+      "target": "rationale_idempotency_redis",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/service/PaymentServiceImpl.java",
+      "source_location": "lines 39-40,63-78",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentserviceimpl_PaymentServiceImpl",
+      "target": "rationale_gateway_strategy",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/service/PaymentServiceImpl.java",
+      "source_location": "lines 46,99,245-252",
+      "weight": 1.0
+    },
+    {
+      "source": "walletservice_WalletService",
+      "target": "walletrepository_WalletRepository",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/service/WalletService.java",
+      "source_location": "lines 47,63,88,99",
+      "weight": 1.0
+    },
+    {
+      "source": "walletservice_WalletService",
+      "target": "wallettransactionrepository_WalletTransactionRepository",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/service/WalletService.java",
+      "source_location": "lines 161,170,179",
+      "weight": 1.0
+    },
+    {
+      "source": "walletservice_WalletService",
+      "target": "rationale_wallet_simulation",
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/service/WalletService.java",
+      "source_location": "line 34",
+      "weight": 1.0
+    },
+    {
+      "source": "authservice_AuthService",
+      "target": "emailservice_EmailService",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/UserManagement/service/AuthService.java",
+      "source_location": "lines 84,218,284",
+      "weight": 1.0
+    },
+    {
+      "source": "authservice_AuthService",
+      "target": "registerrequest_RegisterRequest",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/UserManagement/service/AuthService.java",
+      "source_location": "lines 52,259",
+      "weight": 1.0
+    },
+    {
+      "source": "unifiedauthcontroller_UnifiedAuthController",
+      "target": "authservice_AuthService",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/UserManagement/controller/UnifiedAuthController.java",
+      "source_location": "lines 20,27",
+      "weight": 1.0
+    },
+    {
+      "source": "securityconfig_SecurityConfig",
+      "target": "concept_rbac",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/UserManagement/config/SecurityConfig.java",
+      "source_location": "lines 6,63-64",
+      "weight": 1.0
+    },
+    {
+      "source": "securityconfig_SecurityConfig",
+      "target": "concept_jwt_auth",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/UserManagement/config/SecurityConfig.java",
+      "source_location": "lines 66",
+      "weight": 1.0
+    },
+    {
+      "source": "storefrontcustomizationcontroller_StorefrontCustomizationController",
+      "target": "concept_rbac",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/StorefrontCustomization/controller/StorefrontCustomizationController.java",
+      "source_location": "lines 32,45,53,60",
+      "weight": 1.0
+    },
+    {
+      "source": "redisconfig_RedisConfig",
+      "target": "paymentserviceimpl_PaymentServiceImpl",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "src/main/java/com/example/flowmerceproject/StorefrontCustomization/config/RedisConfig.java",
+      "source_location": "lines 22-31",
+      "weight": 1.0
+    },
+    {
+      "source": "globalexceptionhandler_GlobalExceptionHandler",
+      "target": "authservice_AuthService",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "src/main/java/com/example/flowmerceproject/UserManagement/exception/GlobalExceptionHandler.java",
+      "source_location": "lines 19-89",
+      "weight": 1.0
+    },
+    {
+      "source": "schema_sql",
+      "target": "paymentrepository_PaymentRepository",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/resources/schema.sql",
+      "source_location": "lines 278-287",
+      "weight": 1.0
+    },
+    {
+      "source": "schema_sql",
+      "target": "walletrepository_WalletRepository",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "src/main/resources/schema.sql",
+      "source_location": "storefront and payments section",
+      "weight": 1.0
+    },
+    {
+      "source": "schema_sql",
+      "target": "wallettransactionrepository_WalletTransactionRepository",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "src/main/resources/schema.sql",
+      "source_location": "payments table section",
+      "weight": 1.0
+    },
+    {
+      "source": "orderfix_report",
+      "target": "rationale_perstore_cart",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "ORDER_MANAGEMENT_FIX_REPORT.md",
+      "source_location": "Fix #3",
+      "weight": 1.0
+    },
+    {
+      "source": "orderfix_report",
+      "target": "rationale_cancel_no_stock_release",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "ORDER_MANAGEMENT_FIX_REPORT.md",
+      "source_location": "Fix #2",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentreport_PaymentServiceReport",
+      "target": "paymentserviceimpl_PaymentServiceImpl",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PAYMENT_SERVICE_REPORT.md",
+      "source_location": "Section 2, Section 6",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentreport_PaymentServiceReport",
+      "target": "walletsimulationadapter_WalletSimulationAdapter",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PAYMENT_SERVICE_REPORT.md",
+      "source_location": "Section 2.1, Table row 1",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentreport_PaymentServiceReport",
+      "target": "concept_rabbitmq_events",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PAYMENT_SERVICE_REPORT.md",
+      "source_location": "Section 2.4",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentreport_PaymentServiceReport",
+      "target": "rationale_gateway_strategy",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PAYMENT_SERVICE_REPORT.md",
+      "source_location": "Section 2.1",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentreport_PaymentServiceReport",
+      "target": "rationale_idempotency_redis",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PAYMENT_SERVICE_REPORT.md",
+      "source_location": "Section 2.2",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_FlowMerceMidyearDoc",
+      "target": "concept_ai_assistant",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Copy of FCI-CU-GP-Midyear-Document-2025.pdf",
+      "source_location": "Page 7, Requirement 6",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_FlowMerceMidyearDoc",
+      "target": "concept_rbac",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Copy of FCI-CU-GP-Midyear-Document-2025.pdf",
+      "source_location": "Page 3, Main Techniques",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_FlowMerceMidyearDoc",
+      "target": "concept_jwt_auth",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Copy of FCI-CU-GP-Midyear-Document-2025.pdf",
+      "source_location": "Page 3, Main Techniques",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_FlowMerceMidyearDoc",
+      "target": "rationale_microservices_arch",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Copy of FCI-CU-GP-Midyear-Document-2025.pdf",
+      "source_location": "Page 5, System Architecture",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_FlowMerceMidyearDoc",
+      "target": "storefrontcustomizationcontroller_StorefrontCustomizationController",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "Copy of FCI-CU-GP-Midyear-Document-2025.pdf",
+      "source_location": "Page 7, Requirement 5",
+      "weight": 1.0
+    },
+    {
+      "source": "pdf_FlowMerceMidyearDoc",
+      "target": "schema_sql",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "Copy of FCI-CU-GP-Midyear-Document-2025.pdf",
+      "source_location": "Page 10, ERD section",
+      "weight": 1.0
+    },
+    {
+      "source": "rationale_gateway_strategy",
+      "target": "walletsimulationadapter_WalletSimulationAdapter",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PAYMENT_SERVICE_REPORT.md",
+      "source_location": "Section 2.1",
+      "weight": 1.0
+    },
+    {
+      "source": "rationale_idempotency_redis",
+      "target": "paymentserviceimpl_PaymentServiceImpl",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PAYMENT_SERVICE_REPORT.md",
+      "source_location": "Section 2.2",
+      "weight": 1.0
+    },
+    {
+      "source": "rationale_microservices_arch",
+      "target": "securityconfig_SecurityConfig",
+      "relation": "rationale_for",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "Copy of FCI-CU-GP-Midyear-Document-2025.pdf",
+      "source_location": "Page 5, Section 3",
+      "weight": 1.0
+    },
+    {
+      "source": "concept_rabbitmq_events",
+      "target": "paymentserviceimpl_PaymentServiceImpl",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "PAYMENT_SERVICE_REPORT.md",
+      "source_location": "Section 2.4",
+      "weight": 1.0
+    },
+    {
+      "source": "authservice_AuthService",
+      "target": "concept_jwt_auth",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/UserManagement/service/AuthService.java",
+      "source_location": "lines 127,162",
+      "weight": 1.0
+    },
+    {
+      "source": "paymentserviceimpl_PaymentServiceImpl",
+      "target": "walletservice_WalletService",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.65,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/service/PaymentServiceImpl.java",
+      "source_location": null,
+      "weight": 0.65
+    },
+    {
+      "source": "walletrepository_WalletRepository",
+      "target": "wallettransactionrepository_WalletTransactionRepository",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/repository/WalletRepository.java",
+      "source_location": null,
+      "weight": 0.75
+    },
+    {
+      "source": "concept_rbac",
+      "target": "concept_jwt_auth",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "Copy of FCI-CU-GP-Midyear-Document-2025.pdf",
+      "source_location": "Page 3, Main Techniques",
+      "weight": 0.75
+    },
+    {
+      "source": "orderfix_report",
+      "target": "paymentreport_PaymentServiceReport",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "ORDER_MANAGEMENT_FIX_REPORT.md",
+      "source_location": null,
+      "weight": 0.85
+    },
+    {
+      "source": "rationale_perstore_cart",
+      "target": "rationale_cancel_no_stock_release",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.65,
+      "source_file": "ORDER_MANAGEMENT_FIX_REPORT.md",
+      "source_location": null,
+      "weight": 0.65
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "cart_checkout_inventory_flow",
+      "label": "Cart Checkout with Inventory Reservation Flow",
+      "nodes": [
+        "cartcontroller",
+        "checkoutservice",
+        "inventory_service_ext"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CheckoutService.java"
+    },
+    {
+      "id": "notification_event_driven_pipeline",
+      "label": "Event-Driven Notification Pipeline via RabbitMQ",
+      "nodes": [
+        "ordernotificationconsumer",
+        "paymentnotificationconsumer",
+        "notificationservice"
+      ],
+      "relation": "implement",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/NotificationManagement/consumer/OrderNotificationConsumer.java"
+    },
+    {
+      "id": "cart_store_customer_scope",
+      "label": "Cart Scoped to Customer-Store Pair",
+      "nodes": [
+        "shoppingcart",
+        "cartservice",
+        "shoppingcartrepository"
+      ],
+      "relation": "implement",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/CartManagement/service/CartService.java"
+    },
+    {
+      "id": "payment_gateway_adapter_pattern",
+      "label": "Payment Gateway Adapter Strategy Pattern",
+      "nodes": [
+        "gateway_PaymentGatewayAdapter",
+        "banktransferadapter_BankTransferAdapter",
+        "codadapter_CashOnDeliveryAdapter",
+        "fawryadapter_FawryAdapter",
+        "paymoabadapter_PaymobAdapter",
+        "stripeadapter_StripeAdapter"
+      ],
+      "relation": "implement",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/gateway/PaymentGatewayAdapter.java"
+    },
+    {
+      "id": "order_place_flow",
+      "label": "Order Placement Flow: Checkout + Order + Payment",
+      "nodes": [
+        "ordercontroller_OrderController",
+        "orderservice_OrderService",
+        "paymentdtos_OrderPlaceResponse"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/OrderManagement/controller/OrderController.java"
+    },
+    {
+      "id": "event_driven_notification_flow",
+      "label": "Event-Driven Notification Flow via RabbitMQ",
+      "nodes": [
+        "ordereventpublisher_OrderEventPublisher",
+        "paymenteventpublisher_PaymentEventPublisher",
+        "paymentrabbitconfig_PaymentRabbitMQConfig"
+      ],
+      "relation": "participate_in",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/event/PaymentEventPublisher.java"
+    },
+    {
+      "id": "payment_orchestration_flow",
+      "label": "Payment Orchestration Flow: ServiceImpl + WalletAdapter + EventPublisher",
+      "nodes": [
+        "paymentserviceimpl_PaymentServiceImpl",
+        "walletsimulationadapter_WalletSimulationAdapter",
+        "concept_rabbitmq_events"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.95,
+      "source_file": "PAYMENT_SERVICE_REPORT.md"
+    },
+    {
+      "id": "auth_security_triad",
+      "label": "Authentication Security Triad: AuthService + SecurityConfig + JWT",
+      "nodes": [
+        "authservice_AuthService",
+        "securityconfig_SecurityConfig",
+        "concept_jwt_auth"
+      ],
+      "relation": "implement",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.95,
+      "source_file": "src/main/java/com/example/flowmerceproject/UserManagement/config/SecurityConfig.java"
+    },
+    {
+      "id": "wallet_debit_credit_cycle",
+      "label": "Wallet Debit-Credit Cycle: WalletService + WalletRepository + WalletTransactionRepository",
+      "nodes": [
+        "walletservice_WalletService",
+        "walletrepository_WalletRepository",
+        "wallettransactionrepository_WalletTransactionRepository"
+      ],
+      "relation": "implement",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/main/java/com/example/flowmerceproject/PaymentManagement/service/WalletService.java"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,1 @@
+{"nodes": [{"id": "StockChangedEvent", "label": "StockChangedEvent (Spring ApplicationEvent)", "file_type": "code", "source_file": "src/main/java/com/example/flowmerceproject/InventoryManagement/event/StockChangedEvent.java", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [], "hyperedges": []}

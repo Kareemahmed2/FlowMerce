@@ -32,6 +32,12 @@ public class FileStorageService {
     @Value("${minio.url}")
     private String minioUrl;
 
+    // Public-facing base URL for links returned to the browser — may differ from
+    // minioUrl (the endpoint the backend itself connects to), e.g. when MinIO sits
+    // behind a different public host/port than the one the backend reaches it on.
+    @Value("${minio.public-url}")
+    private String minioPublicUrl;
+
     // ─────────────────────────────────────────────
     // UPLOAD FILE
     // Uploads to MinIO and saves metadata to DB
@@ -59,7 +65,7 @@ public class FileStorageService {
                             .build()
             );
 
-            String fileUrl = minioUrl + "/" + bucketName + "/" + objectName;
+            String fileUrl = minioPublicUrl + "/" + bucketName + "/" + objectName;
 
             // 2. Determine file type
             FileMetadata.FileType fileType = resolveFileType(file.getContentType());
@@ -112,7 +118,7 @@ public class FileStorageService {
 
             // 2. Remove from MinIO
             String objectName = fileUrl.replace(
-                    minioUrl + "/" + bucketName + "/", "");
+                    minioPublicUrl + "/" + bucketName + "/", "");
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(bucketName)
@@ -184,6 +190,32 @@ public class FileStorageService {
                     MakeBucketArgs.builder().bucket(bucketName).build());
             log.info("Bucket created: {}", bucketName);
         }
+
+        // Files are served by handing their MinIO URL straight to the browser
+        // (product images, logos, etc.), so the bucket must allow anonymous GETs.
+        // Idempotent — safe to re-apply on every upload, and covers buckets that
+        // already existed before this policy was introduced.
+        minioClient.setBucketPolicy(
+                SetBucketPolicyArgs.builder()
+                        .bucket(bucketName)
+                        .config(publicReadPolicy(bucketName))
+                        .build());
+    }
+
+    private String publicReadPolicy(String bucket) {
+        return """
+                {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {"AWS": ["*"]},
+                      "Action": ["s3:GetObject"],
+                      "Resource": ["arn:aws:s3:::%s/*"]
+                    }
+                  ]
+                }
+                """.formatted(bucket);
     }
 
     private String getExtension(String filename) {

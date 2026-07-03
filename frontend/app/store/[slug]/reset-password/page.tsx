@@ -13,13 +13,14 @@
  */
 
 import { Suspense, useEffect, useRef, useState } from 'react'
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Loader2, ArrowLeft, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react'
 import { useStore } from '@/components/store/StoreProvider'
+import { useStoreBase } from '@/components/store/StoreBaseProvider'
 import { textOnBg } from '@/components/store/store-types'
 import { authService } from '@/services/auth.service'
 
@@ -64,13 +65,12 @@ export default function CustomerResetPasswordPage() {
 }
 
 function CustomerResetPasswordPageContent() {
-  const { slug } = useParams<{ slug: string }>()
   const router = useRouter()
   const searchParams = useSearchParams()
   const store = useStore()
 
   const token = searchParams.get('token') ?? ''
-  const base = `/store/${slug}`
+  const base = useStoreBase()
   const accent = store.colors.accent
 
   const [showNew, setShowNew] = useState(false)

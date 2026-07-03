@@ -1,0 +1,1 @@
+{"nodes": [{"id": "RegisterRequest", "label": "Register Request DTO", "file_type": "code", "source_file": "src/main/java/com/example/flowmerceproject/UserManagement/dto/RegisterRequest.java", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [], "hyperedges": []}

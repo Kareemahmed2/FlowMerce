@@ -1,0 +1,96 @@
+@startuml AI_Recommendation
+title AI Recommendation Flow
+
+note over Merchant, Groq
+  PLANNED — This module is not yet implemented.
+  The flow below describes the intended design.
+end note
+
+actor "Merchant" as Merchant
+participant "Merchant Dashboard\n(Next.js)" as UI
+participant "AI Recommendation\nService (Spring Boot)" as AIS
+participant "Store Service" as SS
+participant "Product Service" as PS
+participant "PostgreSQL DB" as DB
+participant "Groq API" as Groq
+
+== Request AI Recommendations ==
+
+Merchant -> UI : Click "Get AI Recommendations"\non dashboard
+UI -> AIS : POST /ai/recommendations/generate\n{storeId} + Bearer Token
+
+AIS -> AIS : Validate merchant owns\nthis storeId
+
+== Collect Store Data ==
+
+AIS -> SS : GET store layout & design config\n{theme, colors, banner, navigation structure}
+SS -> DB : Query store configuration
+DB --> SS : Return store config
+SS --> AIS : Store layout & design data
+
+AIS -> PS : GET product catalog snapshot\n{storeId}
+PS -> DB : Query products\n{name, description, images,\nprice, category, stock}
+DB --> PS : Return products
+PS --> AIS : Product list
+
+== Check Rate Limit ==
+
+AIS -> DB : Fetch last recommendation\ntimestamp for this store
+DB --> AIS : Last generated: {date}
+
+note over AIS
+  Rate limit: max 1 request per hour
+  per store to control Groq API costs
+end note
+
+alt Too soon since last request
+    AIS --> UI : 429 Too Many Requests\n"Please wait before generating\nnew recommendations"
+    UI --> Merchant : Show cooldown message
+else Proceed
+
+    == Build AI Prompt ==
+
+    AIS -> AIS : Build structured prompt\n{storeLayout, theme, products,\ninstructions}
+
+    == Call Groq API ==
+
+    AIS -> Groq : POST /openai/v1/chat/completions\n{model: llama3-70b,\n messages: [system + user prompt],\n response_format: JSON}
+
+    alt Groq API unavailable / timeout
+        Groq --> AIS : 503 / timeout error
+        AIS --> UI : 502 Bad Gateway\n"AI service temporarily unavailable"
+        UI --> Merchant : Show error message
+
+    else Groq responds successfully
+        Groq --> AIS : JSON recommendations array\n[{category, issue, recommendation, priority}]
+
+        AIS -> AIS : Parse & validate JSON response
+        AIS -> DB : Save recommendations\n{storeId, generatedAt, recommendations}
+        DB --> AIS : Saved with recommendationBatchId
+
+        AIS --> UI : 200 OK\n{batchId, recommendations}
+
+        UI --> Merchant : Render recommendations panel\ngrouped by priority (High / Medium / Low)
+
+        loop For each recommendation
+            Merchant -> UI : Click Accept / Reject / Ignore
+
+            alt Accepted or Rejected
+                UI -> AIS : PATCH /ai/recommendations/{id}\n{status: ACCEPTED | REJECTED}
+                AIS -> DB : Update status
+                AIS --> UI : Confirmed
+            end
+        end
+
+        == View Recommendation History ==
+
+        Merchant -> UI : Click "View Past Recommendations"
+        UI -> AIS : GET /ai/recommendations/history\n{storeId, page, limit}
+        AIS -> DB : Query all recommendation batches
+        DB --> AIS : Return history
+        AIS --> UI : Paginated history list
+        UI --> Merchant : Show history with status per recommendation
+    end
+end
+
+@enduml

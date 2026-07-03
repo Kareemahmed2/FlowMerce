@@ -1,0 +1,91 @@
+@startuml Checkout_Payment
+title Checkout & Payment Flow
+
+actor "Customer" as User
+participant "Storefront\n(Next.js)" as UI
+participant "Order Service\n(Spring Boot)" as OS
+participant "Product DB\n(PostgreSQL)" as DB
+participant "Paymob API" as Paymob
+participant "Notification Service" as Notify
+
+== Load Checkout Page ==
+
+User -> UI : Click "Proceed to Checkout"
+UI -> OS : GET /cart/{storeId}\n+ Bearer Token
+OS -> DB : Validate cart items\n(availability, stock, prices)
+DB --> OS : Return validated cart
+
+OS -> DB : Fetch merchant-enabled\npayment methods
+DB --> OS : {COD, Paymob, FlowMerce Wallet}\n(based on merchant config)
+
+OS --> UI : Cart summary + order total\n+ available payment methods
+UI --> User : Show checkout page
+
+== Fill Checkout Details ==
+
+User -> UI : Enter shipping address
+User -> UI : Select payment method\n(COD / Paymob / FlowMerce Wallet)
+
+== Place Order ==
+
+note over UI, OS
+  All payment methods go through a single call.
+  Stock reservation, order creation, and payment
+  initiation happen atomically inside Order Service.
+end note
+
+UI -> OS : POST /orders/place\n{cartId, shippingAddress, paymentMethod}
+OS -> DB : Reserve stock for all cart items
+OS -> DB : Create order\n{status: PENDING}
+
+alt Payment Method = Cash on Delivery
+    OS --> UI : 200 OK {orderId}
+    UI --> User : Order placed\n"Awaiting merchant confirmation"
+    OS -> Notify : Notify Customer\n"Order received, pending confirmation"
+    OS -> Notify : Notify Merchant\n"New COD order"
+
+else Payment Method = Paymob
+    OS -> Paymob : Create payment intention\n{amount, currency, orderId}
+    Paymob --> OS : Payment key + iframe URL
+    OS --> UI : Return iframe URL
+    UI --> User : Show Paymob payment iframe
+
+    User -> Paymob : Enter card details & confirm
+    Paymob -> OS : Webhook: payment event\n{orderId, status}
+
+    alt Payment Success
+        OS -> DB : Update order\n{status: CONFIRMED}
+        OS -> DB : Deduct reserved stock
+        OS --> UI : Payment confirmed
+        UI --> User : Show order confirmation page
+        OS -> Notify : Notify Customer "Payment successful"
+        OS -> Notify : Notify Merchant "New paid order"
+
+    else Payment Failed
+        OS -> DB : Update order\n{status: CANCELLED}
+        OS -> DB : Release reserved stock
+        OS --> UI : Payment failed
+        UI --> User : Show error\n"Payment failed, please try again"
+    end
+
+else Payment Method = FlowMerce Wallet
+    OS -> DB : Check & deduct wallet balance
+    OS -> DB : Update order\n{status: CONFIRMED}
+    OS -> DB : Deduct reserved stock
+    OS --> UI : 200 OK {orderId}
+    UI --> User : Show order confirmation page
+    OS -> Notify : Notify Customer "Payment successful"
+    OS -> Notify : Notify Merchant "New paid order"
+end
+
+== Merchant Confirms COD (COD only) ==
+
+note over OS, DB
+  Separate flow triggered when merchant confirms COD order
+end note
+
+OS -> DB : Update order\n{status: CONFIRMED}
+OS -> DB : Deduct reserved stock
+OS -> Notify : Notify Customer "Order confirmed by merchant"
+
+@enduml

@@ -1,0 +1,892 @@
+{
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\FlowMerce.postman_collection.json": {
+    "mtime": 1779759524.8066654,
+    "ast_hash": "33059521e1df858faaad1b6f551138e4",
+    "semantic_hash": "33059521e1df858faaad1b6f551138e4"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\mvnw": {
+    "mtime": 1771186197.281948,
+    "ast_hash": "ab50dd89da7da2346b28003352eeeeeb",
+    "semantic_hash": "ab50dd89da7da2346b28003352eeeeeb"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\.claude\\settings.local.json": {
+    "mtime": 1781558319.6024723,
+    "ast_hash": "fb9e36d259cd739f6b86530b2e9a987e",
+    "semantic_hash": "fb9e36d259cd739f6b86530b2e9a987e"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\FlowMerceProjectApplication.java": {
+    "mtime": 1778918712.3330908,
+    "ast_hash": "43234bc5b957fd3e708febf146ad445e",
+    "semantic_hash": "43234bc5b957fd3e708febf146ad445e"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\CartManagement\\controller\\CartController.java": {
+    "mtime": 1779718719.2377098,
+    "ast_hash": "7df91890f8edae263ed162ca75a9b03a",
+    "semantic_hash": "7df91890f8edae263ed162ca75a9b03a"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\CartManagement\\controller\\WishlistController.java": {
+    "mtime": 1779375094.1978128,
+    "ast_hash": "84d3b674ab65cdf24b8124bca64621a6",
+    "semantic_hash": "84d3b674ab65cdf24b8124bca64621a6"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\CartManagement\\dto\\CartDTOs.java": {
+    "mtime": 1779733122.3819785,
+    "ast_hash": "853540def1eee064b7cbc59cc9ad789f",
+    "semantic_hash": "853540def1eee064b7cbc59cc9ad789f"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\CartManagement\\dto\\WishlistDTOs.java": {
+    "mtime": 1779374985.8826177,
+    "ast_hash": "73582fcbb49d6aaa5f3728b0198dac1a",
+    "semantic_hash": "73582fcbb49d6aaa5f3728b0198dac1a"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\CartManagement\\entity\\CartItem.java": {
+    "mtime": 1779374965.848495,
+    "ast_hash": "d7fe87ed8c81061a63c3d28ec100637a",
+    "semantic_hash": "d7fe87ed8c81061a63c3d28ec100637a"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\CartManagement\\entity\\ShoppingCart.java": {
+    "mtime": 1779718719.2397754,
+    "ast_hash": "a1d75f84665039de8405475d26041783",
+    "semantic_hash": "a1d75f84665039de8405475d26041783"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\CartManagement\\entity\\Wishlist.java": {
+    "mtime": 1779400665.4717505,
+    "ast_hash": "af502fdcfa8ceb7a8940ddafe0f15ff3",
+    "semantic_hash": "af502fdcfa8ceb7a8940ddafe0f15ff3"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\CartManagement\\repository\\CartItemRepository.java": {
+    "mtime": 1779374995.388496,
+    "ast_hash": "d564bc7c30147dde68d77c3fb5fdb339",
+    "semantic_hash": "d564bc7c30147dde68d77c3fb5fdb339"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\CartManagement\\repository\\ShoppingCartRepository.java": {
+    "mtime": 1779730418.0868573,
+    "ast_hash": "a16d177a0edd1afb50dc313312ff4ba9",
+    "semantic_hash": "a16d177a0edd1afb50dc313312ff4ba9"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\CartManagement\\repository\\WishlistRepository.java": {
+    "mtime": 1779400676.758925,
+    "ast_hash": "cc585d81f72b415fd25e1594500714b9",
+    "semantic_hash": "cc585d81f72b415fd25e1594500714b9"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\CartManagement\\service\\CartCleanupScheduler.java": {
+    "mtime": 1779375075.0735328,
+    "ast_hash": "606367aa8084ef5023ddfa9c532261ef",
+    "semantic_hash": "606367aa8084ef5023ddfa9c532261ef"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\CartManagement\\service\\CartService.java": {
+    "mtime": 1779730309.0219488,
+    "ast_hash": "ace94f3dd2a114eaa3800536721baf7b",
+    "semantic_hash": "ace94f3dd2a114eaa3800536721baf7b"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\CartManagement\\service\\CheckoutService.java": {
+    "mtime": 1779730664.8217144,
+    "ast_hash": "9cd7bfbb003e599be77e27fa0e4a6ed3",
+    "semantic_hash": "9cd7bfbb003e599be77e27fa0e4a6ed3"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\CartManagement\\service\\WishlistService.java": {
+    "mtime": 1779400704.95887,
+    "ast_hash": "611e41215400b5f4da8b910438ac6de1",
+    "semantic_hash": "611e41215400b5f4da8b910438ac6de1"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\common\\ApiResponse.java": {
+    "mtime": 1778946144.9387834,
+    "ast_hash": "c4962769995037e0d7585b7769f92530",
+    "semantic_hash": "c4962769995037e0d7585b7769f92530"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\controller\\InventoryController.java": {
+    "mtime": 1779400653.2003555,
+    "ast_hash": "ed2fae3b0aa2b61fef8399ca65f3904f",
+    "semantic_hash": "ed2fae3b0aa2b61fef8399ca65f3904f"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\dto\\InventoryRequest.java": {
+    "mtime": 1778947706.7962465,
+    "ast_hash": "67d0cc66378e890d347b189fa511db1d",
+    "semantic_hash": "67d0cc66378e890d347b189fa511db1d"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\dto\\InventoryResponse.java": {
+    "mtime": 1778947713.968285,
+    "ast_hash": "81fd606f6894f1bc8c115c33271f34d6",
+    "semantic_hash": "81fd606f6894f1bc8c115c33271f34d6"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\dto\\RestockRequest.java": {
+    "mtime": 1778947727.252111,
+    "ast_hash": "5ca09e4cdebadbad9c2abebe40e6ce3c",
+    "semantic_hash": "5ca09e4cdebadbad9c2abebe40e6ce3c"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\dto\\StockUpdateRequest.java": {
+    "mtime": 1778947720.8860216,
+    "ast_hash": "f13a517183ed1c177717fef856f3ae86",
+    "semantic_hash": "f13a517183ed1c177717fef856f3ae86"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\entity\\Inventory.java": {
+    "mtime": 1779400554.8153348,
+    "ast_hash": "85a7b8c724c230ac655c33fc3bcb24fa",
+    "semantic_hash": "85a7b8c724c230ac655c33fc3bcb24fa"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\entity\\InventoryTransaction.java": {
+    "mtime": 1778947617.2374816,
+    "ast_hash": "88d3dd359e018d2d8ab33fa8b6b72f88",
+    "semantic_hash": "88d3dd359e018d2d8ab33fa8b6b72f88"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\event\\StockChangedEvent.java": {
+    "mtime": 1778947625.6277077,
+    "ast_hash": "61832cdf27203b91f9a833290995fcaf",
+    "semantic_hash": "61832cdf27203b91f9a833290995fcaf"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\event\\StockEventListener.java": {
+    "mtime": 1778947636.5476007,
+    "ast_hash": "11fd1a0a293c8a4fd4f71057d802afdf",
+    "semantic_hash": "11fd1a0a293c8a4fd4f71057d802afdf"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\repository\\InventoryRepository.java": {
+    "mtime": 1779400556.7880456,
+    "ast_hash": "a5b0f659e648855c9387883f132a1522",
+    "semantic_hash": "a5b0f659e648855c9387883f132a1522"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\repository\\InventoryTransactionRepository.java": {
+    "mtime": 1778947651.7368822,
+    "ast_hash": "80a218d7121c7bb959c972afea082ee5",
+    "semantic_hash": "80a218d7121c7bb959c972afea082ee5"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\service\\InventoryService.java": {
+    "mtime": 1778947736.4486475,
+    "ast_hash": "6d5543ef451df0aabaecfc24f6471890",
+    "semantic_hash": "6d5543ef451df0aabaecfc24f6471890"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\service\\InventoryServiceImpl.java": {
+    "mtime": 1779401092.4506018,
+    "ast_hash": "03b73db8b25c1d6b1b2932b26cd7b971",
+    "semantic_hash": "03b73db8b25c1d6b1b2932b26cd7b971"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\strategy\\FlashSaleStrategy.java": {
+    "mtime": 1778947677.263009,
+    "ast_hash": "1a6b8a127202b316c5646958b44834c8",
+    "semantic_hash": "1a6b8a127202b316c5646958b44834c8"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\strategy\\InventoryStrategy.java": {
+    "mtime": 1778947658.8454256,
+    "ast_hash": "36f822dfffae36d8b0ce359c53c78661",
+    "semantic_hash": "36f822dfffae36d8b0ce359c53c78661"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\strategy\\InventoryStrategyFactory.java": {
+    "mtime": 1779400509.5275378,
+    "ast_hash": "eb5e3954de7a13c83642ac0753910919",
+    "semantic_hash": "eb5e3954de7a13c83642ac0753910919"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\strategy\\NormalStockStrategy.java": {
+    "mtime": 1778947667.2728515,
+    "ast_hash": "480279f0a9da580f5380b1079f85a88d",
+    "semantic_hash": "480279f0a9da580f5380b1079f85a88d"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\InventoryManagement\\strategy\\ReservedStockStrategy.java": {
+    "mtime": 1778947685.7805827,
+    "ast_hash": "a74556d8f8a0a9d89b09329abb465ec8",
+    "semantic_hash": "a74556d8f8a0a9d89b09329abb465ec8"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\ProductManagement\\controller\\CategoryController.java": {
+    "mtime": 1779374922.4831564,
+    "ast_hash": "4167d1fcbd1192b2f4502ac8fd603f94",
+    "semantic_hash": "4167d1fcbd1192b2f4502ac8fd603f94"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\ProductManagement\\controller\\ProductController.java": {
+    "mtime": 1779400470.4347486,
+    "ast_hash": "da3329a73a280c88cccb2a8fc7b7abcb",
+    "semantic_hash": "da3329a73a280c88cccb2a8fc7b7abcb"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\ProductManagement\\controller\\ReviewController.java": {
+    "mtime": 1779374945.0990496,
+    "ast_hash": "131d3078756a73cf48cd5e899db44cc8",
+    "semantic_hash": "131d3078756a73cf48cd5e899db44cc8"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\ProductManagement\\dto\\CategoryDTOs.java": {
+    "mtime": 1779400724.8489585,
+    "ast_hash": "6742df3ae9fc3bd06e134616208f5de6",
+    "semantic_hash": "6742df3ae9fc3bd06e134616208f5de6"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\ProductManagement\\dto\\ProductDTOs.java": {
+    "mtime": 1779374827.4684978,
+    "ast_hash": "4972da892906b3496dabe701443d3d05",
+    "semantic_hash": "4972da892906b3496dabe701443d3d05"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\ProductManagement\\dto\\ReviewDTOs.java": {
+    "mtime": 1779374832.4175394,
+    "ast_hash": "aad6f64df0f978703dfb8312f3d71769",
+    "semantic_hash": "aad6f64df0f978703dfb8312f3d71769"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\ProductManagement\\entity\\Category.java": {
+    "mtime": 1779400542.6774564,
+    "ast_hash": "b23a535fd0c8e0134a71804615a11096",
+    "semantic_hash": "b23a535fd0c8e0134a71804615a11096"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\ProductManagement\\entity\\Product.java": {
+    "mtime": 1779374801.8383298,
+    "ast_hash": "81216b7c1f8fbc03871de84e76d93cd0",
+    "semantic_hash": "81216b7c1f8fbc03871de84e76d93cd0"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\ProductManagement\\entity\\ProductMedia.java": {
+    "mtime": 1779374807.1188118,
+    "ast_hash": "eb8899b72d55b0f8c9747d8fdf272668",
+    "semantic_hash": "eb8899b72d55b0f8c9747d8fdf272668"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\ProductManagement\\entity\\Review.java": {
+    "mtime": 1779374814.2166243,
+    "ast_hash": "a6129806c13a7494388ad71104adc4a9",
+    "semantic_hash": "a6129806c13a7494388ad71104adc4a9"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\ProductManagement\\repository\\CategoryRepository.java": {
+    "mtime": 1779400715.275615,
+    "ast_hash": "0efb6318122ee60b2b1d402bc624855e",
+    "semantic_hash": "0efb6318122ee60b2b1d402bc624855e"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\ProductManagement\\repository\\ProductMediaRepository.java": {
+    "mtime": 1779374849.2749438,
+    "ast_hash": "06e581fb55f85efe79df7834752389d3",
+    "semantic_hash": "06e581fb55f85efe79df7834752389d3"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\ProductManagement\\repository\\ProductRepository.java": {
+    "mtime": 1779377179.1255784,
+    "ast_hash": "12466859b1e54d7a237c5023de0a1404",
+    "semantic_hash": "12466859b1e54d7a237c5023de0a1404"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\ProductManagement\\repository\\ReviewRepository.java": {
+    "mtime": 1779374854.1689289,
+    "ast_hash": "580c815c04afbb149ffee6dfb0dd701d",
+    "semantic_hash": "580c815c04afbb149ffee6dfb0dd701d"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\ProductManagement\\service\\CategoryService.java": {
+    "mtime": 1779400738.5133493,
+    "ast_hash": "9106b07a220cd5b85a035d8b24e7f091",
+    "semantic_hash": "9106b07a220cd5b85a035d8b24e7f091"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\ProductManagement\\service\\ProductService.java": {
+    "mtime": 1779400639.989802,
+    "ast_hash": "29225fb1676f86f61b5b2f7053fc37e1",
+    "semantic_hash": "29225fb1676f86f61b5b2f7053fc37e1"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\ProductManagement\\service\\ReviewService.java": {
+    "mtime": 1779377147.364622,
+    "ast_hash": "995dc32d313f3dd132a8c2d252d37036",
+    "semantic_hash": "995dc32d313f3dd132a8c2d252d37036"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\config\\AsyncConfig.java": {
+    "mtime": 1778918712.365451,
+    "ast_hash": "15b4710149a7bf7c2473b6eb2277d0f9",
+    "semantic_hash": "15b4710149a7bf7c2473b6eb2277d0f9"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\config\\RedisConfig.java": {
+    "mtime": 1779728449.6929085,
+    "ast_hash": "6a442c1f04ef140fcfd1f29442f96089",
+    "semantic_hash": "6a442c1f04ef140fcfd1f29442f96089"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\controller\\PublicStorefrontController.java": {
+    "mtime": 1779375134.4725926,
+    "ast_hash": "0626afa9ec9c73403882b5fb1d8f97a2",
+    "semantic_hash": "0626afa9ec9c73403882b5fb1d8f97a2"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\controller\\StorefrontCustomizationController.java": {
+    "mtime": 1779728805.2512548,
+    "ast_hash": "a15b58b74ad1b574985955be5ddaace4",
+    "semantic_hash": "a15b58b74ad1b574985955be5ddaace4"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\dto\\StorefrontDTOs.java": {
+    "mtime": 1779400750.984807,
+    "ast_hash": "39c1a7a9e5452d726d4c58f5ff0f01f0",
+    "semantic_hash": "39c1a7a9e5452d726d4c58f5ff0f01f0"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\entity\\BaseComponent.java": {
+    "mtime": 1778945202.336928,
+    "ast_hash": "f319653132e2298f265c53a2778ba6ba",
+    "semantic_hash": "f319653132e2298f265c53a2778ba6ba"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\entity\\ComponentDecorator.java": {
+    "mtime": 1779377214.3351758,
+    "ast_hash": "d97cc394ec5d17d4cc81604235435bae",
+    "semantic_hash": "d97cc394ec5d17d4cc81604235435bae"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\entity\\DecoratorComponent.java": {
+    "mtime": 1778945202.3432684,
+    "ast_hash": "25c9b73ac29a604d8c3fb7a782a5542d",
+    "semantic_hash": "25c9b73ac29a604d8c3fb7a782a5542d"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\entity\\Page.java": {
+    "mtime": 1778945202.3497183,
+    "ast_hash": "8230595b06ed2ea1f92c526afdd0a3ae",
+    "semantic_hash": "8230595b06ed2ea1f92c526afdd0a3ae"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\entity\\StorefrontMedia.java": {
+    "mtime": 1779373876.4455657,
+    "ast_hash": "446c90d587587ecf06fe6955fcb21860",
+    "semantic_hash": "446c90d587587ecf06fe6955fcb21860"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\entity\\StorefrontTemplate.java": {
+    "mtime": 1778918712.3818748,
+    "ast_hash": "f4483d79654e3c3140b4ed6117561f33",
+    "semantic_hash": "f4483d79654e3c3140b4ed6117561f33"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\entity\\ThemeTemplate.java": {
+    "mtime": 1778918712.38345,
+    "ast_hash": "8c0e738626f7dbd2bbfc781020bcbee2",
+    "semantic_hash": "8c0e738626f7dbd2bbfc781020bcbee2"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\repository\\BaseComponentRepository.java": {
+    "mtime": 1778918712.3856096,
+    "ast_hash": "c56413ff69ecaa17e5823ee37e86e744",
+    "semantic_hash": "c56413ff69ecaa17e5823ee37e86e744"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\repository\\ComponentDecoratorRepository.java": {
+    "mtime": 1779377219.106766,
+    "ast_hash": "7abb4176dc0e251af5482556e60cc379",
+    "semantic_hash": "7abb4176dc0e251af5482556e60cc379"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\repository\\MediaRepository.java": {
+    "mtime": 1779373880.4384737,
+    "ast_hash": "1e2e6f6782e70608396c524f0e8fe753",
+    "semantic_hash": "1e2e6f6782e70608396c524f0e8fe753"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\repository\\PageRepository.java": {
+    "mtime": 1778945202.3529537,
+    "ast_hash": "3baceabe3c4369774a140d7670ddd7ff",
+    "semantic_hash": "3baceabe3c4369774a140d7670ddd7ff"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\repository\\StorefrontTemplateRepository.java": {
+    "mtime": 1779374009.169821,
+    "ast_hash": "885af2cf8289d516a714b2ff4272da4f",
+    "semantic_hash": "885af2cf8289d516a714b2ff4272da4f"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\repository\\ThemeTemplateRepository.java": {
+    "mtime": 1778918712.389368,
+    "ast_hash": "9caad80f84d5443ee15cdf5b739f703f",
+    "semantic_hash": "9caad80f84d5443ee15cdf5b739f703f"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\service\\StorefrontCustomizationService.java": {
+    "mtime": 1779400830.5929177,
+    "ast_hash": "c638b8427b37cdfc2725cc443920bda0",
+    "semantic_hash": "c638b8427b37cdfc2725cc443920bda0"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StorefrontCustomization\\service\\StorefrontWriteBehindService.java": {
+    "mtime": 1778918712.394255,
+    "ast_hash": "a69ee98ebdf44e17b6624d1d8f4f11d5",
+    "semantic_hash": "a69ee98ebdf44e17b6624d1d8f4f11d5"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StoreMangement\\controller\\StoreController.java": {
+    "mtime": 1779373789.883832,
+    "ast_hash": "299b4085c33b029a6067a4bd6c2f1845",
+    "semantic_hash": "299b4085c33b029a6067a4bd6c2f1845"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StoreMangement\\dto\\CatalogDTOs.java": {
+    "mtime": 1779373976.4959166,
+    "ast_hash": "0c03fb2f1ce716feefb65e1129ab5e22",
+    "semantic_hash": "0c03fb2f1ce716feefb65e1129ab5e22"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StoreMangement\\dto\\StoreDTOs.java": {
+    "mtime": 1778946435.201831,
+    "ast_hash": "538fe053bb49b18b0d7768c9b4257824",
+    "semantic_hash": "538fe053bb49b18b0d7768c9b4257824"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StoreMangement\\dto\\StoreSettingsDTOs.java": {
+    "mtime": 1776105729.8427815,
+    "ast_hash": "c2cff5aefca945312b65a3e2e820ca6a",
+    "semantic_hash": "c2cff5aefca945312b65a3e2e820ca6a"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StoreMangement\\entity\\Store.java": {
+    "mtime": 1778946215.8537917,
+    "ast_hash": "2ff2a1f0cef98543216ac9935a79228a",
+    "semantic_hash": "2ff2a1f0cef98543216ac9935a79228a"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StoreMangement\\entity\\StoreSettings.java": {
+    "mtime": 1778946203.5673282,
+    "ast_hash": "f699f8dcb36c5b2eaf553b19286e85e1",
+    "semantic_hash": "f699f8dcb36c5b2eaf553b19286e85e1"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StoreMangement\\repository\\StoreRepository.java": {
+    "mtime": 1778946228.4564822,
+    "ast_hash": "d5f016a4c483863add7c4c6cbefd2063",
+    "semantic_hash": "d5f016a4c483863add7c4c6cbefd2063"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StoreMangement\\repository\\StoreSettingsRepository.java": {
+    "mtime": 1776105729.8465085,
+    "ast_hash": "0af42d7bb075cc19771335020177f9e3",
+    "semantic_hash": "0af42d7bb075cc19771335020177f9e3"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\StoreMangement\\service\\StoreService.java": {
+    "mtime": 1779375129.0065503,
+    "ast_hash": "7d6bb9532c3350a20151faa20e76aff8",
+    "semantic_hash": "7d6bb9532c3350a20151faa20e76aff8"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\config\\JwtAuthFilter.java": {
+    "mtime": 1776105729.8485534,
+    "ast_hash": "c20bf0e688ad365334a170c648ecf785",
+    "semantic_hash": "c20bf0e688ad365334a170c648ecf785"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\config\\JwtUtil.java": {
+    "mtime": 1776105729.8497941,
+    "ast_hash": "b79f61274665392ca7b1fababc4f38f0",
+    "semantic_hash": "b79f61274665392ca7b1fababc4f38f0"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\config\\SecurityConfig.java": {
+    "mtime": 1779734228.9603071,
+    "ast_hash": "8d36295faeb3f7c1aa5ccbaf7e7394d8",
+    "semantic_hash": "8d36295faeb3f7c1aa5ccbaf7e7394d8"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\controller\\AdminController.java": {
+    "mtime": 1779400443.4564266,
+    "ast_hash": "5c7960d47cfc3b15b4fe6b27ef4379da",
+    "semantic_hash": "5c7960d47cfc3b15b4fe6b27ef4379da"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\controller\\AuthController.java": {
+    "mtime": 1779400482.0100045,
+    "ast_hash": "23da9b7b1090fbdfb442a1a3bb35a680",
+    "semantic_hash": "23da9b7b1090fbdfb442a1a3bb35a680"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\controller\\CustomerAuthController.java": {
+    "mtime": 1779400494.7406006,
+    "ast_hash": "33f272c3178d5e6945af20a0025bf448",
+    "semantic_hash": "33f272c3178d5e6945af20a0025bf448"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\controller\\MerchantController.java": {
+    "mtime": 1778946395.2706058,
+    "ast_hash": "b82049a315df14d1a01e7ef4e15fa870",
+    "semantic_hash": "b82049a315df14d1a01e7ef4e15fa870"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\controller\\SseController.java": {
+    "mtime": 1778918712.396933,
+    "ast_hash": "278691548265a6124e08f8dba7d5550d",
+    "semantic_hash": "278691548265a6124e08f8dba7d5550d"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\controller\\UserController.java": {
+    "mtime": 1778946407.9463365,
+    "ast_hash": "1079ec3f4b320c137f1cebe0a4ac6aa4",
+    "semantic_hash": "1079ec3f4b320c137f1cebe0a4ac6aa4"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\dto\\AuthResponse.java": {
+    "mtime": 1778946155.238821,
+    "ast_hash": "744f3559cfc58561866ab5c7f89b23e5",
+    "semantic_hash": "744f3559cfc58561866ab5c7f89b23e5"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\dto\\ChangePasswordRequest.java": {
+    "mtime": 1776105729.8540664,
+    "ast_hash": "5f7310cb86b69b01f8517807a578623b",
+    "semantic_hash": "5f7310cb86b69b01f8517807a578623b"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\dto\\LoginRequest.java": {
+    "mtime": 1776105729.8550735,
+    "ast_hash": "8b70042f725a9b8ce6a8ae0b493e706b",
+    "semantic_hash": "8b70042f725a9b8ce6a8ae0b493e706b"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\dto\\MerchantDTOs.java": {
+    "mtime": 1776105729.8560607,
+    "ast_hash": "367800851e2860eed11e49e75aa9c4e0",
+    "semantic_hash": "367800851e2860eed11e49e75aa9c4e0"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\dto\\PasswordDTOs.java": {
+    "mtime": 1776105729.8560607,
+    "ast_hash": "b96b0af4ea922d39744f98ef2bae69e6",
+    "semantic_hash": "b96b0af4ea922d39744f98ef2bae69e6"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\dto\\RefreshTokenRequest.java": {
+    "mtime": 1778946164.1950514,
+    "ast_hash": "900dbba2f94566bee64e7f717ae92039",
+    "semantic_hash": "900dbba2f94566bee64e7f717ae92039"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\dto\\RegisterRequest.java": {
+    "mtime": 1779731344.6262896,
+    "ast_hash": "9ebd01625f471255c3df67e264095fc6",
+    "semantic_hash": "9ebd01625f471255c3df67e264095fc6"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\dto\\UpdateProfileRequest.java": {
+    "mtime": 1776105729.8572607,
+    "ast_hash": "2d6608166f6984340915da130315a379",
+    "semantic_hash": "2d6608166f6984340915da130315a379"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\dto\\UserResponse.java": {
+    "mtime": 1778918712.39951,
+    "ast_hash": "a9b1e7f361210733e7dc419157fd9dbe",
+    "semantic_hash": "a9b1e7f361210733e7dc419157fd9dbe"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\entity\\Admin.java": {
+    "mtime": 1776105729.8582664,
+    "ast_hash": "e47dff292f33807b371c46372ad3fa15",
+    "semantic_hash": "e47dff292f33807b371c46372ad3fa15"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\entity\\Customer.java": {
+    "mtime": 1778945202.3761766,
+    "ast_hash": "d0d9b6eca580e1c8f2b9391b79483707",
+    "semantic_hash": "d0d9b6eca580e1c8f2b9391b79483707"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\entity\\Merchant.java": {
+    "mtime": 1776105729.859267,
+    "ast_hash": "2af189c210539dde7aeffd01d3cb842d",
+    "semantic_hash": "2af189c210539dde7aeffd01d3cb842d"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\entity\\Role.java": {
+    "mtime": 1776105729.8603737,
+    "ast_hash": "bde14e308c59511eb4a340e4c5fb0a4e",
+    "semantic_hash": "bde14e308c59511eb4a340e4c5fb0a4e"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\entity\\Session.java": {
+    "mtime": 1776105729.8603737,
+    "ast_hash": "4a9b4b1d9b0c49d3bd8953d2f108581f",
+    "semantic_hash": "4a9b4b1d9b0c49d3bd8953d2f108581f"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\entity\\User.java": {
+    "mtime": 1778946194.9151895,
+    "ast_hash": "662e9984f209c804b2a0cfe8620a0bdf",
+    "semantic_hash": "662e9984f209c804b2a0cfe8620a0bdf"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\entity\\UserProfile.java": {
+    "mtime": 1779373810.4073138,
+    "ast_hash": "ad66672b48f67120e1e4dc339f001b10",
+    "semantic_hash": "ad66672b48f67120e1e4dc339f001b10"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\entity\\VerificationToken.java": {
+    "mtime": 1778946173.8028224,
+    "ast_hash": "4c1980083a9ffdbc95674e7b57eb1660",
+    "semantic_hash": "4c1980083a9ffdbc95674e7b57eb1660"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\exception\\BadRequestException.java": {
+    "mtime": 1776105729.86226,
+    "ast_hash": "1ae4d336fe67c83862fbed5cf8faa9c7",
+    "semantic_hash": "1ae4d336fe67c83862fbed5cf8faa9c7"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\exception\\ConflictException.java": {
+    "mtime": 1776105729.86226,
+    "ast_hash": "50cb732074fe6188a7065d36bb5f31ed",
+    "semantic_hash": "50cb732074fe6188a7065d36bb5f31ed"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\exception\\ErrorResponse.java": {
+    "mtime": 1778946280.8733168,
+    "ast_hash": "82b9b2591da8ef6f3deb02902d47f8d7",
+    "semantic_hash": "82b9b2591da8ef6f3deb02902d47f8d7"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\exception\\ForbiddenException.java": {
+    "mtime": 1776105729.8632817,
+    "ast_hash": "5e24933b176302644ff2943f5995b2f0",
+    "semantic_hash": "5e24933b176302644ff2943f5995b2f0"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\exception\\GlobalExceptionHandler.java": {
+    "mtime": 1779734404.5754333,
+    "ast_hash": "51871f88bdcb5caedf081bd16bdadfcb",
+    "semantic_hash": "51871f88bdcb5caedf081bd16bdadfcb"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\exception\\ResourceNotFoundException.java": {
+    "mtime": 1776105729.864274,
+    "ast_hash": "3b0bf678b7f4c3153a7ad82b71c613dc",
+    "semantic_hash": "3b0bf678b7f4c3153a7ad82b71c613dc"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\exception\\UnauthorizedException.java": {
+    "mtime": 1776105729.8665345,
+    "ast_hash": "5f331aa73807e3d968f0372aa1e9f9ad",
+    "semantic_hash": "5f331aa73807e3d968f0372aa1e9f9ad"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\repository\\CustomerRepository.java": {
+    "mtime": 1779373822.6504369,
+    "ast_hash": "873d5f2082b7a3030fe6d77d674e23a9",
+    "semantic_hash": "873d5f2082b7a3030fe6d77d674e23a9"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\repository\\MerchantRepository.java": {
+    "mtime": 1776105729.8680122,
+    "ast_hash": "f098e94eaf61d3713a7c59c038d07bb0",
+    "semantic_hash": "f098e94eaf61d3713a7c59c038d07bb0"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\repository\\SessionRepository.java": {
+    "mtime": 1778946239.0169394,
+    "ast_hash": "44b40cce79a1ae6a7b2081b1316d05ed",
+    "semantic_hash": "44b40cce79a1ae6a7b2081b1316d05ed"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\repository\\UserProfileRepository.java": {
+    "mtime": 1779373814.4846437,
+    "ast_hash": "2f1a0bfefda44a8a0a57711586634495",
+    "semantic_hash": "2f1a0bfefda44a8a0a57711586634495"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\repository\\UserRepository.java": {
+    "mtime": 1776105729.8690271,
+    "ast_hash": "117ca83d3504e6dd961943d1f83fff06",
+    "semantic_hash": "117ca83d3504e6dd961943d1f83fff06"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\repository\\VerificationTokenRepository.java": {
+    "mtime": 1778946181.6384363,
+    "ast_hash": "e1648cec2fb5cd4ad1823e3dad861759",
+    "semantic_hash": "e1648cec2fb5cd4ad1823e3dad861759"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\service\\AuthService.java": {
+    "mtime": 1779731382.5287893,
+    "ast_hash": "0c169d2b79eccee857895cec1d401e67",
+    "semantic_hash": "0c169d2b79eccee857895cec1d401e67"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\service\\EmailService.java": {
+    "mtime": 1779734201.5745416,
+    "ast_hash": "2aaf66cd3cb930899529151d3e17221c",
+    "semantic_hash": "2aaf66cd3cb930899529151d3e17221c"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\service\\MerchantService.java": {
+    "mtime": 1776105729.8710275,
+    "ast_hash": "d98be9f947b2c5a750a207ad3536c87f",
+    "semantic_hash": "d98be9f947b2c5a750a207ad3536c87f"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\service\\SseService.java": {
+    "mtime": 1778947916.4988954,
+    "ast_hash": "82bdaf3cb6c2052afc116df034f29ecf",
+    "semantic_hash": "82bdaf3cb6c2052afc116df034f29ecf"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\service\\UserService.java": {
+    "mtime": 1778918712.4048994,
+    "ast_hash": "1b9a118dd4f3184ff038a60f2ce9e244",
+    "semantic_hash": "1b9a118dd4f3184ff038a60f2ce9e244"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\resources\\data.sql": {
+    "mtime": 1774991650.4948037,
+    "ast_hash": "a6fb307401d5654fd01f41247bb1c16d",
+    "semantic_hash": "a6fb307401d5654fd01f41247bb1c16d"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\resources\\schema.sql": {
+    "mtime": 1779718719.2538526,
+    "ast_hash": "fbe03b45aa2e8ee96eeeb63d2150b222",
+    "semantic_hash": "fbe03b45aa2e8ee96eeeb63d2150b222"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\test\\java\\com\\example\\flowmerceproject\\FlowMerceProjectApplicationTests.java": {
+    "mtime": 1771186910.6869917,
+    "ast_hash": "ee2eee07cef914923bf8466735213fd9",
+    "semantic_hash": "ee2eee07cef914923bf8466735213fd9"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\test\\java\\com\\example\\flowmerceproject\\TestcontainersConfiguration.java": {
+    "mtime": 1776105729.8759108,
+    "ast_hash": "6d779b44824a9a4bf6a84808eba6eebb",
+    "semantic_hash": "6d779b44824a9a4bf6a84808eba6eebb"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\test\\java\\com\\example\\flowmerceproject\\TestFlowMerceProjectApplication.java": {
+    "mtime": 1771186910.740944,
+    "ast_hash": "a1f1ac83e8dae1a4a0403cafd33e2f44",
+    "semantic_hash": "a1f1ac83e8dae1a4a0403cafd33e2f44"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\compose.yaml": {
+    "mtime": 1771186197.2920358,
+    "ast_hash": "5bf39da89b1e7d3105383bdd30737b19",
+    "semantic_hash": "5bf39da89b1e7d3105383bdd30737b19"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\Copy of FCI-CU-GP-Midyear-Document-2025.pdf": {
+    "mtime": 1778918712.328092,
+    "ast_hash": "a74e84db398b7c9e585f816490b33409",
+    "semantic_hash": "a74e84db398b7c9e585f816490b33409"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\OrderManagement\\controller\\OrderController.java": {
+    "mtime": 1779759459.923602,
+    "ast_hash": "37307c92116c65525c6ba96aac7dc23a",
+    "semantic_hash": "37307c92116c65525c6ba96aac7dc23a"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\OrderManagement\\dto\\OrderDTOs.java": {
+    "mtime": 1779718719.2455108,
+    "ast_hash": "894b569f5deff6ebbaac5dfbe704457d",
+    "semantic_hash": "894b569f5deff6ebbaac5dfbe704457d"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\OrderManagement\\entity\\Invoice.java": {
+    "mtime": 1779718719.2465422,
+    "ast_hash": "464c042d3ad02765d7c550774a894cd5",
+    "semantic_hash": "464c042d3ad02765d7c550774a894cd5"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\OrderManagement\\entity\\Order.java": {
+    "mtime": 1779718719.2470586,
+    "ast_hash": "0e308c68a8b78eddfa8fd1b15da544ee",
+    "semantic_hash": "0e308c68a8b78eddfa8fd1b15da544ee"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\OrderManagement\\entity\\OrderItem.java": {
+    "mtime": 1779718719.2480924,
+    "ast_hash": "3fbe9d4d0e895cc121b6077d09a6297c",
+    "semantic_hash": "3fbe9d4d0e895cc121b6077d09a6297c"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\OrderManagement\\repository\\InvoiceRepository.java": {
+    "mtime": 1779718719.249121,
+    "ast_hash": "c07f88e292ef8fdad9b67494c5362214",
+    "semantic_hash": "c07f88e292ef8fdad9b67494c5362214"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\OrderManagement\\repository\\OrderItemRepository.java": {
+    "mtime": 1779718719.250155,
+    "ast_hash": "20f265778bf530f766cc1027c344c456",
+    "semantic_hash": "20f265778bf530f766cc1027c344c456"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\OrderManagement\\repository\\OrderRepository.java": {
+    "mtime": 1779718719.2511885,
+    "ast_hash": "968793dcb7f7a9aa45dd4f7563305c55",
+    "semantic_hash": "968793dcb7f7a9aa45dd4f7563305c55"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\OrderManagement\\service\\OrderService.java": {
+    "mtime": 1779739165.9216008,
+    "ast_hash": "7d61e389b55878154ca119a3d09f8d61",
+    "semantic_hash": "7d61e389b55878154ca119a3d09f8d61"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\test_apis.py": {
+    "mtime": 1779739922.168113,
+    "ast_hash": "350a787ab62933eca6ddd35f857d0b15",
+    "semantic_hash": "350a787ab62933eca6ddd35f857d0b15"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\test_full.py": {
+    "mtime": 1779741865.9389458,
+    "ast_hash": "62742860a4955d68f3ddf2f245ee4614",
+    "semantic_hash": "62742860a4955d68f3ddf2f245ee4614"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\NotificationManagement\\config\\NotificationRabbitMQConfig.java": {
+    "mtime": 1779739120.8029351,
+    "ast_hash": "8c029a41751f6e761fb3af873286d5e9",
+    "semantic_hash": "8c029a41751f6e761fb3af873286d5e9"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\NotificationManagement\\consumer\\OrderNotificationConsumer.java": {
+    "mtime": 1779739193.2537522,
+    "ast_hash": "4dcba4720e6cf81f86681fa830ed4c15",
+    "semantic_hash": "4dcba4720e6cf81f86681fa830ed4c15"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\NotificationManagement\\consumer\\PaymentNotificationConsumer.java": {
+    "mtime": 1779739181.4064755,
+    "ast_hash": "aef2ff28611b7552c7ecbf55ec170f12",
+    "semantic_hash": "aef2ff28611b7552c7ecbf55ec170f12"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\NotificationManagement\\controller\\NotificationController.java": {
+    "mtime": 1779739204.2076628,
+    "ast_hash": "f4f522230f6bd138273e03f4a8f27144",
+    "semantic_hash": "f4f522230f6bd138273e03f4a8f27144"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\NotificationManagement\\dto\\NotificationDTOs.java": {
+    "mtime": 1779739099.30495,
+    "ast_hash": "9a0148c25162085d4ffb8da31c72cbf6",
+    "semantic_hash": "9a0148c25162085d4ffb8da31c72cbf6"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\NotificationManagement\\entity\\Notification.java": {
+    "mtime": 1779739087.4654896,
+    "ast_hash": "f29a1c7bf1089eb5a0779cb42fcb4eda",
+    "semantic_hash": "f29a1c7bf1089eb5a0779cb42fcb4eda"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\NotificationManagement\\repository\\NotificationRepository.java": {
+    "mtime": 1779739094.2041714,
+    "ast_hash": "2d76c588f876678407f30c2b04cf23df",
+    "semantic_hash": "2d76c588f876678407f30c2b04cf23df"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\NotificationManagement\\service\\NotificationService.java": {
+    "mtime": 1779739112.7009938,
+    "ast_hash": "774e55351bde8e51030e22db248a30b5",
+    "semantic_hash": "774e55351bde8e51030e22db248a30b5"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\OrderManagement\\event\\OrderEventPublisher.java": {
+    "mtime": 1779740583.4835646,
+    "ast_hash": "e741cc902a7b0178030830e6237cf31b",
+    "semantic_hash": "e741cc902a7b0178030830e6237cf31b"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\config\\PaymentRabbitMQConfig.java": {
+    "mtime": 1779732765.7783623,
+    "ast_hash": "c839d55f13d9fe5697f0493e92666b76",
+    "semantic_hash": "c839d55f13d9fe5697f0493e92666b76"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\controller\\PaymentController.java": {
+    "mtime": 1779732874.238151,
+    "ast_hash": "03849e9ebf3b871289dc63809367bb5e",
+    "semantic_hash": "03849e9ebf3b871289dc63809367bb5e"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\controller\\WalletController.java": {
+    "mtime": 1779732887.3225493,
+    "ast_hash": "f04dd642a823b01249e3dc06c01753fa",
+    "semantic_hash": "f04dd642a823b01249e3dc06c01753fa"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\dto\\PaymentDTOs.java": {
+    "mtime": 1779738821.5301187,
+    "ast_hash": "a8a910063daf623e21a3f7333845261a",
+    "semantic_hash": "a8a910063daf623e21a3f7333845261a"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\entity\\Payment.java": {
+    "mtime": 1779732599.5319178,
+    "ast_hash": "46214a49fba154cec417660083213f1d",
+    "semantic_hash": "46214a49fba154cec417660083213f1d"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\entity\\Wallet.java": {
+    "mtime": 1779732609.0082407,
+    "ast_hash": "91ec3f7cfc5ab011b91c20fce9c194c4",
+    "semantic_hash": "91ec3f7cfc5ab011b91c20fce9c194c4"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\entity\\WalletTransaction.java": {
+    "mtime": 1779732618.0477417,
+    "ast_hash": "c1b6f401e831fed7ab936aca93c895f2",
+    "semantic_hash": "c1b6f401e831fed7ab936aca93c895f2"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\event\\PaymentEventPublisher.java": {
+    "mtime": 1779740582.5214448,
+    "ast_hash": "e651fe9ade5e7cbe933cd5c3204a3158",
+    "semantic_hash": "e651fe9ade5e7cbe933cd5c3204a3158"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\gateway\\BankTransferAdapter.java": {
+    "mtime": 1779732694.8762672,
+    "ast_hash": "0c55ba542becf2065c71561386599886",
+    "semantic_hash": "0c55ba542becf2065c71561386599886"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\gateway\\CashOnDeliveryAdapter.java": {
+    "mtime": 1779732683.9584975,
+    "ast_hash": "f451fcef873d88d70066d48fe2c5966d",
+    "semantic_hash": "f451fcef873d88d70066d48fe2c5966d"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\gateway\\FawryAdapter.java": {
+    "mtime": 1779732753.4541678,
+    "ast_hash": "737cde0d787bd9052af3eaf460f40b60",
+    "semantic_hash": "737cde0d787bd9052af3eaf460f40b60"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\gateway\\GatewayResult.java": {
+    "mtime": 1779732661.3826568,
+    "ast_hash": "7808b3d94c4206c2517fd99e2600bd31",
+    "semantic_hash": "7808b3d94c4206c2517fd99e2600bd31"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\gateway\\PaymentGatewayAdapter.java": {
+    "mtime": 1779732672.1221306,
+    "ast_hash": "e270f27413482efb8500b03ce55905df",
+    "semantic_hash": "e270f27413482efb8500b03ce55905df"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\gateway\\PaymobAdapter.java": {
+    "mtime": 1779732738.819057,
+    "ast_hash": "4cf98c2f52b46d9e258d22e18e3d968f",
+    "semantic_hash": "4cf98c2f52b46d9e258d22e18e3d968f"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\gateway\\StripeAdapter.java": {
+    "mtime": 1779732725.2454643,
+    "ast_hash": "e6ef652732880810d8c611933151c18e",
+    "semantic_hash": "e6ef652732880810d8c611933151c18e"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\gateway\\WalletSimulationAdapter.java": {
+    "mtime": 1779739911.0471275,
+    "ast_hash": "0a68c3b983482f3d15978652b414f4f3",
+    "semantic_hash": "0a68c3b983482f3d15978652b414f4f3"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\repository\\PaymentRepository.java": {
+    "mtime": 1779732624.8218982,
+    "ast_hash": "13977efab4cfee81ea53043a2e09482d",
+    "semantic_hash": "13977efab4cfee81ea53043a2e09482d"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\repository\\WalletRepository.java": {
+    "mtime": 1779732633.1824791,
+    "ast_hash": "f9b88872a0d04bd4bacc7a88d2259702",
+    "semantic_hash": "f9b88872a0d04bd4bacc7a88d2259702"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\repository\\WalletTransactionRepository.java": {
+    "mtime": 1779732640.232603,
+    "ast_hash": "437ccdf9171c7fdae15692860aa1a2fd",
+    "semantic_hash": "437ccdf9171c7fdae15692860aa1a2fd"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\service\\PaymentServiceImpl.java": {
+    "mtime": 1779741374.9042544,
+    "ast_hash": "40e84e7274368f215431294e293166b5",
+    "semantic_hash": "40e84e7274368f215431294e293166b5"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\PaymentManagement\\service\\WalletService.java": {
+    "mtime": 1779734510.3331938,
+    "ast_hash": "7a8d94ac6767bb34c171f4e8ad4c604a",
+    "semantic_hash": "7a8d94ac6767bb34c171f4e8ad4c604a"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\src\\main\\java\\com\\example\\flowmerceproject\\UserManagement\\controller\\UnifiedAuthController.java": {
+    "mtime": 1779734213.1317663,
+    "ast_hash": "32e813a505084810d4d74159517297d6",
+    "semantic_hash": "32e813a505084810d4d74159517297d6"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\ORDER_MANAGEMENT_FIX_REPORT.md": {
+    "mtime": 1779718719.236111,
+    "ast_hash": "27625bc01dd3d83cb74b32219dc05f49",
+    "semantic_hash": "27625bc01dd3d83cb74b32219dc05f49"
+  },
+  "C:\\Users\\kokom\\IdeaProjects\\FlowMerceProject\\PAYMENT_SERVICE_REPORT.md": {
+    "mtime": 1779733358.4818988,
+    "ast_hash": "efba67f66bdab1ef9fe991d32bde3b54",
+    "semantic_hash": "efba67f66bdab1ef9fe991d32bde3b54"
+  }
+}
