@@ -92,7 +92,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const isDev = typeof window !== 'undefined' && window.location.hostname === 'localhost'
   const storeHref = isDev
     ? `${window.location.origin}/store/${slug}`
-    : `https://${slug}.flowmerce.io`
+    : `https://${slug}.flowmerce.tech`
   const hasStore = !!auth.storeId && !!storeSlug
   const avatar = useMemo(() => initialsFromName(displayName), [displayName])
   const plan = 'Merchant'

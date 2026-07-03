@@ -57,7 +57,7 @@ jobs:
       - name: Build Frontend
         working-directory: frontend
         env:
-          NEXT_PUBLIC_API_URL: https://api.flowmerce.io/api/v1
+          NEXT_PUBLIC_API_URL: https://api.flowmerce.tech/api/v1
         run: npm run build
 
   # ── Job 3: Docker Compose Validate ───────────────────────────────────────────
