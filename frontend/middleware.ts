@@ -5,8 +5,8 @@ export function middleware(request: NextRequest) {
   const url = request.nextUrl.clone()
 
   // استخرجي الـ subdomain
-  // مثلاً: lumeri.flowmerce.tech → lumeri
-  const mainDomain = 'flowmerce.tech'
+  // مثلاً: lumeri.flowmerce.io → lumeri
+  const mainDomain = 'flowmerce.io'
   
   if (hostname.endsWith(`.${mainDomain}`)) {
     const slug = hostname.replace(`.${mainDomain}`, '')

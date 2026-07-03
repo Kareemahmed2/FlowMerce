@@ -303,7 +303,7 @@ export function MerchantOnboarding() {
     const isDev = typeof window !== 'undefined' && window.location.hostname === 'localhost'
     const storeHref = isDev
       ? `${window.location.origin}/store/${slug}`
-        : `https://${slug}.flowmerce.tech`
+        : `https://${slug}.flowmerce.io`
     return (
       <div style={styles.successScreen}>
         <div style={styles.successIcon}>▷</div>
