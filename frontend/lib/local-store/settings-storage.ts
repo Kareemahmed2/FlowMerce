@@ -108,7 +108,7 @@ export function loadMerchantSettings(): MerchantSettingsState {
 
 function storeUrlFromSlug(slug: string): string {
   const s = slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/^-+|-+$/g, '')
-  return s ? `${s}.flowmerce.io` : ''
+  return s ? `${s}.flowmerce.tech` : ''
 }
 
 export function saveMerchantSettings(state: MerchantSettingsState): void {

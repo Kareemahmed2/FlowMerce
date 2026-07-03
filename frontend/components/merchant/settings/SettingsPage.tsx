@@ -95,10 +95,10 @@ function StoreInfoSection({
 
         <Field
           label="Store URL"
-          hint={`Your store will be at https://${data.url || 'your-store'}.flowmerce.io`}
+          hint={`Your store will be at https://${data.url || 'your-store'}.flowmerce.tech`}
         >
           <div style={S.urlInput}>
-            <span style={S.urlPrefix}>flowmerce.io/</span>
+            <span style={S.urlPrefix}>flowmerce.tech/</span>
             <input
               style={{ ...S.input, borderLeft: 'none', borderRadius: '0 8px 8px 0', flex: 1 }}
               value={data.url}

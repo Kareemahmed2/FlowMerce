@@ -2,7 +2,7 @@
 
 export type StoreSettingsSlice = {
   name: string
-  /** URL slug (e.g. luma-jewelry) — synced to `storeUrl` as `{slug}.flowmerce.io` */
+  /** URL slug (e.g. luma-jewelry) — synced to `storeUrl` as `{slug}.flowmerce.tech` */
   url: string
   description: string
   email: string

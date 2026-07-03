@@ -6,11 +6,12 @@ import { useMerchantAuthSafe } from '@/store/auth-store'
 import { storeService } from '@/services/store.service'
 import { generateStoreUrl } from '@/components/merchant/onboarding/constants'
 
-/** Strip the old `.flowmerce.io` suffix left by the previous slug generator. */
+/** Strip legacy domain suffixes left by old slug generators. */
 function fixLegacySlug(storeUrl: string, storeName: string): string {
-  // Old format was "slug.flowmerce.io" or ".flowmerce.io" (Arabic names)
-  if (!storeUrl.endsWith('.flowmerce.io')) return storeUrl
-  const stripped = storeUrl.replace(/\.flowmerce\.io$/, '').replace(/^\./, '')
+  const stripped = storeUrl
+    .replace(/\.flowmerce\.(io|tech)$/, '')
+    .replace(/^\./, '')
+  if (stripped === storeUrl) return storeUrl
   return stripped || generateStoreUrl(storeName)
 }
 

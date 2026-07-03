@@ -9,7 +9,7 @@
  * The existing service mock implementations remain active and unchanged.
  *
  * ## Live mode
- * Set NEXT_PUBLIC_API_URL=https://api.flowmerce.io/api/v1 in .env.production.
+ * Set NEXT_PUBLIC_API_URL=https://api.flowmerce.tech/api/v1 in .env.production.
  * Every service call will hit the real backend; mock logic is bypassed.
  *
  * ## Backend swap: ONE environment-variable change

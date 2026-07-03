@@ -5,7 +5,6 @@ const nextConfig = {
   ...(process.env.NODE_ENV === 'production' ? { output: 'standalone' } : {}),
 
   images: {
-    // DOC-7: allow images served from localhost (dev) and the backend upload path.
     remotePatterns: [
       {
         protocol: 'http',
@@ -15,7 +14,12 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '**.flowmerce.io',
+        hostname: 'api.flowmerce.tech',
+        pathname: '/api/v1/uploads/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.flowmerce.tech',
       },
     ],
   },
