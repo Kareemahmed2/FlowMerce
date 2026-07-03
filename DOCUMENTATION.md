@@ -110,13 +110,15 @@ The app starts on `http://localhost:8080`. All routes are prefixed with `/api/v1
 
 ### `compose.yaml` services
 
-| Service | Image | Port |
-|---------|-------|------|
-| postgres | `postgres:latest` | 5432 |
-| rabbitmq | `rabbitmq:latest` | 5672 |
-| redis | `redis/redis-stack:latest` | 6379 |
+| Service | Image | Ports |
+|---------|-------|-------|
+| redis | `redis/redis-stack:latest` | 6379 (API) · 8001 (RedisInsight UI) |
+| rabbitmq | `rabbitmq:3-management` | 5672 (AMQP) · 15672 (Management UI) |
+| minio | `minio/minio:latest` | 9000 (S3 API) · 9001 (Console UI) |
+| backend | Spring Boot (Dockerfile) | 8080 |
+| frontend | Next.js (Dockerfile) | 3000 |
 
-> The live application connects to **Supabase** (configured in `application.properties`). Switch `spring.datasource.url` to `jdbc:postgresql://localhost:5432/mydatabase` for local-only development.
+> The live application connects to **Supabase** (configured in `application.properties`). The compose stack does not include a local Postgres — use the Supabase connection string for all environments.
 
 ---
 
@@ -127,12 +129,14 @@ All values have defaults for local development. Override for production.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `JWT_EXPIRY` | `86400000` | JWT expiry in ms (24h) |
+| `BACKEND_URL` | `http://localhost:8080` | Base URL the backend uses for self-referencing links (email activation/reset links, upload image URLs) — set to `https://api.flowmerce.tech` in production |
 | `REDIS_HOST` | `localhost` | Redis host |
 | `REDIS_PORT` | `6379` | Redis port |
 | `RABBITMQ_HOST` | `localhost` | RabbitMQ host |
 | `RABBITMQ_PORT` | `5672` | RabbitMQ port |
 | `RABBITMQ_USERNAME` | `guest` | RabbitMQ user |
 | `RABBITMQ_PASSWORD` | `guest` | RabbitMQ password |
+| `MINIO_URL` | `http://localhost:9000` | MinIO S3 API endpoint — set to `http://minio:9000` when running via Docker Compose |
 | `SF_CACHE_TTL_MINUTES` | `30` | Storefront Redis cache TTL |
 | `INVENTORY_LOW_STOCK_THRESHOLD` | `5` | Threshold for low-stock events |
 | `SHIPPING_FLAT_RATE` | `25.00` | Flat shipping cost (EGP) |
@@ -148,7 +152,7 @@ Mail (Gmail SMTP) and database credentials are currently hardcoded in `applicati
 
 ## API Conventions
 
-**Base URL:** `http://localhost:8080/api/v1`
+**Base URL:** `http://localhost:8080/api/v1` (dev) · `https://api.flowmerce.tech/api/v1` (production)
 
 **Authentication:** `Authorization: Bearer <JWT>` on all protected routes.
 
@@ -173,6 +177,8 @@ Mail (Gmail SMTP) and database credentials are currently hardcoded in `applicati
 ### 1. UserManagement
 
 Handles registration, login, email verification, password reset, JWT issuance, and profile management for three roles: Admin, Merchant, and Customer. Uses `@OncePerRequestFilter` (JwtAuthFilter) to validate tokens on every request. Sessions are persisted in the `sessions` table and can be revoked.
+
+**Forgot password behaviour:** `POST /auth/forgot-password` returns `400 Bad Request` with the message `"No account found with this email address."` if the email is not registered. No email is sent and no token is created for unknown addresses.
 
 **Key classes:**
 - `UnifiedAuthController` — single entry point for all auth flows
@@ -513,6 +519,37 @@ base_components ──────── component_decorators (1:N)
 - `inventory.version` — optimistic locking column, incremented by Hibernate on every update
 - `cart_items.price_at_add`, `order_items.price` — price snapshots, immutable after creation
 
+**Schema management:** `spring.jpa.hibernate.ddl-auto=none` — Hibernate does not create or modify the schema. All tables and FK constraints are managed directly in Supabase. The full store-deletion cascade chain is enforced with `ON DELETE CASCADE` on the following FK columns:
+
+| Table | Column | Cascades from |
+|-------|--------|---------------|
+| `orders` | `store_id` | `stores` |
+| `categories` | `store_id` | `stores` |
+| `products` | `store_id` | `stores` |
+| `products` | `category_id` | `categories` |
+| `shopping_carts` | `store_id` | `stores` |
+| `store_settings` | `store_id` | `stores` |
+| `store_integrations` | `store_id` | `stores` |
+| `storefront_templates` | `store_id` | `stores` |
+| `storefront_media` | `store_id` | `stores` |
+| `base_components` | `store_id` | `stores` |
+| `ai_suggestions` | `store_id` | `stores` |
+| `reports` | `store_id` | `stores` |
+| `invoices` | `order_id` | `orders` |
+| `payments` | `order_id` | `orders` |
+| `deliveries` | `order_id` | `orders` |
+| `order_items` | `order_id` | `orders` |
+| `shipments` | `order_id` | `orders` |
+| `cart_items` | `cart_id` | `shopping_carts` |
+| `storefront_pages` | `storefront_id` | `storefront_templates` |
+| `base_components` | `page_id` | `storefront_pages` |
+| `component_decorators` | `component_id` | `base_components` |
+| `product_media` | `product_id` | `products` |
+| `order_items` | `product_id` | `products` |
+| `cart_items` | `product_id` | `products` |
+| `reviews` | `product_id` | `products` |
+| `wishlists` | `product_id` | `products` |
+
 ---
 
 ## Event Bus (RabbitMQ)
@@ -560,6 +597,12 @@ The `inventory` table has a `version` column managed by JPA `@Version`. Concurre
 
 **Authentication — Unified Controller**  
 `UnifiedAuthController` handles all auth flows (merchant, customer, admin) in a single class. Role-specific behavior is branched internally on the `role` field in the request or the authenticated principal's role.
+
+**CORS**  
+`SecurityConfig` allows `http://localhost:3000` and `https://*.flowmerce.tech`. Credentials (`Authorization` header) are permitted.
+
+**Subdomain routing**  
+The Next.js middleware rewrites `{slug}.flowmerce.tech` requests to `/store/{slug}` so each merchant's storefront is served from its own subdomain without a separate deployment.
 
 **SSE for Real-Time Events**  
 `SseController` / `SseService` provide a Server-Sent Events endpoint for pushing real-time notifications to connected browser clients without WebSocket complexity.
@@ -819,7 +862,7 @@ The test suite is structured in three tiers, matching the delivery phases:
 | U-AUTH-04 | Activate with expired token | BadRequestException "expired" | PASS |
 | U-AUTH-05 | Activate with invalid/unknown token | BadRequestException | PASS |
 | U-AUTH-06 | Forgot password — registered email | Reset token created, password reset email sent | PASS |
-| U-AUTH-07 | Forgot password — unknown email | Returns silently (no enumeration), no email sent | PASS |
+| U-AUTH-07 | Forgot password — unknown email | `BadRequestException` thrown, 400 response, no email sent | PASS |
 | U-AUTH-08 | Reset password with valid token | Password hash updated, token marked used | PASS |
 
 **Result: 8/8 tests passed**
@@ -899,7 +942,7 @@ The test suite is structured in three tiers, matching the delivery phases:
 
 ### Part 3 — E2E Scenarios (Manual)
 
-Run against the live Docker stack: frontend `http://localhost:3000`, backend `http://localhost:8080/api/v1`.
+Run against the live Docker stack: frontend `http://localhost:3000`, backend `http://localhost:8080/api/v1`. In production substitute `https://flowmerce.tech` and `https://api.flowmerce.tech/api/v1`.
 
 #### Persona 1 — Merchant Journey
 
