@@ -15,11 +15,14 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'FlowMerce',
-  description:
-    'Create and manage your e-commerce store — onboarding, dashboard, and storefront.',
+    title: 'FlowMerce',
+    description:
+        'Create and manage your e-commerce store — onboarding, dashboard, and storefront.',
+    icons: {
+        icon: '/logo.ico',
+        apple: '/logo.ico',
+    },
 }
-
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
