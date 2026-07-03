@@ -69,10 +69,10 @@ function readSession(): AuthSession | null {
 
 function writeSession(session: AuthSession): void {
   if (typeof window === 'undefined') return
-  // SEC-6: store only non-sensitive metadata (user info, expiry, storeId) — NOT the JWT.
-  // The actual access token lives in an httpOnly cookie set by the backend,
-  // which JavaScript cannot read (mitigates XSS token theft).
-  const { accessToken: _drop, refreshToken: _drop2, ...meta } = session
+  // SEC-6: the short-lived access token stays in memory only (mitigates XSS theft).
+  // The refresh token IS stored so the page can silently re-authenticate after a
+  // refresh without forcing the user back to the login page.
+  const { accessToken: _drop, ...meta } = session
   localStorage.setItem(SESSION_KEY, JSON.stringify(meta))
 }
 
@@ -140,10 +140,35 @@ export function MerchantAuthProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     const saved = readSession()
     if (saved) {
-      setSessionState(saved)
-      scheduleRefresh(saved)
+      if (!saved.accessToken && saved.refreshToken) {
+        // Page refresh: access token is not persisted (SEC-6); silently re-auth
+        // with the refresh token before marking hydration complete so that any
+        // protected page (dashboard, onboarding publish) has a live JWT ready.
+        authService.refreshMerchantToken(saved.refreshToken)
+          .then((result) => {
+            if (result.ok) {
+              const newSession = { ...buildSession(result.data), storeId: saved.storeId ?? null }
+              writeSession(newSession)
+              setSessionState(newSession)
+              scheduleRefresh(newSession)
+            } else {
+              removeSession()
+            }
+          })
+          .catch(() => {
+            // Network error — preserve session metadata without access token;
+            // the 401 interceptor will handle it when an API call fails.
+            setSessionState(saved)
+          })
+          .finally(() => setIsHydrated(true))
+      } else {
+        setSessionState(saved)
+        scheduleRefresh(saved)
+        setIsHydrated(true)
+      }
+    } else {
+      setIsHydrated(true)
     }
-    setIsHydrated(true)
     return () => {
       if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current)
     }

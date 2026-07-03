@@ -115,16 +115,19 @@ export function MerchantOnboarding() {
   }
 
   const handlePublish = async () => {
-    // Auth guard — must have a valid JWT before calling any backend endpoint.
-    const headers = auth.getAuthHeader()
-    if (!headers.Authorization) {
+    // Auth guard — must have an active session before calling any backend endpoint.
+    // Do NOT check headers.Authorization here: after a page refresh the access token
+    // is not in memory (SEC-6) and auth-store silently re-fetches it before hydrating,
+    // but getAuthHeader() still returns no Authorization until that completes.
+    // isAuthenticated correctly reflects whether the user is logged in.
+    if (!auth.isAuthenticated) {
       setPublishError(
         'You are not logged in. Please log in first, then return to this page to publish your store.'
       )
-      // Give the user 2 seconds to read the message, then redirect to login.
       setTimeout(() => router.push('/login'), 2500)
       return
     }
+    const headers = auth.getAuthHeader()
 
     // Live mode: drive the full backend flow with progress feedback.
     setPublishing(true)
@@ -452,12 +455,12 @@ export function MerchantOnboarding() {
               type="button"
               style={{
                 ...styles.publishBtn,
-                ...(publishing ? { opacity: 0.6, cursor: 'not-allowed' } : {}),
+                ...((publishing || !auth.isHydrated) ? { opacity: 0.6, cursor: 'not-allowed' } : {}),
               }}
               onClick={handlePublish}
-              disabled={publishing}
+              disabled={publishing || !auth.isHydrated}
             >
-              {publishing ? 'Publishing…' : '▷ Publish Store'}
+              {publishing ? 'Publishing…' : !auth.isHydrated ? 'Authenticating…' : '▷ Publish Store'}
             </button>
           )}
         </div>
