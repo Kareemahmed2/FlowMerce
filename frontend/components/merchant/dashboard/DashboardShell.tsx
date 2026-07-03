@@ -88,7 +88,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     () => storeSlug || generateStoreUrl(displayName),
     [storeSlug, displayName]
   )
-  const storeHref = `http://localhost:3000/store/${host.split('.')[0]}`
+  const slug = host.split('.')[0]
+  const isDev = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+  const storeHref = isDev
+    ? `${window.location.origin}/store/${slug}`
+    : `https://${slug}.flowmerce.io`
   const hasStore = !!auth.storeId && !!storeSlug
   const avatar = useMemo(() => initialsFromName(displayName), [displayName])
   const plan = 'Merchant'
