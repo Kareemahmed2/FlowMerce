@@ -646,23 +646,23 @@ function SecuritySection({
 }
 
 function DangerSection({
-  urlSlug,
   isPaused,
   onPause,
   onExport,
   onDelete,
+  onDeleteError,
   isDeleting,
 }: {
-  urlSlug: string
   isPaused: boolean
   onPause: () => void
   onExport: () => void
   onDelete: () => void
+  onDeleteError?: string
   isDeleting: boolean
 }) {
   const [confirm, setConfirm] = useState('')
   const [showDelete, setShowDelete] = useState(false)
-  const expected = urlSlug.trim() || 'DELETE'
+  const expected = 'DELETE'
 
   return (
     <div style={S.dangerZone}>
@@ -715,6 +715,11 @@ function DangerSection({
             Type <strong>{expected}</strong> to confirm permanent deletion:
           </p>
           <input style={S.input} placeholder={expected} value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+          {onDeleteError ? (
+            <p role="alert" style={{ fontSize: 13, color: '#A32D2D', margin: '4px 0 0' }}>
+              {onDeleteError}
+            </p>
+          ) : null}
           <button
             type="button"
             style={{
@@ -990,11 +995,11 @@ export function SettingsPage() {
           ) : null}
           {activeSection === 'danger' ? (
             <DangerSection
-              urlSlug={settings.store.url}
               isPaused={isPaused}
               onPause={handlePause}
               onExport={handleExport}
               onDelete={handleDelete}
+              onDeleteError={saveError || undefined}
               isDeleting={isDeleting}
             />
           ) : null}

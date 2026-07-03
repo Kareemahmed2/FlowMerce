@@ -5,6 +5,8 @@ import com.example.flowmerceproject.UserManagement.entity.Customer;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -37,6 +39,7 @@ public class Order {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Store store;
 
     @Enumerated(EnumType.STRING)
