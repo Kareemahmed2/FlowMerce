@@ -651,12 +651,14 @@ function DangerSection({
   onPause,
   onExport,
   onDelete,
+  isDeleting,
 }: {
   urlSlug: string
   isPaused: boolean
   onPause: () => void
   onExport: () => void
   onDelete: () => void
+  isDeleting: boolean
 }) {
   const [confirm, setConfirm] = useState('')
   const [showDelete, setShowDelete] = useState(false)
@@ -717,12 +719,12 @@ function DangerSection({
             type="button"
             style={{
               ...S.deleteBtn,
-              opacity: confirm === expected ? 1 : 0.4,
+              opacity: confirm === expected && !isDeleting ? 1 : 0.4,
             }}
-            disabled={confirm !== expected}
+            disabled={confirm !== expected || isDeleting}
             onClick={onDelete}
           >
-            I understand, delete my store permanently
+            {isDeleting ? 'Deleting…' : 'I understand, delete my store permanently'}
           </button>
         </div>
       ) : null}
@@ -739,6 +741,7 @@ export function SettingsPage() {
   const [savedBanner, setSavedBanner] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   // The merchant's current store — sourced from auth context (populated by
   // MerchantBackendSync at the dashboard layout level), same as every other
   // dashboard page. Avoids a second, racier fetch just for this page.
@@ -894,12 +897,17 @@ export function SettingsPage() {
   }
 
   const handleDelete = async () => {
-    if (storeId !== null) {
-      const result = await storeService.deleteStore(storeId, auth.getAuthHeader())
-      if (!result.ok) {
-        setSaveError(result.error)
-        return
-      }
+    if (storeId === null) {
+      setSaveError('Store not loaded yet — please wait a moment and try again.')
+      return
+    }
+    setIsDeleting(true)
+    setSaveError('')
+    const result = await storeService.deleteStore(storeId, auth.getAuthHeader())
+    setIsDeleting(false)
+    if (!result.ok) {
+      setSaveError(result.error)
+      return
     }
     clearAllLocalMerchantData()
     const fresh = loadMerchantSettings()
@@ -987,6 +995,7 @@ export function SettingsPage() {
               onPause={handlePause}
               onExport={handleExport}
               onDelete={handleDelete}
+              isDeleting={isDeleting}
             />
           ) : null}
         </div>

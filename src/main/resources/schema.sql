@@ -426,3 +426,39 @@ CREATE TABLE IF NOT EXISTS reports (
     generated_at TIMESTAMP WITHOUT TIME ZONE,
     FOREIGN KEY (store_id) REFERENCES stores(store_id)
     );
+
+-- =========================
+-- CASCADE FIX: store deletion
+-- =========================
+-- These tables reference stores/orders without ON DELETE CASCADE,
+-- which blocks store deletion. Re-add FKs with CASCADE.
+
+ALTER TABLE orders
+    DROP CONSTRAINT IF EXISTS orders_store_id_fkey,
+    ADD CONSTRAINT orders_store_id_fkey
+        FOREIGN KEY (store_id) REFERENCES stores(store_id) ON DELETE CASCADE;
+
+ALTER TABLE invoices
+    DROP CONSTRAINT IF EXISTS invoices_order_id_fkey,
+    ADD CONSTRAINT invoices_order_id_fkey
+        FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE;
+
+ALTER TABLE payments
+    DROP CONSTRAINT IF EXISTS payments_order_id_fkey,
+    ADD CONSTRAINT payments_order_id_fkey
+        FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE;
+
+ALTER TABLE deliveries
+    DROP CONSTRAINT IF EXISTS deliveries_order_id_fkey,
+    ADD CONSTRAINT deliveries_order_id_fkey
+        FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE;
+
+ALTER TABLE ai_suggestions
+    DROP CONSTRAINT IF EXISTS ai_suggestions_store_id_fkey,
+    ADD CONSTRAINT ai_suggestions_store_id_fkey
+        FOREIGN KEY (store_id) REFERENCES stores(store_id) ON DELETE CASCADE;
+
+ALTER TABLE reports
+    DROP CONSTRAINT IF EXISTS reports_store_id_fkey,
+    ADD CONSTRAINT reports_store_id_fkey
+        FOREIGN KEY (store_id) REFERENCES stores(store_id) ON DELETE CASCADE;
