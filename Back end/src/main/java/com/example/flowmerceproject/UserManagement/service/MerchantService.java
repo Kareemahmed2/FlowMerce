@@ -9,6 +9,7 @@ import com.example.flowmerceproject.UserManagement.exception.ResourceNotFoundExc
 import com.example.flowmerceproject.UserManagement.repository.MerchantRepository;
 import com.example.flowmerceproject.UserManagement.repository.SessionRepository;
 import com.example.flowmerceproject.UserManagement.repository.UserRepository;
+import com.example.flowmerceproject.StoreMangement.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ public class MerchantService {
     private final UserRepository userRepository;
     private final SessionRepository sessionRepository;
     private final SessionCacheService sessionCacheService;
+    private final StoreRepository storeRepository;
 
     @Transactional
     public MerchantDTOs.MerchantResponse createMerchantProfile(String email, MerchantDTOs.MerchantRequest request) {
@@ -90,13 +92,18 @@ public class MerchantService {
     }
 
     private MerchantDTOs.MerchantResponse toResponse(Merchant merchant) {
+        User user = merchant.getUser();
         return MerchantDTOs.MerchantResponse.builder()
                 .merchantId(merchant.getMerchantId())
-                .userId(merchant.getUser().getUserId())
+                .userId(user.getUserId())
                 .businessName(merchant.getBusinessName())
                 .isVerified(merchant.getIsVerified())
-                .email(merchant.getUser().getEmail())
-                .fullName(merchant.getUser().getFullName())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .phone(user.getPhone())
+                .isActive(user.getIsActive())
+                .createdAt(user.getCreatedAt())
+                .storeCount(storeRepository.countByMerchant_MerchantId(merchant.getMerchantId()))
                 .build();
     }
 }

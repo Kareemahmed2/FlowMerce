@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 public class MerchantDTOs {
 
     @Data
@@ -21,5 +23,9 @@ public class MerchantDTOs {
         private Boolean isVerified;
         private String email;
         private String fullName;
+        private String phone;
+        private Boolean isActive;
+        private LocalDateTime createdAt;
+        private Integer storeCount;
     }
 }

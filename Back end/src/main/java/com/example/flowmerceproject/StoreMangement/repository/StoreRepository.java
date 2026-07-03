@@ -13,6 +13,7 @@ import java.util.Optional;
 public interface StoreRepository extends JpaRepository<Store, Integer> {
 
     List<Store> findByMerchant_MerchantId(Integer merchantId);
+    int countByMerchant_MerchantId(Integer merchantId);
 
     @Query("SELECT s FROM Store s JOIN FETCH s.merchant m WHERE m.merchantId = :merchantId")
     List<Store> findByMerchantIdWithMerchant(@Param("merchantId") Integer merchantId);
