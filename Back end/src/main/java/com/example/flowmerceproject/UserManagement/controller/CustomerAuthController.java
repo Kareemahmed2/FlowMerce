@@ -45,8 +45,21 @@ public class CustomerAuthController {
             @Valid @RequestBody LoginRequest request,
             HttpServletResponse response) {
         AuthResponse auth = authService.login(request);
+        if (Boolean.TRUE.equals(auth.getMfaRequired())) {
+            return ResponseEntity.ok(ApiResponse.ok(auth, "Verification code sent"));
+        }
         // SEC-11: namespaced to the customer scope so this login can't overwrite (or be
         // overwritten by) a merchant dashboard session in the same browser.
+        cookieUtil.setAuthCookies(response, CookieUtil.CUSTOMER_SCOPE, auth.getAccessToken(), auth.getRefreshToken(),
+                jwtExpirationMs / 1000, 30L * 24 * 3600);
+        return ResponseEntity.ok(ApiResponse.ok(auth, "Login successful"));
+    }
+
+    @PostMapping("/mfa/verify")
+    public ResponseEntity<ApiResponse<AuthResponse>> verifyMfa(
+            @Valid @RequestBody MfaVerifyRequest request,
+            HttpServletResponse response) {
+        AuthResponse auth = authService.verifyMfa(request.getMfaToken(), request.getCode());
         cookieUtil.setAuthCookies(response, CookieUtil.CUSTOMER_SCOPE, auth.getAccessToken(), auth.getRefreshToken(),
                 jwtExpirationMs / 1000, 30L * 24 * 3600);
         return ResponseEntity.ok(ApiResponse.ok(auth, "Login successful"));

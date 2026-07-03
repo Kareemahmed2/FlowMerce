@@ -1,6 +1,7 @@
 package com.example.flowmerceproject.UserManagement.controller;
 
 import com.example.flowmerceproject.UserManagement.dto.ChangePasswordRequest;
+import com.example.flowmerceproject.UserManagement.dto.MfaToggleRequest;
 import com.example.flowmerceproject.UserManagement.dto.UpdateProfileRequest;
 import com.example.flowmerceproject.UserManagement.dto.UserResponse;
 import com.example.flowmerceproject.UserManagement.service.UserService;
@@ -43,5 +44,13 @@ public class UserController {
     @DeleteMapping("/me")
     public ResponseEntity<ApiResponse<String>> deleteMyAccount(Principal principal) {
         return ResponseEntity.ok(ApiResponse.ok(userService.deleteMyAccount(principal.getName())));
+    }
+
+    @PutMapping("/me/mfa")
+    public ResponseEntity<ApiResponse<UserResponse>> setMfaEnabled(
+            Principal principal,
+            @Valid @RequestBody MfaToggleRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                userService.setMfaEnabled(principal.getName(), request.getEnabled())));
     }
 }

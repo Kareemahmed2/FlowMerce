@@ -20,4 +20,5 @@ public class UserResponse {
     private Role role;
     private Boolean isActive;
     private LocalDateTime createdAt;
+    private Boolean isMfaEnabled;
 }

@@ -25,10 +25,13 @@ import com.example.flowmerceproject.UserManagement.repository.UserRepository;
 import com.example.flowmerceproject.UserManagement.repository.VerificationTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -46,9 +49,15 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
     private final SessionCacheService sessionCacheService;
+    private final StringRedisTemplate redisTemplate;
 
     @Value("${jwt.expiration-ms:86400000}")
     private long jwtExpirationMs;
+
+    private static final String MFA_KEY_PREFIX = "mfa:";
+    private static final Duration MFA_TTL = Duration.ofMinutes(5);
+    private static final int MFA_MAX_ATTEMPTS = 5;
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     // ── REGISTER ──────────────────────────────────────────────────────────────
 
@@ -128,6 +137,58 @@ public class AuthService {
                 "Account is not activated. Please check your email for the activation link.");
         }
 
+        if (Boolean.TRUE.equals(user.getIsMfaEnabled())) {
+            return startMfaChallenge(user);
+        }
+
+        return completeLogin(user);
+    }
+
+    // ── MFA ───────────────────────────────────────────────────────────────────
+
+    private AuthResponse startMfaChallenge(User user) {
+        String mfaToken = UUID.randomUUID().toString();
+        String code = String.format("%06d", RANDOM.nextInt(1_000_000));
+        redisTemplate.opsForValue().set(MFA_KEY_PREFIX + mfaToken, user.getEmail() + "|" + code, MFA_TTL);
+        emailService.sendMfaCodeEmail(user.getEmail(), code);
+        return AuthResponse.builder().mfaRequired(true).mfaToken(mfaToken).build();
+    }
+
+    @Transactional
+    public AuthResponse verifyMfa(String mfaToken, String code) {
+        String key = MFA_KEY_PREFIX + mfaToken;
+        String stored = redisTemplate.opsForValue().get(key);
+        if (stored == null) {
+            throw new BadRequestException("Verification code has expired. Please log in again.");
+        }
+
+        String[] parts = stored.split("\\|", 2);
+        String email = parts[0];
+        String expectedCode = parts[1];
+
+        if (!expectedCode.equals(code)) {
+            String attemptsKey = key + ":attempts";
+            Long attempts = redisTemplate.opsForValue().increment(attemptsKey);
+            if (attempts != null && attempts == 1) {
+                redisTemplate.expire(attemptsKey, MFA_TTL);
+            }
+            if (attempts != null && attempts >= MFA_MAX_ATTEMPTS) {
+                redisTemplate.delete(key);
+                redisTemplate.delete(attemptsKey);
+                throw new BadRequestException("Too many incorrect attempts. Please log in again.");
+            }
+            throw new BadRequestException("Invalid verification code.");
+        }
+
+        redisTemplate.delete(key);
+        redisTemplate.delete(key + ":attempts");
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return completeLogin(user);
+    }
+
+    private AuthResponse completeLogin(User user) {
         String accessToken = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
 
         Session accessSession = Session.builder()
@@ -223,6 +284,7 @@ public class AuthService {
                 .role(user.getRole())
                 .isActive(user.getIsActive())
                 .createdAt(user.getCreatedAt())
+                .isMfaEnabled(user.getIsMfaEnabled())
                 .build();
     }
 

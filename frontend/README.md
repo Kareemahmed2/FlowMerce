@@ -95,7 +95,7 @@ Until the API owns persistence, the app uses the browser:
 | `flowmerce_local_user_v1` | Local signed-in user record (dev auth). |
 | `flowmerce_store_v1` | Store payload: `brand`, `categories`, merchant `payment` methods, `colors` (including optional `text` / `card`), `published`, `storeUrl`, etc. |
 | `flowmerce_orders_v1` | Orders used by Orders, Customers, and Analytics. |
-| `flowmerce_settings_v1` | Dashboard **Settings** (store, checkout gateways, shipping, notifications, tax, `twoFactor`). |
+| `flowmerce_settings_v1` | Dashboard **Settings** (store, checkout gateways, shipping, notifications, tax). 2FA is server-side now (`isMfaEnabled` on the user), not part of this blob. |
 
 Clear **Application → Local Storage** in DevTools to reset (or use **Settings → Danger Zone** for structured export/delete of local data).
 

@@ -29,11 +29,13 @@ export function Toggle({
   onChange,
   label,
   sub,
+  disabled,
 }: {
   value: boolean
   onChange: (v: boolean) => void
   label: string
   sub?: string
+  disabled?: boolean
 }) {
   return (
     <div style={S.toggleRow}>
@@ -45,7 +47,8 @@ export function Toggle({
         type="button"
         role="switch"
         aria-checked={value}
-        style={{ ...S.toggleBtn, ...(value ? S.toggleBtnOn : S.toggleBtnOff) }}
+        disabled={disabled}
+        style={{ ...S.toggleBtn, ...(value ? S.toggleBtnOn : S.toggleBtnOff), ...(disabled ? { opacity: 0.6, cursor: 'not-allowed' } : {}) }}
         onClick={() => onChange(!value)}
       >
         <span style={{ ...S.toggleThumb, ...(value ? S.toggleThumbOn : {}) }} />

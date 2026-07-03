@@ -85,9 +85,6 @@ export function buildDefaultsFromStore(store: PersistedStorePayload | null): Mer
       inclusive: false,
       vatNumber: '',
     },
-    security: {
-      twoFactor: false,
-    },
   }
 }
 

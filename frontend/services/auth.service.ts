@@ -25,6 +25,7 @@ import type {
   ForgotPasswordRequest,
   LoginRequest,
   MerchantRegisterRequest,
+  MfaVerifyRequest,
   ResetPasswordRequest,
   UserResponse,
 } from '@/types/auth.types'
@@ -64,6 +65,10 @@ export const authService = {
 
   async getMerchantMe(authHeaders?: Record<string, string>): Promise<ApiResult<UserResponse>> {
     return httpClient.get<UserResponse>('/auth/merchant/me', authHeaders)
+  },
+
+  async verifyMfaMerchant(payload: MfaVerifyRequest): Promise<ApiResult<AuthResponse>> {
+    return httpClient.post<AuthResponse>('/auth/merchant/mfa/verify', payload)
   },
 
   // ── Customer ──────────────────────────────────────────────────────────────

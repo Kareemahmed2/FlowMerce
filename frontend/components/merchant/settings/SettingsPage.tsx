@@ -516,18 +516,37 @@ function TaxSection({
   )
 }
 
-function SecuritySection({
-  twoFactor,
-  onTwoFactorChange,
-}: {
-  twoFactor: boolean
-  onTwoFactorChange: (v: boolean) => void
-}) {
+function SecuritySection() {
   const auth = useMerchantAuth()
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' })
   const [pwError, setPwError] = useState('')
   const [pwSuccess, setPwSuccess] = useState(false)
   const [pwSaving, setPwSaving] = useState(false)
+
+  const [mfaEnabled, setMfaEnabled] = useState(false)
+  const [mfaLoading, setMfaLoading] = useState(true)
+  const [mfaSaving, setMfaSaving] = useState(false)
+  const [mfaError, setMfaError] = useState('')
+
+  useEffect(() => {
+    userService.getMyProfile(auth.getAuthHeader()).then((result) => {
+      if (result.ok) setMfaEnabled(!!result.data.isMfaEnabled)
+      setMfaLoading(false)
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleToggleMfa = async (next: boolean) => {
+    setMfaError('')
+    setMfaSaving(true)
+    const result = await userService.setMfaEnabled({ enabled: next }, auth.getAuthHeader())
+    setMfaSaving(false)
+    if (!result.ok) {
+      setMfaError(result.error)
+      return
+    }
+    setMfaEnabled(!!result.data.isMfaEnabled)
+  }
 
   const handlePwChange = async () => {
     if (!pwForm.current) {
@@ -619,14 +638,16 @@ function SecuritySection({
 
       <SectionCard title="Two-Factor Authentication" sub="Add an extra layer of security to your account.">
         <Toggle
-          value={twoFactor}
-          onChange={onTwoFactorChange}
+          value={mfaEnabled}
+          onChange={handleToggleMfa}
           label="Enable 2FA"
-          sub="Require a verification code on each login"
+          sub="Require a 6-digit code emailed to you on each login"
+          disabled={mfaLoading || mfaSaving}
         />
-        {twoFactor ? (
+        {mfaError ? <p style={S.errorMsg}>{mfaError}</p> : null}
+        {mfaEnabled ? (
           <div style={{ ...S.infoBox, marginTop: 12 }}>
-            ✦ You will be asked to scan a QR code on next login to set up your authenticator app.
+            ✦ On your next login, we'll email a 6-digit code to your account email — you'll need to enter it to finish signing in.
           </div>
         ) : null}
       </SectionCard>
@@ -983,16 +1004,7 @@ export function SettingsPage() {
             <NotificationsSection data={settings.notifications} onChange={update('notifications')} />
           ) : null}
           {activeSection === 'tax' ? <TaxSection data={settings.tax} onChange={update('tax')} /> : null}
-          {activeSection === 'security' ? (
-            <SecuritySection
-              twoFactor={settings.security.twoFactor}
-              onTwoFactorChange={(v) =>
-                setSettings((prev) =>
-                  prev ? { ...prev, security: { ...prev.security, twoFactor: v } } : prev
-                )
-              }
-            />
-          ) : null}
+          {activeSection === 'security' ? <SecuritySection /> : null}
           {activeSection === 'danger' ? (
             <DangerSection
               isPaused={isPaused}

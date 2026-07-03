@@ -5,6 +5,7 @@
  *   GET    /users/me                    → getMyProfile()
  *   PUT    /users/me                    → updateProfile()
  *   PUT    /users/me/change-password    → changePassword()
+ *   PUT    /users/me/mfa                → setMfaEnabled()
  *   DELETE /users/me                    → deleteAccount()
  */
 
@@ -12,6 +13,7 @@ import { httpClient } from '@/lib/api/http-client'
 import type { ApiResult } from '@/types/api.types'
 import type {
   ChangePasswordRequest,
+  MfaToggleRequest,
   UpdateProfileRequest,
   UserResponse,
 } from '@/types/auth.types'
@@ -27,6 +29,10 @@ export const userService = {
 
   async changePassword(request: ChangePasswordRequest, authHeaders?: Record<string, string>): Promise<ApiResult<{ message: string }>> {
     return httpClient.put<{ message: string }>('/users/me/change-password', request, authHeaders)
+  },
+
+  async setMfaEnabled(request: MfaToggleRequest, authHeaders?: Record<string, string>): Promise<ApiResult<UserResponse>> {
+    return httpClient.put<UserResponse>('/users/me/mfa', request, authHeaders)
   },
 
   async deleteAccount(authHeaders?: Record<string, string>): Promise<ApiResult<{ message: string }>> {

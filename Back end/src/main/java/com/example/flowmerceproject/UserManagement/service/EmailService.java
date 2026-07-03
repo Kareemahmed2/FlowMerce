@@ -83,6 +83,19 @@ public class EmailService {
         sendHtmlEmail(toEmail, subject, body);
     }
 
+    @Async
+    public void sendMfaCodeEmail(String toEmail, String code) {
+        String subject = "Your FlowMerce verification code";
+        String body = """
+                <h2>Verification Code</h2>
+                <p>Use the code below to finish logging in:</p>
+                <p style="font-size:28px;font-weight:700;letter-spacing:6px;">%s</p>
+                <p>This code expires in 5 minutes.</p>
+                <p>If you did not attempt to log in, you can safely ignore this email.</p>
+                """.formatted(code);
+        sendHtmlEmail(toEmail, subject, body);
+    }
+
     private void sendHtmlEmail(String to, String subject, String htmlBody) {
         try {
             MimeMessage message = mailSender.createMimeMessage();

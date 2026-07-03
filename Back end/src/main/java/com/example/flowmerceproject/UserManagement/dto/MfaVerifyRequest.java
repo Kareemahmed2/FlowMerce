@@ -1,12 +1,15 @@
 package com.example.flowmerceproject.UserManagement.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
 public class MfaVerifyRequest {
-    @NotBlank
-    private String email;
-    @NotBlank
-    private String otp;
+    @NotBlank(message = "mfaToken is required")
+    private String mfaToken;
+
+    @NotBlank(message = "Verification code is required")
+    @Pattern(regexp = "\\d{6}", message = "Verification code must be 6 digits")
+    private String code;
 }

@@ -10,6 +10,12 @@ public class AuthResponse {
     private long expiresIn;
     private UserInfo user;
 
+    // Set instead of the fields above when the account has MFA enabled — the
+    // client must call the mfa/verify endpoint with this token + the emailed
+    // code before a real session is issued.
+    private Boolean mfaRequired;
+    private String mfaToken;
+
     @Data @Builder @NoArgsConstructor @AllArgsConstructor
     public static class UserInfo {
         /** CON-11: renamed id → userId to match frontend AuthResponse.user.userId */

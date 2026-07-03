@@ -136,6 +136,14 @@ public class UserService {
         return "User deleted successfully.";
     }
 
+    @Transactional
+    public UserResponse setMfaEnabled(String email, boolean enabled) {
+        User user = findByEmailOrThrow(email);
+        user.setIsMfaEnabled(enabled);
+        userRepository.save(user);
+        return toResponse(user);
+    }
+
     private User findByEmailOrThrow(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
@@ -150,6 +158,7 @@ public class UserService {
                 .role(user.getRole())
                 .isActive(user.getIsActive())
                 .createdAt(user.getCreatedAt())
+                .isMfaEnabled(user.getIsMfaEnabled())
                 .build();
     }
 }

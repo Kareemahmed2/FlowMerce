@@ -71,6 +71,17 @@ export interface RefreshTokenRequest {
   refreshToken: string
 }
 
+/** POST /auth/merchant/mfa/verify | POST /auth/customer/mfa/verify */
+export interface MfaVerifyRequest {
+  mfaToken: string
+  code: string
+}
+
+/** PUT /users/me/mfa */
+export interface MfaToggleRequest {
+  enabled: boolean
+}
+
 /** POST /auth/merchant/forgot-password | POST /auth/customer/forgot-password */
 export interface ForgotPasswordRequest {
   email: string
@@ -121,9 +132,14 @@ export interface AuthResponse {
     role: UserRole
     createdAt: string
   }
+  /** When true, accessToken/refreshToken/user above are null — the account has
+   *  MFA enabled. Call POST /auth/{scope}/mfa/verify with mfaToken + the
+   *  emailed code to get a real session back in this same shape. */
+  mfaRequired?: boolean
+  mfaToken?: string
 }
 
-/** Returned by GET /auth/merchant/me | GET /auth/customer/me */
+/** Returned by GET /auth/merchant/me | GET /auth/customer/me | GET /users/me */
 export interface UserResponse {
   userId: number
   email: string
@@ -134,6 +150,7 @@ export interface UserResponse {
   role: UserRole
   isActive: boolean
   createdAt: string
+  isMfaEnabled?: boolean
 }
 
 // ─── Backend error shape ──────────────────────────────────────────────────────

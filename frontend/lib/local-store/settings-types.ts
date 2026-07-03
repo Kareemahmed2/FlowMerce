@@ -41,16 +41,11 @@ export type TaxSettingsSlice = {
   vatNumber: string
 }
 
-export type SecuritySettingsSlice = {
-  twoFactor: boolean
-}
-
 export type MerchantSettingsState = {
   store: StoreSettingsSlice
   shipping: ShippingSettingsSlice
   notifications: NotificationsSettingsSlice
   tax: TaxSettingsSlice
-  security: SecuritySettingsSlice
 }
 
 export type PersistedMerchantSettings = MerchantSettingsState
