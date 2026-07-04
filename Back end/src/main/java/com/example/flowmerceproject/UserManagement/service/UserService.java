@@ -14,12 +14,20 @@ import com.example.flowmerceproject.UserManagement.repository.MerchantRepository
 import com.example.flowmerceproject.UserManagement.repository.SessionRepository;
 import com.example.flowmerceproject.UserManagement.repository.UserProfileRepository;
 import com.example.flowmerceproject.UserManagement.repository.UserRepository;
+import com.example.flowmerceproject.OrderManagement.entity.Order;
+import com.example.flowmerceproject.OrderManagement.repository.OrderRepository;
+import com.example.flowmerceproject.PaymentManagement.entity.Wallet;
+import com.example.flowmerceproject.PaymentManagement.repository.PaymentRepository;
+import com.example.flowmerceproject.PaymentManagement.repository.WalletRepository;
+import com.example.flowmerceproject.PaymentManagement.repository.WalletTransactionRepository;
+import com.example.flowmerceproject.ShippingManagement.repository.ShipmentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,6 +43,11 @@ public class UserService {
     private final UserProfileRepository userProfileRepository;
     private final NotificationRepository notificationRepository;
     private final StoreRepository storeRepository;
+    private final OrderRepository orderRepository;
+    private final PaymentRepository paymentRepository;
+    private final ShipmentRepository shipmentRepository;
+    private final WalletRepository walletRepository;
+    private final WalletTransactionRepository walletTransactionRepository;
 
     public UserResponse getMyProfile(String email) {
         return toResponse(findByEmailOrThrow(email));
@@ -119,21 +132,56 @@ public class UserService {
         userProfileRepository.findByUser_UserId(userId)
                 .ifPresent(userProfileRepository::delete);
 
-        // 4. Customer profile (stores wishlist/cart cascade from customers table)
-        customerRepository.findByUser_UserId(userId)
-                .ifPresent(customerRepository::delete);
+        // 4. Customer profile: delete wallet transactions + wallet (if any), then the
+        //    customer's orders' dependents (shipments, payments) then the orders
+        //    themselves, then the customer row itself (reviews/wishlist/cart already
+        //    cascade from the customers table via DB ON DELETE CASCADE).
+        customerRepository.findByUser_UserId(userId).ifPresent(customer -> {
+            deleteWalletAndTransactions(walletRepository.findByCustomer_CustomerId(customer.getCustomerId()));
+            orderRepository.findByCustomer_CustomerIdOrderByOrderDateDesc(customer.getCustomerId())
+                    .forEach(this::deleteOrderDependentsThenOrder);
+            customerRepository.delete(customer);
+        });
 
-        // 5. Merchant: delete stores first (no DB-level cascade from merchants→stores),
-        //    then the merchant profile row itself.
+        // 5. Merchant: for each store, delete its orders' dependents (shipments,
+        //    payments) then the orders, then the store itself (no DB-level cascade
+        //    from merchants→stores; store deletion already cascades
+        //    products/categories/inventory/storefront rows via DB/JPA cascade), then
+        //    the merchant's wallet + wallet transactions (if any), then finally the
+        //    merchant profile row itself.
         merchantRepository.findByUser_UserId(userId).ifPresent(merchant -> {
-            storeRepository.findByMerchant_MerchantId(merchant.getMerchantId())
-                    .forEach(storeRepository::delete);
+            storeRepository.findByMerchant_MerchantId(merchant.getMerchantId()).forEach(store -> {
+                orderRepository.findByStore_StoreIdOrderByOrderDateDesc(store.getStoreId())
+                        .forEach(this::deleteOrderDependentsThenOrder);
+                storeRepository.delete(store);
+            });
+            deleteWalletAndTransactions(walletRepository.findByMerchant_MerchantId(merchant.getMerchantId()));
             merchantRepository.delete(merchant);
         });
 
         // 6. Finally the user row itself
         userRepository.delete(user);
         return "User deleted successfully.";
+    }
+
+    /**
+     * Deletes an order's dependents (shipment, then payment) in FK-safe order, then
+     * the order itself (order_items and the order's invoice cascade automatically
+     * via JPA's CascadeType.ALL on Order.items / Order.invoice).
+     */
+    private void deleteOrderDependentsThenOrder(Order order) {
+        shipmentRepository.findByOrder_OrderId(order.getOrderId()).ifPresent(shipmentRepository::delete);
+        paymentRepository.findByOrder_OrderId(order.getOrderId()).ifPresent(paymentRepository::delete);
+        orderRepository.delete(order);
+    }
+
+    /** Deletes a wallet's transactions, then the wallet itself, if the wallet is present. */
+    private void deleteWalletAndTransactions(Optional<Wallet> walletOpt) {
+        walletOpt.ifPresent(wallet -> {
+            walletTransactionRepository.findByWallet_WalletIdOrderByCreatedAtDesc(wallet.getWalletId())
+                    .forEach(walletTransactionRepository::delete);
+            walletRepository.delete(wallet);
+        });
     }
 
     @Transactional

@@ -67,6 +67,8 @@ export default function AdminMerchantsPage() {
       setMerchants((prev) => prev.filter((m) => m.userId !== confirmDelete.userId))
       setConfirmDelete(null)
       showToast(`Merchant ${confirmDelete.email} deleted`)
+    } else {
+      showToast(result.error)
     }
     setDeleting(false)
   }

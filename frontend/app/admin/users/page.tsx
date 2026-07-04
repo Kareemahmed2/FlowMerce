@@ -64,6 +64,8 @@ export default function AdminUsersPage() {
       setUsers((prev) => prev.filter((u) => u.userId !== confirmDelete.userId))
       setConfirmDelete(null)
       showToast(`User ${confirmDelete.email} deleted`)
+    } else {
+      showToast(result.error)
     }
     setDeleting(false)
   }
