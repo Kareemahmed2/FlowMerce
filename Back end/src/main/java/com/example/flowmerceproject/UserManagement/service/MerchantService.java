@@ -42,6 +42,7 @@ public class MerchantService {
         return toResponse(merchant);
     }
 
+    @Transactional(readOnly = true)
     public MerchantDTOs.MerchantResponse getMerchantProfile(String email) {
         User user = findUserOrThrow(email);
         Merchant merchant = merchantRepository.findByUser_UserId(user.getUserId())
@@ -61,6 +62,7 @@ public class MerchantService {
         return "Merchant account deleted successfully.";
     }
 
+    @Transactional(readOnly = true)
     public List<MerchantDTOs.MerchantResponse> getAllMerchants() {
         return merchantRepository.findAll().stream().map(this::toResponse).collect(Collectors.toList());
     }

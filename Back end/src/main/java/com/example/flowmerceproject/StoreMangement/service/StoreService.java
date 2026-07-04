@@ -14,6 +14,7 @@ import com.example.flowmerceproject.StoreMangement.entity.Store;
 import com.example.flowmerceproject.StoreMangement.entity.StoreSettings;
 import com.example.flowmerceproject.StoreMangement.repository.StoreRepository;
 import com.example.flowmerceproject.StoreMangement.repository.StoreSettingsRepository;
+import com.example.flowmerceproject.StorefrontCustomization.service.StorefrontCustomizationService;
 import com.example.flowmerceproject.UserManagement.entity.Merchant;
 import com.example.flowmerceproject.UserManagement.exception.ConflictException;
 import com.example.flowmerceproject.UserManagement.exception.ForbiddenException;
@@ -41,6 +42,7 @@ public class StoreService {
     private final CategoryService categoryService;
     private final ProductService productService;
     private final InventoryRepository inventoryRepository;
+    private final StorefrontCustomizationService storefrontCustomizationService;
 
     @Transactional
     public StoreDTOs.StoreResponse createStore(String email, StoreDTOs.CreateStoreRequest request) {
@@ -159,6 +161,7 @@ public class StoreService {
     @Transactional
     public String deleteStore(String email, Integer storeId) {
         Store store = getStoreAndVerifyOwner(email, storeId);
+        storefrontCustomizationService.evictAllCacheForStore(storeId, email);
         storeRepository.delete(store);
         return "Store deleted successfully.";
     }

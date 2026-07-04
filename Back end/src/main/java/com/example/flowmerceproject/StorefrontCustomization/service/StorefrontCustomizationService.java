@@ -554,6 +554,27 @@ public class StorefrontCustomizationService {
         }
     }
 
+    /**
+     * Evicts every Redis entry tied to a store — storefront, design, and the
+     * requesting owner's ownership-check cache. Called from store hard-delete
+     * so no phantom storefront is served for the remaining TTL.
+     */
+    public void evictAllCacheForStore(Integer storeId, String ownerEmail) {
+        evictCache(storeId);
+        try {
+            redisTemplate.delete(DESIGN_CACHE_KEY_PREFIX + storeId);
+        } catch (Exception e) {
+            log.warn("Design cache evict failed for store {}: {}", storeId, e.getMessage());
+        }
+        if (ownerEmail != null) {
+            try {
+                redisTemplate.delete(OWNER_CACHE_KEY_PREFIX + storeId + ":" + ownerEmail);
+            } catch (Exception e) {
+                log.warn("Owner cache evict failed for store {}: {}", storeId, e.getMessage());
+            }
+        }
+    }
+
     private Optional<DesignResponse> getDesignFromCache(String key) {
         try {
             String json = redisTemplate.opsForValue().get(key);
