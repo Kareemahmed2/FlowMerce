@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
-      - "8001:8001"   # RedisInsight UI
+      - "8001:8001"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -24,7 +24,7 @@ services:
       RABBITMQ_DEFAULT_PASS: secret
     ports:
       - "5672:5672"
-      - "15672:15672"  # Management UI → http://localhost:15672
+      - "15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
@@ -33,9 +33,23 @@ services:
       timeout: 10s
       retries: 5
 
-  # MinIO is NOT run by this file — it runs on a separate host. Point the
-  # backend at it via MINIO_URL / MINIO_ACCESS_KEY / MINIO_SECRET_KEY / MINIO_BUCKET
-  # in the backend's .env (see Back end/.env.example).
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
 
   # ── Backend (Spring Boot) ────────────────────────────────────────────────────
 
@@ -47,44 +61,28 @@ services:
     ports:
       - "8080:8080"
     env_file:
-      - "./Back end/.env"   # DB_PASSWORD, JWT_SECRET, INTEGRATION_ENCRYPTION_KEY, MAIL_PASSWORD
+      - "./Back end/.env"
     environment:
-      # Supabase — env_file has DB_URL= (empty), which would override Spring Boot's
-      # default. Explicitly set both here so the correct Supabase URL is always used.
       DB_URL: jdbc:postgresql://aws-0-eu-west-1.pooler.supabase.com:5432/postgres
       DB_USERNAME: postgres.jyzpcvosismwilptumpp
-
-      # Redis (container)
       REDIS_HOST: redis
       REDIS_PORT: 6379
-
-      # RabbitMQ (container)
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_PORT: 5672
       RABBITMQ_USERNAME: myuser
       RABBITMQ_PASSWORD: secret
-
-      # MinIO — runs on a separate host, not in this compose file. MINIO_URL
-      # (and MINIO_ACCESS_KEY/MINIO_SECRET_KEY/MINIO_BUCKET, MINIO_PUBLIC_URL if
-      # needed) come from ./Back end/.env via env_file above — do not hardcode
-      # a value here, it would override the real one.
-
-      # URLs
+      MINIO_URL: http://minio:9000
       BACKEND_URL: https://api.flowmerce.tech
       FRONTEND_URL: https://flowmerce.tech
-
-      # Mail sender (env_file has MAIL_USERNAME= empty — set default here)
       MAIL_USERNAME: ka.mahrous@gmail.com
-
-      # Admin (env_file has ADMIN_EMAIL= empty)
       ADMIN_EMAIL: admin@flowmerce.com
-
-      # Upload dir inside container
       UPLOAD_DIR: /app/uploads
     depends_on:
       redis:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     volumes:
       - uploads_data:/app/uploads
@@ -102,10 +100,6 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # Baked into the browser bundle at build time (Next.js NEXT_PUBLIC_*
-        # vars are compile-time, not read at container runtime) — must be the
-        # publicly reachable backend URL, never localhost, or every browser
-        # loading the deployed site tries to call its own machine's port 8080.
         NEXT_PUBLIC_API_URL: https://api.flowmerce.tech/api/v1
     restart: unless-stopped
     ports:
@@ -127,4 +121,5 @@ services:
 volumes:
   redis_data:
   rabbitmq_data:
+  minio_data:
   uploads_data:
