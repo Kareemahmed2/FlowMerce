@@ -47,17 +47,17 @@ export default function CheckoutPage() {
   const base = useStoreBase()
   const accent = store.colors.accent
 
-  // Which methods the store owner has enabled (intersect with working methods)
+  // Which methods the store owner has enabled (intersect with working methods).
+  // Respected as-is — an empty result means the merchant disabled everything,
+  // it must NOT fall back to showing all methods.
   const enabledWorking = WORKING_METHODS.filter((m) =>
     store.payment.some((p) => toBackendPaymentMethod(p) === m || p === m)
   )
-  // If store has no explicit config, show all working methods.
-  const baseMethods = enabledWorking.length > 0 ? enabledWorking : WORKING_METHODS
   // FlowMerce Wallet stays available regardless of the merchant's gateway
   // toggles — it's the platform's own rail and the main payment method for now.
-  const shownMethods = baseMethods.includes('FLOWMERCE_WALLET')
-    ? baseMethods
-    : ['FLOWMERCE_WALLET' as BackendPaymentMethod, ...baseMethods]
+  const shownMethods = enabledWorking.includes('FLOWMERCE_WALLET')
+    ? enabledWorking
+    : ['FLOWMERCE_WALLET' as BackendPaymentMethod, ...enabledWorking]
 
   // Stable per-checkout-attempt idempotency key — generated once and reused on
   // every submit, so a retry after a false client-side timeout doesn't create

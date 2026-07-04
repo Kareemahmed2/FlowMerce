@@ -222,6 +222,9 @@ function PaymentSection({ storeId }: { storeId: number | null }) {
     const r = await storeService.updatePaymentMethods(storeId, { methods }, auth.getAuthHeader())
     setSaving(false)
     if (!r.ok) { setError(r.error); return }
+    // Invalidate the storefront's cached payment methods (sessionStorage, 5min TTL)
+    // so a checkout tab in the same browser session reflects the new toggle state.
+    window.dispatchEvent(new Event('flowmerce-store-updated'))
     setSuccess(true)
     setTimeout(() => setSuccess(false), 2500)
   }
