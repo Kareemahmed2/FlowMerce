@@ -35,7 +35,7 @@ export default function StoreProfilePage() {
 
   const handleLogout = () => {
     auth.logout()
-    router.push(base)
+    router.push(base || '/')
   }
 
   const infoRow = (label: string, value: string) => (

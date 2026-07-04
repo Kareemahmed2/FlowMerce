@@ -73,7 +73,7 @@ export default function WalletPage() {
 
         {/* Breadcrumb */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28, fontSize: 13, color: '#999' }}>
-          <Link href={base} style={{ color: '#999', textDecoration: 'none' }}>Home</Link>
+          <Link href={base || '/'} style={{ color: '#999', textDecoration: 'none' }}>Home</Link>
           <span>/</span>
           <Link href={`${base}/profile`} style={{ color: '#999', textDecoration: 'none' }}>Account</Link>
           <span>/</span>

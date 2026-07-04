@@ -89,7 +89,7 @@ export default function StoreFooter() {
               ))}
               {store.categories.length === 0 && (
                 <>
-                  <Link href={base} style={linkStyle} className="store-footer-link">All Products</Link>
+                  <Link href={base || '/'} style={linkStyle} className="store-footer-link">All Products</Link>
                   <Link href={`${base}/cart`} style={linkStyle} className="store-footer-link">Cart</Link>
                 </>
               )}
@@ -104,9 +104,9 @@ export default function StoreFooter() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {[
                 { href: `${base}/account/orders`, label: 'Order Tracking' },
-                { href: base, label: 'Returns & Refunds' },
-                { href: base, label: 'Help Center' },
-                { href: base, label: 'Privacy Policy' },
+                { href: base || '/', label: 'Returns & Refunds' },
+                { href: base || '/', label: 'Help Center' },
+                { href: base || '/', label: 'Privacy Policy' },
               ].map(({ href, label }) => (
                 <Link key={label} href={href} style={linkStyle} className="store-footer-link">
                   {label}

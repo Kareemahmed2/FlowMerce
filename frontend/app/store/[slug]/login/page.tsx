@@ -54,7 +54,7 @@ function StoreLoginPageContent() {
     setLoading(true)
     try {
       const ok = await auth.login(email, password)
-      if (ok) router.push(base)
+      if (ok) router.push(base || '/')
       else setError('Invalid email or password')
     } catch {
       setError('Something went wrong. Please try again.')

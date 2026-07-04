@@ -65,7 +65,7 @@ export default function EmptyOrdersState({
           </button>
         )}
         <Link
-          href={base}
+          href={base || '/'}
           style={{
             padding: '10px 20px', borderRadius: 10,
             border: 'none', background: accent, color: '#fff',

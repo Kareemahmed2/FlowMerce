@@ -68,7 +68,7 @@ export default function StoreSignupPage() {
         router.push(`${base}/login?activation_required=1&email=${encodeURIComponent(form.email)}`)
       } else {
         // Mock mode — already logged in, go to storefront home.
-        router.push(base)
+        router.push(base || '/')
       }
     } catch {
       setErrors({ general: 'Something went wrong. Please try again.' })

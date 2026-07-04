@@ -159,7 +159,7 @@ export default function OrderDetailPage() {
 
         {/* ── Breadcrumb ──────────────────────────────────────────────────── */}
         <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, fontSize: 13, color: '#999', flexWrap: 'wrap' }}>
-          <Link href={base} style={{ color: '#999', textDecoration: 'none' }}>Home</Link>
+          <Link href={base || '/'} style={{ color: '#999', textDecoration: 'none' }}>Home</Link>
           <span aria-hidden="true">/</span>
           <Link href={`${base}/account/orders`} style={{ color: '#999', textDecoration: 'none' }}>Orders</Link>
           <span aria-hidden="true">/</span>

@@ -97,7 +97,7 @@ export default function CustomerOrdersPage() {
             <p style={{ fontSize: 18, fontWeight: 600, margin: '0 0 8px' }}>No orders yet</p>
             <p style={{ color: '#999', marginBottom: 24 }}>Your orders will appear here once you make a purchase.</p>
             <Link
-              href={base}
+              href={base || '/'}
               style={{
                 display: 'inline-block', background: accent, color: textOnBg(accent),
                 padding: '12px 28px', borderRadius: 10, fontWeight: 600, textDecoration: 'none', fontSize: 15,

@@ -58,7 +58,7 @@ export default function OrdersListContent() {
 
         {/* ── Breadcrumb ──────────────────────────────────────────────────── */}
         <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, fontSize: 13, color: '#999' }}>
-          <Link href={base} style={{ color: '#999', textDecoration: 'none' }}>Home</Link>
+          <Link href={base || '/'} style={{ color: '#999', textDecoration: 'none' }}>Home</Link>
           <span aria-hidden="true">/</span>
           <Link href={`${base}/profile`} style={{ color: '#999', textDecoration: 'none' }}>Account</Link>
           <span aria-hidden="true">/</span>

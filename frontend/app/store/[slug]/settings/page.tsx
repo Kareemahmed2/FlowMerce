@@ -123,7 +123,7 @@ export default function StoreSettingsPage() {
       return
     }
     auth.logout()
-    router.push(base)
+    router.push(base || '/')
   }
 
   const inputStyle: React.CSSProperties = {
@@ -143,7 +143,7 @@ export default function StoreSettingsPage() {
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 24px 64px' }}>
         {/* Breadcrumb */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28, fontSize: 13, color: '#999' }}>
-          <Link href={base} style={{ color: '#999', textDecoration: 'none' }}>Home</Link>
+          <Link href={base || '/'} style={{ color: '#999', textDecoration: 'none' }}>Home</Link>
           <span>/</span>
           <Link href={`${base}/profile`} style={{ color: '#999', textDecoration: 'none' }}>Profile</Link>
           <span>/</span>

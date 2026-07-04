@@ -181,7 +181,7 @@ export default function StoreHeader() {
       }}>
         {/* ── Logo ─────────────────────────────────────────── */}
         <Link
-          href={base}
+          href={base || '/'}
           style={{
             display: 'flex', alignItems: 'center', gap: 10,
             textDecoration: 'none', color: fg,
@@ -214,7 +214,7 @@ export default function StoreHeader() {
           className="store-desktop-nav"
           style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, justifyContent: 'center' }}
         >
-          <Link href={base} style={{ padding: '6px 14px', borderRadius: 8, color: fg, textDecoration: 'none', fontSize: 14, fontWeight: 500, opacity: 0.85, transition: 'opacity 0.2s, background 0.2s' }} className="store-nav-link">
+          <Link href={base || '/'} style={{ padding: '6px 14px', borderRadius: 8, color: fg, textDecoration: 'none', fontSize: 14, fontWeight: 500, opacity: 0.85, transition: 'opacity 0.2s, background 0.2s' }} className="store-nav-link">
             Home
           </Link>
           {store.categories.slice(0, 5).map((cat) => (
@@ -451,7 +451,7 @@ export default function StoreHeader() {
           </form>
 
           {/* Nav links */}
-          {[{ href: base, label: 'Home' }, ...store.categories.map((c) => ({ href: `${base}/category/${c.id}`, label: c.name }))].map(({ href, label }) => (
+          {[{ href: base || '/', label: 'Home' }, ...store.categories.map((c) => ({ href: `${base}/category/${c.id}`, label: c.name }))].map(({ href, label }) => (
             <Link key={href} href={href} onClick={() => setMobileOpen(false)} style={{ color: fg, textDecoration: 'none', fontSize: 15, fontWeight: 500, padding: '10px 4px', borderBottom: `1px solid ${fg}12`, display: 'block' }}>
               {label}
             </Link>

@@ -81,7 +81,7 @@ export default function WishlistPage() {
             Save products you love to revisit them anytime.
           </p>
           <Link
-            href={base}
+            href={base || '/'}
             style={{
               display: 'inline-flex',
               alignItems: 'center',

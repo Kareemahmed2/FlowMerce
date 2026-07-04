@@ -49,7 +49,7 @@ export default function CategoryPage() {
           <p style={{ color: '#75777d', fontSize: 14, margin: '0 0 24px', lineHeight: 1.6 }}>
             This category doesn&apos;t exist or was removed.
           </p>
-          <Link href={base} style={{
+          <Link href={base || '/'} style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
             color: '#1e293b', textDecoration: 'none', fontWeight: 600, fontSize: 14,
           }} className="sf-back-link">
@@ -83,7 +83,7 @@ export default function CategoryPage() {
             display: 'flex', alignItems: 'center', gap: 6,
             marginBottom: 16, fontSize: 13, color: '#75777d',
           }}>
-            <Link href={base} style={{ color: '#75777d', textDecoration: 'none', transition: 'color 0.15s' }} className="sf-breadcrumb-link">
+            <Link href={base || '/'} style={{ color: '#75777d', textDecoration: 'none', transition: 'color 0.15s' }} className="sf-breadcrumb-link">
               Home
             </Link>
             <span style={{ color: '#c5c6cd' }}>/</span>
@@ -159,7 +159,7 @@ export default function CategoryPage() {
             <p style={{ color: '#75777d', fontSize: 15, fontWeight: 500, margin: 0 }}>
               No products in this category yet.
             </p>
-            <Link href={base} style={{ fontSize: 13, color: '#4f46e5', fontWeight: 600, textDecoration: 'none' }}>
+            <Link href={base || '/'} style={{ fontSize: 13, color: '#4f46e5', fontWeight: 600, textDecoration: 'none' }}>
               Explore all products →
             </Link>
           </div>

@@ -105,7 +105,7 @@ export default function CartPage() {
           <p style={{ color: '#75777d', fontSize: 14, lineHeight: 1.6, margin: '0 0 28px' }}>
             Looks like you haven&apos;t added anything yet.
           </p>
-          <Link href={base} style={{
+          <Link href={base || '/'} style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             background: accent, color: textOnBg(accent),
             padding: '12px 28px', borderRadius: 10,
@@ -123,7 +123,7 @@ export default function CartPage() {
   return (
     <div style={{ background: '#f7f9fb', color: '#191c1e' }}>
       <div className="sf-section" style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 32px 80px' }}>
-        <Breadcrumb items={[{ label: 'Home', href: base }, { label: `Cart (${cart.itemCount})` }]} />
+        <Breadcrumb items={[{ label: 'Home', href: base || '/' }, { label: `Cart (${cart.itemCount})` }]} />
 
         <h1 style={{ fontSize: 28, fontWeight: 800, color: '#1e293b', margin: '0 0 36px', letterSpacing: '-0.02em' }}>
           Shopping Cart
@@ -268,7 +268,7 @@ export default function CartPage() {
               Proceed to Checkout
             </Link>
 
-            <Link href={base} style={{
+            <Link href={base || '/'} style={{
               display: 'block', textAlign: 'center', marginTop: 12,
               color: '#75777d', fontSize: 13, textDecoration: 'none',
               transition: 'color 0.15s',

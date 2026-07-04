@@ -170,7 +170,7 @@ export default function CheckoutPage() {
         <div style={{ textAlign: 'center' }}>
           <h2 style={{ fontSize: 22, fontWeight: 700, color: '#1e293b', margin: '0 0 8px' }}>Your cart is empty</h2>
           <p style={{ color: '#75777d', fontSize: 14, margin: '0 0 20px' }}>Add some items before checking out.</p>
-          <Link href={base} style={{ color: accent, textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>← Back to store</Link>
+          <Link href={base || '/'} style={{ color: accent, textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>← Back to store</Link>
         </div>
       </div>
     )
@@ -192,7 +192,7 @@ export default function CheckoutPage() {
     <div style={{ background: '#f7f9fb', color: '#191c1e' }}>
       <div className="sf-section" style={{ maxWidth: 1200, margin: '0 auto', padding: '36px 32px 72px' }}>
         <nav style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 28, fontSize: 13 }}>
-          <Link href={base} style={{ color: '#75777d', textDecoration: 'none' }} className="sf-breadcrumb-link">Home</Link>
+          <Link href={base || '/'} style={{ color: '#75777d', textDecoration: 'none' }} className="sf-breadcrumb-link">Home</Link>
           <span style={{ color: '#c5c6cd' }}>/</span>
           <Link href={`${base}/cart`} style={{ color: '#75777d', textDecoration: 'none' }} className="sf-breadcrumb-link">Cart</Link>
           <span style={{ color: '#c5c6cd' }}>/</span>

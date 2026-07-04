@@ -60,7 +60,7 @@ export default function ProductDetailPage() {
           </div>
           <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1e293b', margin: '0 0 8px' }}>Product not found</h2>
           <p style={{ color: '#75777d', fontSize: 14, margin: '0 0 24px' }}>This product doesn&apos;t exist or was removed.</p>
-          <Link href={base} style={{ color: accent, textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>← Back to store</Link>
+          <Link href={base || '/'} style={{ color: accent, textDecoration: 'none', fontWeight: 600, fontSize: 14 }}>← Back to store</Link>
         </div>
       </div>
     )
@@ -91,7 +91,7 @@ export default function ProductDetailPage() {
 
         {/* ── Breadcrumb ──────────────────────────────────────────────────── */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 32, fontSize: 13 }}>
-          <Link href={base} style={{ color: '#75777d', textDecoration: 'none' }} className="sf-breadcrumb-link">Home</Link>
+          <Link href={base || '/'} style={{ color: '#75777d', textDecoration: 'none' }} className="sf-breadcrumb-link">Home</Link>
           <span style={{ color: '#c5c6cd' }}>/</span>
           <Link href={`${base}/category/${category.id}`} style={{ color: '#75777d', textDecoration: 'none' }} className="sf-breadcrumb-link">{category.name}</Link>
           <span style={{ color: '#c5c6cd' }}>/</span>

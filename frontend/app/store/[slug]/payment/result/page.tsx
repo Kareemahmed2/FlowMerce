@@ -146,7 +146,7 @@ function PaymentResultContent() {
             <p style={{ fontSize: 14, color: '#666', margin: '0 0 28px', lineHeight: 1.6 }}>Your order has been confirmed and is being prepared.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {orderId && primaryBtn(`${base}/account/orders/${orderId}`, 'View Order Details')}
-              {secondaryBtn(base, 'Continue Shopping')}
+              {secondaryBtn(base || '/', 'Continue Shopping')}
             </div>
           </>
         )}
@@ -162,7 +162,7 @@ function PaymentResultContent() {
             <p style={{ fontSize: 14, color: '#666', margin: '0 0 28px', lineHeight: 1.6 }}>No charges were made. You can try again.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {primaryBtn(`${base}/cart`, 'Try Again')}
-              {secondaryBtn(base, 'Back to Store')}
+              {secondaryBtn(base || '/', 'Back to Store')}
             </div>
           </>
         )}
@@ -250,7 +250,7 @@ function PaymentResultContent() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {orderId && primaryBtn(`${base}/account/orders/${orderId}`, 'Track My Order')}
-              {secondaryBtn(base, 'Continue Shopping')}
+              {secondaryBtn(base || '/', 'Continue Shopping')}
             </div>
           </>
         )}
@@ -263,7 +263,7 @@ function PaymentResultContent() {
             <p style={{ fontSize: 14, color: '#666', margin: '0 0 28px', lineHeight: 1.6 }}>We couldn&apos;t verify your payment status. Please check your orders or contact support.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {primaryBtn(`${base}/account/orders`, 'View My Orders')}
-              {secondaryBtn(base, 'Back to Store')}
+              {secondaryBtn(base || '/', 'Back to Store')}
             </div>
           </>
         )}

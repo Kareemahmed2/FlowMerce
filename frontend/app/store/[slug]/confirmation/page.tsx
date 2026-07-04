@@ -106,7 +106,7 @@ function ConfirmationContent() {
           </div>
         </div>
 
-        <Link href={base} style={{
+        <Link href={base || '/'} style={{
           display: 'inline-block',
           background: accent, color: textOnBg(accent),
           padding: '14px 32px', borderRadius: 10,
