@@ -1,23 +1,21 @@
 # Full FlowMerce compose — infra + backend + frontend.
 #
 # Quick start (development):
-#   cp .env.example .env && vi .env   # fill DB_PASSWORD, JWT_SECRET, MAIL_PASSWORD, INTEGRATION_ENCRYPTION_KEY, MINIO_URL
+#   cp .env.example .env && vi .env   # fill DB_PASSWORD, JWT_SECRET, MAIL_PASSWORD, INTEGRATION_ENCRYPTION_KEY
 #   docker compose up --build
 #
 # Services:
 #   rabbitmq  :5672   — async notifications
 #   redis     :6379   — stock cache + rate limits
+#   minio     :9000   — object storage for images, PDFs, attachments
+#   minio     :9001   — MinIO web console (browser)
 #   backend   :8080   — Spring Boot /api/v1
 #   frontend  :3000   — Next.js storefront + merchant dashboard
-#
-# MinIO is NOT run by this file — it runs on a separate host. Set MINIO_URL
-# (and MINIO_ACCESS_KEY/MINIO_SECRET_KEY/MINIO_BUCKET if not using the
-# minioadmin/minioadmin/flowmerce defaults) in .env to point at it.
 #
 # DB-1: No local postgres service — the backend always talks to the shared
 # Supabase Postgres instance (same default as application.properties).
 # Set DB_URL/DB_USERNAME/DB_PASSWORD in .env to point elsewhere.
-# DOC-5: uploads volume persists images from before MinIO was wired up.
+# DOC-5: uploads volume persists merchant-uploaded images.
 # DOC-6: healthchecks + depends_on ensure correct startup order.
 # DOC-7: pinned image versions instead of :latest.
 
@@ -37,7 +35,8 @@ services:
       test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
       interval: 15s
       timeout: 10s
-      retries: 5
+      retries: 10
+      start_period: 90s
 
   redis:
     image: 'redis:7-alpine'
@@ -49,11 +48,22 @@ services:
       timeout: 5s
       retries: 5
 
-  # MinIO object storage — stores product images, store logos,
-  # invoices, profile pictures, notification attachments, and storefront assets.
-  # NOT run by this compose file — MinIO runs on a separate host. Point the
-  # backend at it via MINIO_URL / MINIO_ACCESS_KEY / MINIO_SECRET_KEY / MINIO_BUCKET
-  # in .env (see .env.example).
+  minio:
+    image: 'minio/minio:latest'
+    ports:
+      - '9000:9000'   # API — Spring Boot connects here
+      - '9001:9001'   # Web console — open in browser
+    environment:
+      MINIO_ROOT_USER:     ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 15s
+      timeout: 5s
+      retries: 5
 
   # ── Backend ──────────────────────────────────────────────────────────────────
 
@@ -64,10 +74,6 @@ services:
     ports:
       - '8080:8080'
     environment:
-      # DB-1: defaults to the shared Supabase instance via the Supavisor session
-      # pooler — same fallback as application.properties. The direct
-      # db.<ref>.supabase.co host is IPv6-only, which Docker can't route to.
-      # Override via .env for a different DB.
       DB_URL:          ${DB_URL:-jdbc:postgresql://aws-0-eu-west-1.pooler.supabase.com:5432/postgres}
       DB_USERNAME:     ${DB_USERNAME:-postgres.jyzpcvosismwilptumpp}
       DB_PASSWORD:     ${DB_PASSWORD}
@@ -81,28 +87,16 @@ services:
       RABBITMQ_PORT:   5672
       RABBITMQ_USERNAME: myuser
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-secret}
-      # MinIO — runs on a separate host, not in this compose file. MINIO_URL must
-      # point at wherever it's actually reachable from this container.
-      MINIO_URL:        ${MINIO_URL}
-      # DOC-6: an empty string here would override application.properties'
-      # "fall back to MINIO_URL" default with a blank value instead — nest the
-      # fallback in the compose expression itself so an unset MINIO_PUBLIC_URL
-      # resolves to MINIO_URL, never to "".
-      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-${MINIO_URL}}
+      MINIO_URL:        http://minio:9000
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-https://media.flowmerce.tech}
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
-      MINIO_BUCKET:     ${MINIO_BUCKET:-flowmerce}
+      MINIO_BUCKET:     flowmerce
       UPLOAD_DIR:      /app/uploads
-      # Override frontend URL for email activation links
       FRONTEND_URL:    ${FRONTEND_URL:-http://localhost:3000}
       ADMIN_EMAIL:     ${ADMIN_EMAIL:-admin@flowmerce.com}
       ADMIN_PASSWORD:  ${ADMIN_PASSWORD:-ChangeMe!2026}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-default}
-      # Social OAuth2 — must be forwarded explicitly; compose does not
-      # auto-inject .env keys into the container, only ones listed here.
-      # Redirect URIs fall back to the same localhost default as
-      # application.properties — an empty string here would override that
-      # default with a blank value instead of falling back to it.
       GOOGLE_CLIENT_ID:      ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET:  ${GOOGLE_CLIENT_SECRET:-}
       GOOGLE_REDIRECT_URI:   ${GOOGLE_REDIRECT_URI:-http://localhost:8080/api/v1/auth/social/google/callback}
@@ -110,11 +104,13 @@ services:
       FACEBOOK_APP_SECRET:   ${FACEBOOK_APP_SECRET:-}
       FACEBOOK_REDIRECT_URI: ${FACEBOOK_REDIRECT_URI:-http://localhost:8080/api/v1/auth/social/facebook/callback}
     volumes:
-      - uploads:/app/uploads                   # DOC-5: persist uploaded images
+      - uploads:/app/uploads
     depends_on:
       rabbitmq:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     healthcheck:
       test: ['CMD-SHELL', 'curl -sf http://localhost:8080/api/v1/actuator/health || exit 1']
@@ -130,10 +126,6 @@ services:
       context: ../frontend
       dockerfile: Dockerfile
       args:
-        # NEXT_PUBLIC_* baked into the browser bundle at build time — the
-        # localhost fallback below is dev-only; production MUST set
-        # NEXT_PUBLIC_API_URL to the publicly reachable backend URL, or every
-        # browser loading the deployed site tries to call its own machine.
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080/api/v1}
     ports:
       - '3000:3000'
@@ -145,4 +137,5 @@ services:
 
 # ── Volumes ───────────────────────────────────────────────────────────────────
 volumes:
-  uploads:     # DOC-5: local uploads fallback (pre-MinIO files still served from here)
+  uploads:
+  minio_data:
