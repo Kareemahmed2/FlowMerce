@@ -213,7 +213,7 @@ function ActivatePageContent() {
             </p>
             <div className="w-full space-y-3 mt-2">
               <Link
-                href="/signup"
+                href="/"
                 className="w-full py-3 text-white font-semibold rounded-lg text-center text-sm transition-colors block"
                 style={{ backgroundColor: '#49342F' }}
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#5a4038')}
@@ -251,7 +251,7 @@ function ActivatePageContent() {
             <p className="text-xs text-gray-400 text-center">
               Didn&apos;t receive it? Check your spam folder or{' '}
               <Link
-                href="/signup"
+                href="/"
                 className="font-medium underline"
                 style={{ color: '#49342F' }}
               >

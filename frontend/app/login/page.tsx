@@ -42,7 +42,15 @@ function LoginPageContent() {
       : ''
   )
   const [rememberMe, setRememberMe] = useState(false)
-  const [formData, setFormData] = useState({ email: '', password: '' })
+  const [formData, setFormData] = useState({
+    email: searchParams.get('email') || '',
+    password: '',
+  })
+  const [success] = useState(
+    searchParams.get('registered') === '1'
+      ? `Account created! Check your email${searchParams.get('email') ? ` (${searchParams.get('email')})` : ''} for an activation link, then log in.`
+      : ''
+  )
 
   // ── MFA step (shown instead of the login form when the account has
   // "Enable 2FA" turned on in Settings — see SettingsPage.tsx SecuritySection) ──
@@ -289,6 +297,12 @@ function LoginPageContent() {
                   Log in to your account
                 </h1>
 
+                {success && (
+                  <div style={{ marginBottom: 20, padding: '12px 14px', background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: 10 }}>
+                    <p style={{ fontSize: 13, color: '#059669', margin: 0 }}>{success}</p>
+                  </div>
+                )}
+
                 {error && (
                   <div style={{ marginBottom: 20, padding: '12px 14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10 }}>
                     <p style={{ fontSize: 13, color: '#dc2626', margin: 0 }}>{error}</p>
@@ -360,7 +374,7 @@ function LoginPageContent() {
 
                 <p style={{ marginTop: 24, textAlign: 'center', fontSize: 13, color: '#75777d' }}>
                   New here?{' '}
-                  <Link href="/signup" style={{ color: '#4f46e5', fontWeight: 600, textDecoration: 'none' }} className="auth-link">
+                  <Link href="/" style={{ color: '#4f46e5', fontWeight: 600, textDecoration: 'none' }} className="auth-link">
                     Create an account →
                   </Link>
                 </p>

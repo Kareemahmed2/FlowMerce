@@ -8,7 +8,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card } from '@/components/ui/card'
 import { Loader2 } from 'lucide-react'
 import { authService } from '@/services/auth.service'
 import { redirectToOAuth } from '@/lib/oauth'
@@ -51,9 +50,9 @@ export default function Page() {
         return
       }
 
-      // Backend registration sends an activation email; redirect to /signup
-      // which shows a cleaner activation-required message.
-      router.push(`/signup?registered=1&email=${encodeURIComponent(formData.email)}`)
+      // Backend registration sends an activation email; redirect to /login
+      // which shows an activation-required message and lets them sign in once verified.
+      router.push(`/login?registered=1&email=${encodeURIComponent(formData.email)}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -66,193 +65,123 @@ export default function Page() {
   }
 
   return (
-    <div className="min-h-screen flex bg-gray-900 relative overflow-hidden">
-      {/* Background Image for entire page */}
-      <Image
-        src="/bg-signup.png"
-        alt="FlowMerce Background"
-        fill
-        className="object-cover opacity-40"
-      />
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-900/80 via-gray-900/60 to-transparent" />
-      
-      <div className="relative z-10 flex w-full">
-        {/* Left Section */}
-        <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-          <div className="flex flex-col justify-center px-12 text-white">
-            <div className="flex items-center gap-3 mb-12">
-              <Image
-                src="/logo.png"
-                alt="FlowMerce Logo"
-                width={48}
-                height={48}
-                className="w-12 h-12"
-              />
-              <h1 className="text-3xl font-serif">FlowMerce</h1>
-            </div>
-            
-            <h2 className="text-5xl font-serif leading-tight mb-6 max-w-xl">
-              Building your desired Application...
-            </h2>
-            
-            <p className="text-gray-300 text-lg leading-relaxed max-w-md mb-8">
-              Create your account and start building powerful applications with our platform.
-            </p>
-            
-            <div className="flex gap-2">
-              <div className="w-12 h-1 bg-white rounded-full" />
-              <div className="w-8 h-1 bg-white/40 rounded-full" />
-              <div className="w-8 h-1 bg-white/20 rounded-full" />
-            </div>
+    <div style={{ minHeight: '100vh', display: 'flex', background: '#0f172a', position: 'relative', overflow: 'hidden', fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif" }}>
+      <Image src="/bg-signup.png" alt="FlowMerce Background" fill className="object-cover opacity-40" />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(30,41,59,0.75) 100%)' }} />
+
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', width: '100%' }}>
+        {/* ── Left hero ──────────────────────────────────────────────── */}
+        <div className="hidden lg:flex" style={{ width: '50%', flexDirection: 'column', justifyContent: 'center', padding: '64px 56px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 48 }}>
+            <Image src="/logo.png" alt="FlowMerce Logo" width={48} height={48} className="w-12 h-12" />
+            <span style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>FlowMerce</span>
+          </div>
+          <h2 style={{ fontSize: 'clamp(32px, 3.5vw, 48px)', fontWeight: 800, color: '#fff', lineHeight: 1.15, letterSpacing: '-0.03em', margin: '0 0 20px', maxWidth: 480 }}>
+            Start your commerce journey today.
+          </h2>
+          <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, maxWidth: 400, margin: '0 0 36px' }}>
+            Create your merchant account in minutes and launch your store with FlowMerce.
+          </p>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ width: 40, height: 3, borderRadius: 2, background: '#4f46e5' }} />
+            <div style={{ width: 24, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.2)' }} />
+            <div style={{ width: 16, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.1)' }} />
           </div>
         </div>
 
-        {/* Right Section */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center px-4 py-8 sm:px-6 sm:py-12">
-        <Card className="w-full max-w-md bg-white rounded-2xl shadow-lg border-0">
-          <div className="p-6 sm:p-8">
-            <div className="text-sm font-semibold text-gray-600 mb-4 tracking-widest">
-              LET'S GET YOU STARTED
-            </div>
-            
-            <h2 className="text-gray-900 mb-8" style={{ fontFamily: 'MediumZen Old Mincho, serif', fontSize: '25px', lineHeight: '44px', letterSpacing: '0px', fontWeight: 500 }}>
-              Create an Account
-            </h2>
+        {/* ── Right form ────────────────────────────────────────────── */}
+        <div style={{ width: '100%', maxWidth: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }} className="auth-form-side">
+          <div className="auth-card" style={{ width: '100%', maxWidth: 440, background: '#fff', borderRadius: 20, boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: '#4f46e5', letterSpacing: '0.12em', textTransform: 'uppercase', margin: '0 0 12px' }}>
+              LET&apos;S GET YOU STARTED
+            </p>
+            <h1 style={{ fontSize: 26, fontWeight: 800, color: '#1e293b', margin: '0 0 28px', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+              Create your account
+            </h1>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-700">{error}</p>
+              <div style={{ marginBottom: 20, padding: '12px 14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10 }}>
+                <p style={{ fontSize: 13, color: '#dc2626', margin: 0 }}>{error}</p>
               </div>
             )}
 
-            <form onSubmit={handleSignup} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Your Name
-                </label>
-                <Input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  placeholder="Enter your name"
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                  style={{ '--tw-ring-color': '#49342F' } as React.CSSProperties}
-                  onFocus={(e) => e.currentTarget.style.boxShadow = '0 0 0 2px #49342F'}
-                  onBlur={(e) => e.currentTarget.style.boxShadow = ''}
-                />
-              </div>
+            <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {[
+                { label: 'Your Name', name: 'name', type: 'text', placeholder: 'Full name', required: true },
+                { label: 'Email', name: 'email', type: 'email', placeholder: 'you@example.com', required: true },
+                { label: 'Password', name: 'password', type: 'password', placeholder: '••••••••••••', required: true, minLength: 8 },
+              ].map(({ label, name, type, placeholder, required, minLength }) => (
+                <div key={name} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: '#45474c', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</label>
+                  <Input
+                    type={type} name={name}
+                    value={formData[name as keyof typeof formData]}
+                    onChange={handleInputChange}
+                    placeholder={placeholder}
+                    required={required}
+                    minLength={minLength}
+                    className="w-full px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500"
+                    style={{ borderColor: '#e2e8f0', background: '#f8fafc', color: '#1e293b' }}
+                  />
+                  {name === 'password' && formData.password.length > 0 && formData.password.length < 8 && (
+                    <p style={{ fontSize: 11, color: '#dc2626', margin: 0 }}>At least 8 characters ({formData.password.length}/8)</p>
+                  )}
+                </div>
+              ))}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
-                </label>
-                <Input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="Enter your email"
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                  style={{ '--tw-ring-color': '#49342F' } as React.CSSProperties}
-                  onFocus={(e) => e.currentTarget.style.boxShadow = '0 0 0 2px #49342F'}
-                  onBlur={(e) => e.currentTarget.style.boxShadow = ''}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Password
-                </label>
-                <Input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="••••••••••••••"
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent"
-                  style={{ '--tw-ring-color': '#49342F' } as React.CSSProperties}
-                  onFocus={(e) => e.currentTarget.style.boxShadow = '0 0 0 2px #49342F'}
-                  onBlur={(e) => e.currentTarget.style.boxShadow = ''}
-                />
-              </div>
-
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 text-white font-semibold rounded-lg transition-colors"
-                style={{ backgroundColor: '#49342F' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#5a4038'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#49342F'}
+              <Button type="submit" disabled={loading}
+                className="w-full py-3 text-white font-bold rounded-lg transition-opacity"
+                style={{ backgroundColor: '#4f46e5', marginTop: 4, fontSize: 14, letterSpacing: '-0.01em' }}
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Creating Account...
-                  </>
-                ) : (
-                  'GET STARTED'
-                )}
+                {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Creating Account…</> : 'Get Started →'}
               </Button>
             </form>
 
-            <div className="my-6 flex items-center">
-              <div className="flex-1 h-px bg-gray-300" />
-              <span className="px-3 text-sm text-gray-500">Or</span>
-              <div className="flex-1 h-px bg-gray-300" />
+            <div style={{ margin: '24px 0', display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
+              <span style={{ fontSize: 12, color: '#75777d', fontWeight: 500 }}>Or continue with</span>
+              <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
             </div>
 
-            <div className="space-y-3">
-              <button
-                type="button"
-                onClick={() => handleSocialSignup('google')}
-                className="w-full flex items-center justify-center gap-2 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                </svg>
-                <span className="text-gray-700">Sign up with Google</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSocialSignup('facebook')}
-                className="w-full flex items-center justify-center gap-2 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-                <span className="text-gray-700">Sign up with Facebook</span>
-              </button>
-
-              <button
-                type="button"
-                disabled
-                className="w-full flex items-center justify-center gap-2 py-3 border border-gray-200 rounded-lg text-gray-400 cursor-not-allowed"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.05 2.29.89 3.08.89.79 0 2.38-1.1 4.02-.92 1.26.07 2.91.78 3.8 2.38-3.69 2.23-2.86 6.92.5 7.98-.47 1.5-1.3 2.7-2.4 3.64zm-9.1-14.85c-.11-1.88 1.39-3.54 3.2-3.72.23 1.85-1.57 3.42-3.2 3.72z"/>
-                </svg>
-                <span>Sign up with Apple (coming soon)</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[
+                { provider: 'google' as OAuthProvider, label: 'Sign up with Google', icon: <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> },
+                { provider: 'facebook' as OAuthProvider, label: 'Sign up with Facebook', icon: <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> },
+              ].map(({ provider, label, icon }) => (
+                <button key={provider} type="button" onClick={() => handleSocialSignup(provider)}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '11px 0', borderRadius: 10, border: '1.5px solid #e2e8f0', background: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 500, color: '#1e293b', transition: 'background 0.15s', fontFamily: 'inherit' }}
+                  className="auth-social-btn"
+                >
+                  {icon}{label}
+                </button>
+              ))}
+              <button type="button" disabled style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '11px 0', borderRadius: 10, border: '1.5px solid #f2f4f6', background: '#f7f9fb', cursor: 'not-allowed', fontSize: 13, color: '#c5c6cd', fontFamily: 'inherit' }}>
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.05 2.29.89 3.08.89.79 0 2.38-1.1 4.02-.92 1.26.07 2.91.78 3.8 2.38-3.69 2.23-2.86 6.92.5 7.98-.47 1.5-1.3 2.7-2.4 3.64zm-9.1-14.85c-.11-1.88 1.39-3.54 3.2-3.72.23 1.85-1.57 3.42-3.2 3.72z"/></svg>
+                Sign up with Apple (coming soon)
               </button>
             </div>
 
-            <div className="mt-8 text-center text-sm text-gray-600">
+            <p style={{ marginTop: 24, textAlign: 'center', fontSize: 13, color: '#75777d' }}>
               Already have an account?{' '}
-              <Link href="/login" className="font-semibold transition-colors" style={{ color: '#49342F' }} onMouseEnter={(e) => e.currentTarget.style.color = '#5a4038'} onMouseLeave={(e) => e.currentTarget.style.color = '#49342F'}>
-                LOGIN HERE
+              <Link href="/login" style={{ color: '#4f46e5', fontWeight: 600, textDecoration: 'none' }} className="auth-link">
+                Log in →
               </Link>
-            </div>
+            </p>
           </div>
-        </Card>
         </div>
       </div>
+
+      <style>{`
+        .auth-form-side { max-width: 100% !important; }
+        @media (min-width: 1024px) { .auth-form-side { max-width: 50% !important; } }
+        .auth-card { padding: 40px; }
+        @media (max-width: 480px) {
+          .auth-card { padding: 24px 20px; }
+          .auth-card h1 { font-size: 22px !important; }
+        }
+        .auth-social-btn:hover { background: #f7f9fb !important; }
+        .auth-link:hover { text-decoration: underline !important; }
+      `}</style>
     </div>
   )
 }
