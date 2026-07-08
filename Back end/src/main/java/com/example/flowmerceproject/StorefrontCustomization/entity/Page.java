@@ -3,6 +3,8 @@ package com.example.flowmerceproject.StorefrontCustomization.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
@@ -48,6 +50,7 @@ public class Page {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "storefront_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private StorefrontTemplate storefrontTemplate;
 
     @Column(name = "title", nullable = false, length = 100)

@@ -2,6 +2,8 @@ package com.example.flowmerceproject.ProductManagement.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "product_media")
@@ -17,6 +19,7 @@ public class ProductMedia {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Product product;
 
     @Column(name = "media_url", nullable = false, length = 255)

@@ -1,0 +1,204 @@
+@startuml PlatformSupport_Class_Diagram
+title Platform Support (NotificationManagement + FileStorage + common) — Class Diagram
+
+skinparam backgroundColor #FFFFFF
+skinparam classFontSize 18
+skinparam classAttributeFontSize 15
+skinparam class {
+  BackgroundColor #EAF2FF
+  BorderColor #1A73E8
+  ArrowColor #444444
+}
+
+' ── NotificationManagement ───────────────────────────────────────────────────
+
+class Notification {
+  -Long notificationId
+  -NotificationType type
+  -String title
+  -String message
+  -Boolean isRead = false
+  -Integer referenceId
+  -ReferenceType referenceType
+  -LocalDateTime createdAt
+}
+
+enum "Notification.NotificationType" as NotificationType {
+  PAYMENT_INITIATED
+  PAYMENT_SUCCEEDED
+  PAYMENT_FAILED
+  PAYMENT_REFUNDED
+  ORDER_PROCESSING
+  ORDER_SHIPPED
+  ORDER_DELIVERED
+  ORDER_CANCELLED
+}
+
+enum "Notification.ReferenceType" as ReferenceType {
+  ORDER
+  PAYMENT
+}
+
+abstract class BaseEmailTemplate <<Template Method>> {
+  +{abstract} getSubject() : String
+  #{abstract} buildBodyContent() : String
+  +render() : String
+}
+
+class OrderConfirmedEmailTemplate {
+  +getSubject() : String
+  #buildBodyContent() : String
+}
+class OrderShippedEmailTemplate {
+  +getSubject() : String
+  #buildBodyContent() : String
+}
+class OrderDeliveredEmailTemplate {
+  +getSubject() : String
+  #buildBodyContent() : String
+}
+class OrderCancelledEmailTemplate {
+  +getSubject() : String
+  #buildBodyContent() : String
+}
+class PaymentConfirmedEmailTemplate {
+  +getSubject() : String
+  #buildBodyContent() : String
+}
+
+class OrderNotificationConsumer <<@RabbitListener>> {
+  +onOrderEvent(...)
+}
+class PaymentNotificationConsumer <<@RabbitListener>> {
+  +onPaymentEvent(...)
+}
+
+' ── FileStorage ───────────────────────────────────────────────────────────────
+
+class FileMetadata {
+  -Long id
+  -String fileName
+  -String fileUrl
+  -FileType fileType
+  -EntityType entityType
+  -Integer entityId
+  -String bucketName
+  -String folder
+  -Long sizeBytes
+  -String contentType
+  -Boolean isDeleted
+}
+
+enum "FileMetadata.FileType" as FileType {
+  IMAGE
+  PDF
+  VIDEO
+  DOCUMENT
+}
+
+enum "FileMetadata.EntityType" as EntityType {
+  PRODUCT
+  STORE
+  THEME
+  USER
+  ORDER
+  ATTACHMENT
+  STOREFRONT
+}
+
+enum StorageFolder {
+  PRODUCT_IMAGES
+  STORE_LOGOS
+  STORE_BANNERS
+  THEME_ASSETS
+  USER_PROFILES
+  INVOICES
+  STOREFRONT
+  ATTACHMENTS
+  AI_ASSETS
+  UPLOADS
+  --
+  +getPath() : String
+}
+
+class FileStorageService {
+  +uploadFile(MultipartFile, StorageFolder,\n  subfolder, EntityType, entityId, uploader) : FileMetadata
+}
+
+' ── common ────────────────────────────────────────────────────────────────────
+
+class "common.ApiResponse<T>" as ApiResponse {
+  -boolean success
+  -T data
+  -String message
+  {static} +ok(T data, String message) : ApiResponse<T>
+}
+
+' ── External (Identity & Access) ─────────────────────────────────────────────
+
+class "IdentityAccess.User" as User {
+  (see Identity & Access diagram)
+}
+
+' ── Relationships ────────────────────────────────────────────────────────────
+
+User "1" -- "0..*" Notification : @ManyToOne
+Notification -- NotificationType
+Notification -- ReferenceType
+
+OrderConfirmedEmailTemplate --|> BaseEmailTemplate
+OrderShippedEmailTemplate --|> BaseEmailTemplate
+OrderDeliveredEmailTemplate --|> BaseEmailTemplate
+OrderCancelledEmailTemplate --|> BaseEmailTemplate
+PaymentConfirmedEmailTemplate --|> BaseEmailTemplate
+
+OrderNotificationConsumer ..> BaseEmailTemplate : builds + emails
+OrderNotificationConsumer ..> Notification : persists
+PaymentNotificationConsumer ..> BaseEmailTemplate : builds + emails
+PaymentNotificationConsumer ..> Notification : persists
+
+User "0..1" -- "0..*" FileMetadata : @ManyToOne\n(uploadedBy)
+FileMetadata -- FileType
+FileMetadata -- EntityType
+FileStorageService ..> FileMetadata : creates
+FileStorageService ..> StorageFolder : uses
+
+note bottom of BaseEmailTemplate
+  Template Method pattern: render() is final
+  and fixes the HTML shell; each subclass only
+  supplies the subject line and inner body markup.
+end note
+
+note bottom of OrderNotificationConsumer
+  Consumes flowmerce.order (RabbitMQ). For each
+  event it does three things: persists a
+  Notification row, sends an email via the
+  matching template, and pushes an SSE update
+  (UserManagement.SseService — see the
+  Component Diagram, not this class diagram) —
+  all three, not a fallback chain.
+end note
+
+note bottom of FileStorageService
+  Only two controllers actually call this:
+  common.UploadController (/uploads) and
+  FileStorage.FileUploadController (/api/files).
+  Every other module just stores the returned
+  fileUrl string — none of them call MinIO
+  directly (see e.g. ProductManagement.ProductMedia
+  in the Catalog & Inventory diagram).
+end note
+
+note right of StorageFolder
+  AI_ASSETS folder exists but is unused —
+  the AI Assistant lives entirely in the Next.js
+  frontend (see Component Diagram), not the backend.
+end note
+
+note bottom of ApiResponse
+  Generic envelope every controller in every
+  module wraps its response body in:
+  { success, data, message }.
+end note
+
+@enduml

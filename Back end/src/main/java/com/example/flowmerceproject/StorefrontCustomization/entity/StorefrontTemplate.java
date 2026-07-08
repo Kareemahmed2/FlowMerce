@@ -4,6 +4,8 @@ import com.example.flowmerceproject.StoreMangement.entity.Store;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
@@ -45,6 +47,7 @@ public class StorefrontTemplate {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false, unique = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Store store;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

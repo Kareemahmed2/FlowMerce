@@ -1,6 +1,9 @@
 package com.example.flowmerceproject.UserManagement.service;
 
+import com.example.flowmerceproject.CartManagement.repository.ShoppingCartRepository;
+import com.example.flowmerceproject.CartManagement.repository.WishlistRepository;
 import com.example.flowmerceproject.NotificationManagement.repository.NotificationRepository;
+import com.example.flowmerceproject.ProductManagement.repository.ReviewRepository;
 import com.example.flowmerceproject.StoreMangement.repository.StoreRepository;
 import com.example.flowmerceproject.UserManagement.dto.ChangePasswordRequest;
 import com.example.flowmerceproject.UserManagement.dto.UpdateProfileRequest;
@@ -48,6 +51,9 @@ public class UserService {
     private final ShipmentRepository shipmentRepository;
     private final WalletRepository walletRepository;
     private final WalletTransactionRepository walletTransactionRepository;
+    private final ShoppingCartRepository shoppingCartRepository;
+    private final WishlistRepository wishlistRepository;
+    private final ReviewRepository reviewRepository;
 
     public UserResponse getMyProfile(String email) {
         return toResponse(findByEmailOrThrow(email));
@@ -95,9 +101,7 @@ public class UserService {
     @Transactional
     public String deleteMyAccount(String email) {
         User user = findByEmailOrThrow(email);
-        sessionCacheService.evictAllForUser(user.getUserId());
-        sessionRepository.revokeAllByUserId(user.getUserId());
-        userRepository.delete(user);
+        deleteUserById(user.getUserId());
         return "Account deleted successfully.";
     }
 
@@ -132,11 +136,16 @@ public class UserService {
         userProfileRepository.findByUser_UserId(userId)
                 .ifPresent(userProfileRepository::delete);
 
-        // 4. Customer profile: delete wallet transactions + wallet (if any), then the
-        //    customer's orders' dependents (shipments, payments) then the orders
-        //    themselves, then the customer row itself (reviews/wishlist/cart already
-        //    cascade from the customers table via DB ON DELETE CASCADE).
+        // 4. Customer profile: delete reviews, wishlist entries and shopping carts
+        //    (Hibernate's ddl-auto=update generates these FKs as NO ACTION, not the
+        //    ON DELETE CASCADE that schema.sql declares, since schema.sql never runs
+        //    against the live DB - so these must be deleted explicitly), then wallet
+        //    transactions + wallet (if any), then the customer's orders' dependents
+        //    (shipments, payments) then the orders themselves, then the customer row.
         customerRepository.findByUser_UserId(userId).ifPresent(customer -> {
+            reviewRepository.deleteAll(reviewRepository.findByCustomer_CustomerId(customer.getCustomerId()));
+            wishlistRepository.deleteAll(wishlistRepository.findByCustomer_CustomerId(customer.getCustomerId()));
+            shoppingCartRepository.deleteAll(shoppingCartRepository.findByCustomer_CustomerId(customer.getCustomerId()));
             deleteWalletAndTransactions(walletRepository.findByCustomer_CustomerId(customer.getCustomerId()));
             orderRepository.findByCustomer_CustomerIdOrderByOrderDateDesc(customer.getCustomerId())
                     .forEach(this::deleteOrderDependentsThenOrder);

@@ -57,14 +57,14 @@ FlowMerce is a smart e-commerce platform builder for SMEs. Its core differentiat
 
 | Layer | Technology |
 |-------|-----------|
-| Backend | Spring Boot 4.0 (Jackson 3) · Java 21 |
+| Backend | Spring Boot 4.0.2 (Jackson 3) · Java 21 |
 | Frontend | Next.js 14 · TypeScript |
 | Database | PostgreSQL (Supabase, EU-West-1, via Supavisor session pooler) |
 | Cache | Redis (`redis/redis-stack`) — accessed exclusively via `StringRedisTemplate`, no `@Cacheable`/Spring Cache abstraction |
 | Message Queue | RabbitMQ (topic exchanges, JSON payloads via `Jackson2JsonMessageConverter`) |
-| File Storage | MinIO (S3-compatible) — runs on its own host, decoupled from `compose.yaml` |
+| File Storage | MinIO (S3-compatible) — runs as its own service **in** `compose.yaml`, not external |
 | Real-time push | Server-Sent Events (`SseEmitter`) — no WebSockets |
-| AI | Groq API (planned — see [AI Assistant](#12-ai-assistant)) |
+| AI | Groq API — **implemented, but entirely in the Next.js frontend** as a BFF proxy route (`app/api/ai/chat`); the Spring backend has no AI code at all (see [AI Assistant](#12-ai-assistant)) |
 | Auth | JWT + refresh-token rotation + RBAC, plus Google/Facebook OAuth2 for merchants |
 | Encryption | AES-256-GCM for per-store third-party credentials (IntegrationManagement) |
 | Testing | JUnit 5 · Mockito · MockMvc standalone (see [Testing](#testing)) |
@@ -76,14 +76,16 @@ FlowMerce is a smart e-commerce platform builder for SMEs. Its core differentiat
 ```
 [Next.js 14 Frontend]
         │
+        ├── app/api/ai/chat (Next.js API route, BFF)  ──▶ Groq API
+        │   (same-origin + rate-limit guarded; never touches the Spring backend)
+        │
         ▼ REST (JSON)
 [Spring Boot Backend]   ─── base path: /api/v1
         │
         ├── PostgreSQL (Supabase)   — persistent data
         ├── Redis                   — session cache, storefront cache, stock cache, idempotency keys
         ├── RabbitMQ                — async order/payment events → notifications
-        ├── MinIO                   — product images, store logos, invoices (separate host)
-        └── Groq API                — AI advisor (proxied, server-side — not yet implemented)
+        └── MinIO                   — product images, store logos, invoices (runs in compose.yaml)
 ```
 
 **Module structure:** All modules live in the same Spring Boot application under `com.example.flowmerceproject.*`. They communicate via:
@@ -123,12 +125,13 @@ The app starts on `http://localhost:8080`. All routes are prefixed with `/api/v1
 |---------|-------|-------|
 | redis | `redis/redis-stack:latest` | 6379 (API) · 8001 (RedisInsight UI) |
 | rabbitmq | `rabbitmq:3-management` | 5672 (AMQP) · 15672 (Management UI) |
-| backend | Spring Boot (Dockerfile) | 8080 |
-| frontend | Next.js (Dockerfile) | 3000 |
+| minio | `minio/minio:latest` | 9000 (S3 API) · 9001 (console) |
+| backend | Spring Boot (Dockerfile), `depends_on` all three above | 8080 |
+| frontend | Next.js (Dockerfile), `depends_on` backend | 3000 |
 
 > The live application connects to **Supabase** (configured in `application.properties`). The compose stack does not include a local Postgres — use the Supabase connection string for all environments.
 >
-> **MinIO is not run by `compose.yaml`** — it runs on its own host/stack (a separate `docker-compose.yaml`, or a managed S3-compatible provider). Set `MINIO_URL` (internal endpoint the backend connects to) and `MINIO_PUBLIC_URL` (the HTTPS host browsers hit — files are served with a public-read bucket policy directly to the browser) plus `MINIO_ACCESS_KEY`/`MINIO_SECRET_KEY`/`MINIO_BUCKET` in `Back end/.env`.
+> **MinIO runs as its own service in `compose.yaml`** alongside redis/rabbitmq — it is not external. `MINIO_URL` is the internal endpoint the backend connects to (`http://minio:9000` inside the compose network); `MINIO_PUBLIC_URL` is the HTTPS host browsers hit if it differs (files are served with a public-read bucket policy directly to the browser). Set `MINIO_ACCESS_KEY`/`MINIO_SECRET_KEY`/`MINIO_BUCKET` in `Back end/.env` to match the `minio` service's `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD`.
 
 ---
 
@@ -232,7 +235,8 @@ Handles registration, login, email verification, password reset, JWT issuance, a
 |--------|------|------|-------------|
 | `POST` | `/auth/merchant/register` | Public | Register merchant account |
 | `GET`  | `/auth/merchant/activate?token=` | Public | Activate merchant account |
-| `POST` | `/auth/merchant/login` | Public | Login, returns JWT + refresh token |
+| `POST` | `/auth/merchant/login` | Public | Login, returns JWT + refresh token — or, if `isMfaEnabled`, returns `{mfaRequired: true, mfaToken}` and emails a 6-digit code instead |
+| `POST` | `/auth/merchant/mfa/verify` | Public | Complete MFA login: `{mfaToken, code}` → same JWT+refresh+cookie response as a normal login |
 | `POST` | `/auth/merchant/refresh` | Public | Rotate refresh token (single-use), issue new access token |
 | `POST` | `/auth/merchant/logout` | Public | Revoke session (Authorization header or cookie) |
 | `GET`  | `/auth/merchant/me` | Authenticated | Get current merchant profile |
@@ -245,7 +249,8 @@ Handles registration, login, email verification, password reset, JWT issuance, a
 |--------|------|------|-------------|
 | `POST` | `/auth/customer/register` | Public | Register customer account |
 | `GET`  | `/auth/customer/activate?token=` | Public | Activate customer account |
-| `POST` | `/auth/customer/login` | Public | Login, returns JWT + refresh token |
+| `POST` | `/auth/customer/login` | Public | Login, returns JWT + refresh token — or, if `isMfaEnabled`, returns `{mfaRequired: true, mfaToken}` and emails a 6-digit code instead |
+| `POST` | `/auth/customer/mfa/verify` | Public | Complete MFA login: `{mfaToken, code}` → same JWT+refresh+cookie response as a normal login |
 | `POST` | `/auth/customer/refresh` | Public | Rotate refresh token |
 | `POST` | `/auth/customer/logout` | Public | Revoke session |
 | `GET`  | `/auth/customer/me` | Authenticated | Get current customer profile |
@@ -266,10 +271,11 @@ Social login always creates/resolves a **MERCHANT** account — it never creates
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| `GET`  | `/users/me` | Authenticated | Get own profile |
+| `GET`  | `/users/me` | Authenticated | Get own profile (now includes `isMfaEnabled`) |
 | `PUT`  | `/users/me` | Authenticated | Update profile |
 | `PUT`  | `/users/me/change-password` | Authenticated | Change password |
-| `DELETE` | `/users/me` | Authenticated | Delete own account (thinner cleanup than the admin delete path — see [Known Issues](#known-issues--gaps)) |
+| `PUT`  | `/users/me/mfa` | Authenticated | Toggle email-based MFA on/off (`{enabled}`), persists `User.isMfaEnabled` |
+| `DELETE` | `/users/me` | Authenticated | `UserService.deleteMyAccount` — only evicts session cache + deletes the `User` row; no cleanup of notifications/profile/Customer/Merchant/stores/orders/payments/shipments/wallets, even after the admin delete path was hardened (see [Known Issues](#known-issues--gaps)) |
 
 **Merchant profile endpoints** (`MerchantController` at `/merchants`):
 
@@ -277,22 +283,24 @@ Social login always creates/resolves a **MERCHANT** account — it never creates
 |--------|------|------|-------------|
 | `POST` | `/merchants/me` | Authenticated | Create merchant profile |
 | `GET`  | `/merchants/me` | Authenticated | Get own merchant profile |
-| `DELETE` | `/merchants/me` | Authenticated | Delete merchant account |
+| `DELETE` | `/merchants/me` | Authenticated | Full cascade: every store's orders (shipment+payment cleanup, then the order) then the store, then the merchant's wallet+transactions, then the merchant row, then sessions/notifications/profile/user — same depth as the admin delete path |
 
 **Admin endpoints** (`AdminController` at `/admin`):
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | `GET`  | `/admin/users` | ADMIN | List all users |
-| `DELETE` | `/admin/users/{userId}` | ADMIN | Delete user by ID (cascades sessions, notifications, profile, customer/merchant, stores) |
+| `DELETE` | `/admin/users/{userId}` | ADMIN | Delete user by ID — full cascade: sessions, notifications, profile, then (if customer) wallet+transactions and every order's shipment+payment then the order, then the customer row; then (if merchant) every store's orders (same shipment/payment cleanup) then the store, then the merchant's wallet+transactions, then the merchant row; finally the user row |
 | `GET`  | `/admin/merchants` | ADMIN | List all merchants |
 | `PUT`  | `/admin/merchants/{merchantId}/verify` | ADMIN | Verify/approve merchant |
-| `DELETE` | `/admin/merchants/{merchantId}` | ADMIN | Delete merchant by ID |
+| `DELETE` | `/admin/merchants/{merchantId}` | ADMIN | Delete merchant by ID — same full cascade as above (stores→orders→shipments/payments, wallet+transactions) before deleting the merchant + user rows |
 | `PUT`  | `/admin/users/{userId}/activate` | ADMIN | Force-activate a user, bypassing the email flow |
 | `GET`  | `/admin/stores` | ADMIN | List all stores |
 
 **Verification token types:** `ACTIVATION` (24h) · `PASSWORD_RESET` (1h)
 Tokens are single-use, have an `expires_at`, and are stored in `verification_tokens`.
+
+**MFA (email-based 2FA):** real and wired end-to-end. `AuthService.login()` checks `isMfaEnabled` before issuing tokens; if set, it generates a 6-digit code, stores it in Redis as `mfa:{mfaToken}` (5 min TTL, invalidated after 5 failed attempts), emails it, and responds with `{mfaRequired: true, mfaToken}` instead of tokens. `POST /auth/{merchant,customer}/mfa/verify` completes the login once the code is confirmed.
 
 ---
 
@@ -576,8 +584,10 @@ Manages the merchant's customer-facing store design: theme colors, pages, and pa
 ```
 flowmerce:sf:{storeId}          → full storefront (theme + pages + components), TTL = SF_CACHE_TTL_MINUTES (default 30 min)
 flowmerce:sf:design:{storeId}   → design/theme only, same TTL
-flowmerce:own:{storeId}:{email} → merchant ID (ownership fast-path), fixed 60 s TTL, no explicit eviction — relies purely on expiry
+flowmerce:own:{storeId}:{email} → merchant ID (ownership fast-path), fixed 60 s TTL
 ```
+
+All three keys above are also explicitly evicted together (`evictAllCacheForStore`) whenever a store is hard-deleted (`DELETE /stores/{storeId}`), so a deleted store's public page/design/ownership-check don't stay servable for the remaining TTL. Outside of store deletion, the ownership cache still has no other eviction hook (moot today — there's no ownership-transfer feature).
 
 **Entity hierarchy:**
 ```
@@ -694,16 +704,14 @@ Stores and tests **per-store** third-party credentials for payment (Paymob) and 
 
 ### 12. AI Assistant
 
-Planned feature: proxy requests to the Groq API server-side, enriching the system prompt with store context (brand name, hex colors, category names, WCAG contrast ratios) to prevent the API key from being exposed to the frontend. Cache repeated pattern questions in Redis (TTL 1 hour).
+**Implemented — but entirely in the Next.js frontend, not the Spring backend.** There is no `/ai/*` path under `/api/v1`, no AI controller, and no Redis caching of AI responses in the backend at all. The real implementation is `frontend/app/api/ai/chat/route.ts`, a Next.js API route acting as a same-origin BFF (backend-for-frontend) proxy directly to Groq:
 
-> **Status:** No AI controller exists in the current codebase. The `ai_suggestions` table is present in the database schema (and cascades on store delete), but the `/ai/*` endpoints are not yet implemented.
+- **Guardrail system prompt**, hardcoded server-side and always prepended first: scopes the assistant to FlowMerce store-building topics (store setup, storefront design, products, pricing, e-commerce guidance) and instructs it never to reveal its own instructions/env vars/guardrail or accept role/rule changes. Any client-supplied `system` string is demoted below it and length-capped (4,000 chars).
+- **CSRF / abuse controls**: same-origin enforcement (`Origin`/`Referer` host must match the request host — rejects requests with neither), an in-memory per-IP sliding-window rate limit (20 requests / 60s), and conversation-size caps (≤20 messages, ≤8,000 chars each).
+- **Model call:** `POST https://api.groq.com/openai/v1/chat/completions`, model `llama-3.3-70b-versatile`, `max_tokens: 550`, `temperature: 0.25`, using the server-only `GROQ_API_KEY` env var (never exposed to the browser). If the key isn't configured, it returns a friendly "AI is not configured" message instead of erroring.
+- **No store-context enrichment** (brand colors, category names, WCAG contrast) and **no answer caching** — both were part of an earlier plan for a backend-hosted version of this feature that was never built; the shipped implementation is a simpler direct proxy.
 
-**Planned endpoints:**
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| `POST` | `/ai/chat` | MERCHANT | Send message to AI advisor |
-| `GET`  | `/ai/suggestions/{storeId}` | MERCHANT | Get stored suggestions for store |
+The `ai_suggestions` and `reports` tables exist in `schema.sql` (and correctly cascade on store delete, per the FK table below), but nothing in the codebase reads or writes them — they're dead schema left over from the original backend-hosted design, not a partially-built feature.
 
 ---
 
@@ -855,7 +863,7 @@ Unlike Stripe/Fawry (single global API key via env var), Paymob and the shipping
 `WalletSimulationAdapter` and `WalletService` simulate wallet debit/credit for demo purposes. The wallet is not connected to a real financial network.
 
 **Storefront Cache — Cache-Aside + Write-Behind**
-Public reads (`GET /public/storefront/{storeId}`) are cache-aside via `flowmerce:sf:{storeId}` with a 30-minute TTL, falling back to DB on miss. Merchant writes to design/theme go to Redis immediately (synchronous), then a separate `@Async` bean writes to PostgreSQL in the background — the HTTP response returns before the DB commit completes. A short-lived (60s) ownership cache additionally lets repeat merchant writes skip the DB entirely when both ownership and design are already warm.
+Public reads (`GET /public/storefront/{storeId}`) are cache-aside via `flowmerce:sf:{storeId}` with a 30-minute TTL, falling back to DB on miss. Merchant writes to design/theme go to Redis immediately (synchronous), then a separate `@Async` bean writes to PostgreSQL in the background — the HTTP response returns before the DB commit completes. A short-lived (60s) ownership cache additionally lets repeat merchant writes skip the DB entirely when both ownership and design are already warm. All three cache keys are explicitly evicted together on store hard-delete.
 
 **Cart Scoping**
 Each cart is scoped to a `(customer, store)` pair. A customer browsing two different stores maintains two independent carts. Carts expire after 7 days of inactivity.
@@ -873,7 +881,7 @@ Both `/orders/place` and `/payments/initiate` accept a client-supplied idempoten
 The `inventory` table has a `version` column managed by JPA `@Version` — concurrent adjustments to the same product fail all but one with a retry-me exception. On top of that, `reserveStock` does an atomic Redis `DECRBY` against a per-product cached counter (rolled back with `INCRBY` on failure) so the overselling check itself doesn't need to round-trip Postgres on the hot path.
 
 **Authentication — Role-Split Controllers**
-Auth is split across two controllers: `AuthController` (`/auth/merchant/*`) for merchants and `CustomerAuthController` (`/auth/customer/*`) for customers, plus `SocialAuthController` (`/auth/social/*`) for Google/Facebook merchant login. Profile and password management live in `UserController` (`/users/me`). Merchant profile CRUD is in `MerchantController` (`/merchants/me`). Note: `SecurityConfig` still `permitAll()`s the bare `/auth/activate` and `/auth/reset-password` paths from an earlier unification attempt, but no controller handles them — see [Known Issues](#known-issues--gaps).
+Auth is split across two controllers: `AuthController` (`/auth/merchant/*`) for merchants and `CustomerAuthController` (`/auth/customer/*`) for customers, plus `SocialAuthController` (`/auth/social/*`) for Google/Facebook merchant login. Profile and password management live in `UserController` (`/users/me`), which also now hosts the real MFA toggle (`PUT /users/me/mfa`). Merchant profile CRUD is in `MerchantController` (`/merchants/me`). Note: `SecurityConfig` still `permitAll()`s the bare `/auth/activate` and `/auth/reset-password` paths from an earlier unification attempt, but no controller handles them — see [Known Issues](#known-issues--gaps).
 
 **CORS**
 `SecurityConfig` allows `http://localhost:*`, `https://*.flowmerce.tech`, and the configured `FRONTEND_URL`. Credentials (cookies + `Authorization` header) are permitted.
@@ -915,8 +923,10 @@ The ownership verification step was isolated into a Redis-backed cache. On the f
 ```
 Key:    flowmerce:own:{storeId}:{email}
 Value:  merchant ID (string)
-TTL:    60 seconds, fixed — no explicit eviction on ownership changes
+TTL:    60 seconds, fixed
 ```
+
+Explicitly evicted (alongside the two storefront cache keys) when the owning store is hard-deleted (`StoreService.deleteStore` → `evictAllCacheForStore`); no other event evicts it early, so it otherwise expires purely on the 60s TTL.
 
 On a cache hit, `getStoreAndVerifyOwner` returns immediately without re-verifying ownership against the database. Storefront write operations (`saveDesign`, `updateTheme`) detect the cache hit and dispatch the database persistence asynchronously via `@Async`, returning a 200 OK to the client before the write completes.
 
@@ -1307,13 +1317,13 @@ Found while auditing the actual source against this document (full detail with f
 - **Orphaned routes**: `SecurityConfig` still `permitAll()`s `/auth/activate` and `/auth/reset-password`, but no controller serves them (a leftover from an earlier unification attempt) — requests 404. Activation/reset emails correctly link to frontend routes instead.
 - **`payment.webhooks` queue and `wallet.debited`/`wallet.credited` routing keys** are fully wired but have no producer and no consumer — dead scaffolding.
 - **`OrderNotificationConsumer`'s `PROCESSING` branch** is unreachable — no `OrderStatus` value or transition produces it.
-- **Ownership cache (`flowmerce:own:`) has no explicit eviction** — a store-ownership change only takes effect after its 60s TTL lapses.
+- **Ownership cache (`flowmerce:own:`) eviction is store-delete-only** — hard-deleting a store evicts it (and both storefront cache keys) immediately; there's still no eviction hook for any other ownership-affecting event, though none exists today (no ownership-transfer feature).
 - **Storefront media add/delete don't evict the public cache** — unlike every other mutating storefront endpoint.
 - **`ReviewController`'s ADMIN delete branch is non-functional** — the service always resolves the caller as a `Customer` and throws for an admin caller despite the `@PreAuthorize` allowing it.
 - **`StoreCategoryController` has no ownership check** — any authenticated MERCHANT can create/delete categories under any `storeId`.
 - **`InventoryController`'s store-inventory listing** likewise has no ownership check.
-- **`UserService.deleteMyAccount` (self-delete)** is thinner than the admin delete path — no cascade cleanup of `Customer`/`Merchant`/`Store`/`UserProfile`/notifications.
+- **`UserService.deleteMyAccount` (self-delete via `DELETE /users/me`)** is still thinner than the admin delete path — only evicts session cache + deletes the `User` row, with no cascade cleanup of notifications/profile/Customer/Merchant/stores/orders/payments/shipments/wallets. The admin (`deleteUserById`) and merchant self-delete (`DELETE /merchants/me`) paths were both hardened to the full cascade, but this specific method was not touched by that fix and remains the one thin path.
 - **`GET /api/files` has no role restriction**, unlike every sibling endpoint in `FileUploadController`.
-- **MFA is scaffolded but unimplemented** — `MfaVerifyRequest` DTO and `User.isMfaEnabled` exist with no backing endpoint.
+- ~~MFA is scaffolded but unimplemented~~ — **fixed**: MFA (email-based 2FA) is now real and wired end-to-end, see the MFA paragraph under [UserManagement](#1-usermanagement).
 - **`/stream/stock` is not actually merchant-scoped** despite its code comment claiming so — every authenticated user receives every stock event.
 - **`/uploads` POST/GET storage-backend mismatch** — the generic `common/UploadController` POST writes to MinIO, but its GET still serves from local disk; callers should use the MinIO URL returned by the POST rather than the GET.

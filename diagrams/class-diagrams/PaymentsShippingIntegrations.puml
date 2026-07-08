@@ -1,0 +1,335 @@
+@startuml PaymentsShippingIntegrations_Class_Diagram
+title Payments, Shipping & Integrations\nClass Diagram
+
+skinparam backgroundColor #FFFFFF
+skinparam classFontSize 18
+skinparam classAttributeFontSize 15
+skinparam class {
+  BackgroundColor #EAF2FF
+  BorderColor #1A73E8
+  ArrowColor #444444
+}
+skinparam nodesep 20
+skinparam ranksep 30
+left to right direction
+
+' ── PaymentManagement ─────────────────────────────────────────────────────────
+
+class Payment {
+  -Integer paymentId
+  -String paymentMethod
+  -PaymentStatus paymentStatus
+  -BigDecimal amount
+  -String currency = "EGP"
+  -String idempotencyKey
+  -String gateway
+  -String transactionReference
+  -String failureReason
+  -String gatewayResponse
+  -String redirectUrl
+  -LocalDateTime paidAt
+  -LocalDateTime createdAt
+  -LocalDateTime updatedAt
+}
+
+enum "Payment.PaymentStatus" as PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+class Wallet {
+  -Integer walletId
+  -OwnerType ownerType
+  -BigDecimal balance = 0
+  -String currency = "EGP"
+  -Boolean isActive = true
+  -LocalDateTime createdAt
+}
+
+enum "Wallet.OwnerType" as OwnerType {
+  CUSTOMER
+  MERCHANT
+}
+
+class WalletTransaction {
+  -Long transactionId
+  -BigDecimal amount
+  -TransactionType type
+  -ReferenceType referenceType
+  -Integer referenceId
+  -BigDecimal balanceAfter
+  -String description
+  -LocalDateTime createdAt
+}
+
+enum "WalletTransaction.TransactionType" as TxType {
+  CREDIT
+  DEBIT
+}
+enum "WalletTransaction.ReferenceType" as RefType {
+  PAYMENT
+  REFUND
+  TOPUP
+  ADJUSTMENT
+}
+
+class PaymentServiceImpl {
+  -List<PaymentGatewayAdapter> gateways
+  +initiatePayment(...) : PaymentResponse
+}
+
+interface PaymentGatewayAdapter <<Strategy>> {
+  +getProviderName() : String
+  +supports(method) : boolean
+  +process(...) : GatewayResult
+  +refund(...) : GatewayResult
+}
+
+class GatewayResult {
+  -boolean success
+  -PaymentStatus status
+  -String transactionReference
+  -String gatewayResponse
+  -String redirectUrl
+  -String failureReason
+}
+
+class BankTransferAdapter <<real, internal>> {
+}
+class CashOnDeliveryAdapter <<real, internal>> {
+}
+class WalletSimulationAdapter <<real, internal>> {
+}
+class PaymobAdapter <<real, per-store\nvia RestTemplate>> {
+}
+class FawryAdapter <<STUB — TODO body>> {
+}
+class StripeAdapter <<STUB — TODO body>> {
+}
+
+' ── ShippingManagement ────────────────────────────────────────────────────────
+
+class Shipment {
+  -Integer shipmentId
+  -Carrier carrier
+  -String trackingNumber
+  -ShipmentStatus status
+  -String labelUrl
+  -String carrierResponse
+  -String failureReason
+  -LocalDateTime createdAt
+  -LocalDateTime updatedAt
+}
+
+enum "Shipment.Carrier" as Carrier {
+  DHL
+  ARAMEX
+  BOSTA
+}
+
+enum "Shipment.ShipmentStatus" as ShipmentStatus {
+  CREATED
+  IN_TRANSIT
+  DELIVERED
+  FAILED
+  CANCELLED
+}
+
+class ShippingService {
+  -List<ShippingCarrierAdapter> carriers
+  +createShipmentForOrder(...) : Shipment
+}
+
+interface ShippingCarrierAdapter <<Strategy>> {
+  +getProviderName() : String
+  +supports(carrier) : boolean
+  +createShipment(...) : ShippingResult
+  +track(...) : ShippingResult
+}
+
+class ShippingResult {
+  -boolean success
+  -ShipmentStatus status
+  -String trackingNumber
+  -String labelUrl
+  -String carrierResponse
+  -String failureReason
+}
+
+class DhlAdapter {
+}
+class AramexAdapter {
+}
+class BostaAdapter {
+}
+
+' ── IntegrationManagement ─────────────────────────────────────────────────────
+
+class StoreIntegration {
+  -Integer integrationId
+  -Provider provider
+  -boolean enabled = false
+  -String credentialsEncrypted
+  -LocalDateTime lastVerifiedAt
+  -VerificationStatus lastVerifiedStatus
+  -LocalDateTime createdAt
+  -LocalDateTime updatedAt
+}
+
+enum "StoreIntegration.Provider" as Provider {
+  PAYMOB
+  DHL
+  ARAMEX
+  BOSTA
+}
+
+enum "StoreIntegration.VerificationStatus" as VerificationStatus {
+  UNVERIFIED
+  SUCCESS
+  FAILED
+}
+
+class CredentialEncryptionService {
+  -SecretKeySpec key
+  +encrypt(String plaintext) : String
+  +decrypt(String packedBase64) : String
+}
+
+class IntegrationCredentialResolver {
+  +resolve(storeId, Provider)\n  : Optional<Map>
+}
+
+class RequiredCredentialFields <<static registry>> {
+  {static} +REQUIRED : Map
+  {static} +validate(...)
+  {static} +previewField(...) : String
+}
+
+interface IntegrationTestConnectionProbe <<Strategy>> {
+  +getProvider() : Provider
+  +test(...) : TestConnectionResponse
+}
+
+class PaymobTestConnectionProbe {
+}
+class DhlTestConnectionProbe {
+}
+class AramexTestConnectionProbe {
+}
+class BostaTestConnectionProbe {
+}
+
+' ── External (Identity & Access, Store & Storefront, Cart & Order) ──────────
+
+class "IdentityAccess.Customer" as Customer {
+  (see Identity & Access diagram)
+}
+class "IdentityAccess.Merchant" as Merchant {
+  (see Identity & Access diagram)
+}
+class "StoreAndStorefront.Store" as Store {
+  (see Store & Storefront diagram)
+}
+class "CartAndOrderFulfillment.Order" as Order {
+  (see Cart & Order Fulfillment diagram)
+}
+
+' ── Relationships: Payment ────────────────────────────────────────────────────
+
+Order "1" -- "0..*" Payment : @ManyToOne
+Payment -- PaymentStatus
+Wallet "0..1" -- "1" Customer : @OneToOne
+Wallet "0..1" -- "1" Merchant : @OneToOne
+Wallet -- OwnerType
+Wallet "1" -- "0..*" WalletTransaction : @ManyToOne
+WalletTransaction -- TxType
+WalletTransaction -- RefType
+
+PaymentServiceImpl --> PaymentGatewayAdapter : selects by\nsupports(method)
+BankTransferAdapter ..|> PaymentGatewayAdapter
+CashOnDeliveryAdapter ..|> PaymentGatewayAdapter
+WalletSimulationAdapter ..|> PaymentGatewayAdapter
+PaymobAdapter ..|> PaymentGatewayAdapter
+FawryAdapter ..|> PaymentGatewayAdapter
+StripeAdapter ..|> PaymentGatewayAdapter
+PaymentGatewayAdapter ..> GatewayResult : returns
+
+' ── Relationships: Shipping ───────────────────────────────────────────────────
+
+Order "1" -- "0..1" Shipment : @OneToOne
+Shipment -- Carrier
+Shipment -- ShipmentStatus
+ShippingService --> ShippingCarrierAdapter : selects by\nsupports(carrier)
+DhlAdapter ..|> ShippingCarrierAdapter
+AramexAdapter ..|> ShippingCarrierAdapter
+BostaAdapter ..|> ShippingCarrierAdapter
+ShippingCarrierAdapter ..> ShippingResult : returns
+
+' ── Relationships: Integration ────────────────────────────────────────────────
+
+Store "1" -- "0..*" StoreIntegration : @ManyToOne\nUNIQUE(store_id, provider)
+StoreIntegration -- Provider
+StoreIntegration -- VerificationStatus
+IntegrationCredentialResolver --> StoreIntegration : reads
+IntegrationCredentialResolver --> CredentialEncryptionService : decrypts via
+PaymobTestConnectionProbe ..|> IntegrationTestConnectionProbe
+DhlTestConnectionProbe ..|> IntegrationTestConnectionProbe
+AramexTestConnectionProbe ..|> IntegrationTestConnectionProbe
+BostaTestConnectionProbe ..|> IntegrationTestConnectionProbe
+
+' ── The cross-module link that justifies this grouping ───────────────────────
+
+PaymobAdapter --> IntegrationCredentialResolver : resolves this store's\nPaymob creds directly
+ShippingService --> IntegrationCredentialResolver : resolves this store's\ncarrier creds, then\npasses the plain Map\ninto adapter.createShipment()
+
+note bottom of PaymentGatewayAdapter
+  Own javadoc calls this a
+  "Strategy interface" despite
+  the "Adapter" naming. Redis
+  payment:idempotency:{key}
+  dedupes calls before any
+  adapter runs (in
+  PaymentServiceImpl).
+end note
+
+note bottom of FawryAdapter
+  Fawry and Stripe are
+  genuine stubs (TODO bodies,
+  no real HTTP calls) — only
+  Paymob is wired to a real
+  gateway.
+end note
+
+note bottom of ShippingCarrierAdapter
+  Unlike PaymobAdapter, the
+  carrier adapters never call
+  IntegrationCredentialResolver
+  themselves — ShippingService
+  resolves creds once and
+  passes the Map into
+  createShipment().
+end note
+
+note bottom of CredentialEncryptionService
+  AES/256/GCM/NoPadding.
+  Stored format: Base64(IV[12]
+  || ciphertext+tag). Key from
+  integration.encryption-key,
+  no inline default (fails
+  fast if unset).
+end note
+
+note bottom of StoreIntegration
+  One row per (store,
+  provider). No shared/global
+  provider account — every
+  outbound call uses the
+  owning store's own
+  encrypted credentials.
+end note
+
+@enduml

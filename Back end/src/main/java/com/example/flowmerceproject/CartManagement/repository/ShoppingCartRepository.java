@@ -22,4 +22,6 @@ public interface ShoppingCartRepository extends JpaRepository<ShoppingCart, Inte
     boolean existsByCustomer_CustomerIdAndStore_StoreId(Integer customerId, Integer storeId);
 
     List<ShoppingCart> findByExpiresAtBefore(LocalDateTime now);
+
+    List<ShoppingCart> findByCustomer_CustomerId(Integer customerId);
 }

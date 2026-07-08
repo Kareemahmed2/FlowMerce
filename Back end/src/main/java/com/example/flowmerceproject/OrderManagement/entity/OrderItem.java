@@ -3,6 +3,8 @@ package com.example.flowmerceproject.OrderManagement.entity;
 import com.example.flowmerceproject.ProductManagement.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
 
@@ -20,6 +22,7 @@ public class OrderItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)

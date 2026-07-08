@@ -1,0 +1,184 @@
+@startuml StoreAndStorefront_Class_Diagram
+title Store & Storefront (StoreManagement + StorefrontCustomization) — Class Diagram
+
+skinparam backgroundColor #FFFFFF
+skinparam classFontSize 18
+skinparam classAttributeFontSize 15
+skinparam class {
+  BackgroundColor #EAF2FF
+  BorderColor #1A73E8
+  ArrowColor #444444
+}
+
+' ── StoreManagement ─────────────────────────────────────────────────────────
+
+class Store {
+  -Integer storeId
+  -String storeName
+  -String storeUrl
+  -String description
+  -String logo
+  -StoreStatus status
+  -Integer currentStep
+  -String paymentMethods
+  -LocalDateTime createdAt
+}
+
+enum "Store.StoreStatus" as StoreStatus {
+  DRAFT
+  PUBLISHED
+  PAUSED
+  DEACTIVATED
+}
+
+class StoreSettings {
+  -Integer settingsId
+  -String currency = "EGP"
+  -String timezone = "UTC"
+  -String language = "en"
+  -String taxSettings
+  -String shippingSettings
+}
+
+' ── StorefrontCustomization ──────────────────────────────────────────────────
+
+class StorefrontTemplate {
+  -Long templateId
+  -StorefrontStatus status
+  -Integer version
+  -LocalDateTime publishedAt
+  -LocalDateTime createdAt
+  -LocalDateTime updatedAt
+}
+
+enum "StorefrontTemplate.StorefrontStatus" as StorefrontStatus {
+  DRAFT
+  PUBLISHED
+  PAUSED
+}
+
+class ThemeTemplate {
+  -Long themeId
+  -String background = "#FFFFFF"
+  -String header = "#1A1A2E"
+  -String footer = "#16213E"
+  -String accent = "#E94560"
+  -String text = "#1A1A1A"
+  -String card = "#F9F9F9"
+  -LocalDateTime createdAt
+  -LocalDateTime updatedAt
+}
+
+class Page {
+  -Long pageId
+  -String title
+  -String slug
+  -PageType pageType
+  -Boolean isPublished
+  -String metaDescription
+  -Integer navOrder
+  -Boolean showInNav
+  -LocalDateTime createdAt
+  -LocalDateTime updatedAt
+}
+
+enum "Page.PageType" as PageType {
+  HOME
+  ABOUT
+  CONTACT
+  CUSTOM
+}
+
+class BaseComponent {
+  -Long componentId
+  -ComponentType componentType
+  -String name
+  -String content
+  -Integer sortOrder
+  -Boolean isVisible
+  -LocalDateTime createdAt
+  -LocalDateTime updatedAt
+}
+
+enum "BaseComponent.ComponentType" as ComponentType {
+  NAVBAR
+  BREADCRUMBS
+  SEARCH_BUTTON
+  HERO_BANNER
+  PRODUCT_GRID
+  FEATURED_PRODUCT
+  TEXT_BLOCK
+  IMAGE_GALLERY
+  CALL_TO_ACTION
+  TESTIMONIALS
+  NEWSLETTER_SIGNUP
+  VIDEO_EMBED
+  DIVIDER
+  CUSTOM_HTML
+}
+
+class ComponentDecorator {
+  -Long decoratorId
+  -Integer priority
+  -String data = "{}"
+  -LocalDateTime createdAt
+  -LocalDateTime updatedAt
+}
+
+interface DecoratorComponent {
+  +String getDecoratorType()
+  +String getProperties()
+  +boolean isActive()
+  +int getPriority()
+}
+
+class StorefrontMedia {
+  -Long mediaId
+  -String url
+  -String name
+  -String mediaType = "IMAGE"
+  -LocalDateTime uploadedAt
+}
+
+' ── External (from Identity & Access group) ─────────────────────────────────
+
+class "IdentityAccess.Merchant" as Merchant {
+  (see Identity & Access diagram)
+}
+
+' ── Relationships ────────────────────────────────────────────────────────────
+
+Merchant "1" -- "0..*" Store : @ManyToOne
+Store "1" -- "1" StoreSettings : @OneToOne\ncascade=ALL, orphanRemoval
+Store "1" -- "1" StorefrontTemplate : @OneToOne
+StorefrontTemplate "1" -- "1" ThemeTemplate : @OneToOne\ncascade=ALL
+StorefrontTemplate "1" -- "0..*" Page : @OneToMany\nmappedBy storefrontTemplate
+Page "1" -- "0..*" BaseComponent : @OneToMany\nmappedBy page, ordered\nby sortOrder
+BaseComponent "1" -- "0..*" ComponentDecorator : @ManyToOne
+Store "1" -- "0..*" StorefrontMedia : @ManyToOne
+Store -- StoreStatus
+StorefrontTemplate -- StorefrontStatus
+Page -- PageType
+BaseComponent -- ComponentType
+ComponentDecorator .[#red].> DecoratorComponent : NOT implemented\n(interface has 0 implementors)
+
+note bottom of Store
+  paymentMethods / taxSettings / shippingSettings
+  are raw TEXT columns (JSON-as-string), not
+  normalized child tables or JSONB.
+end note
+
+note bottom of DecoratorComponent
+  Decorator-pattern interface exists but has
+  ZERO concrete implementations in the codebase
+  today. ComponentDecorator is a generic JPA data
+  holder (priority + JSON "data" blob) — it does
+  not actually implement this interface yet.
+end note
+
+note right of BaseComponent
+  "content" is a JSON string whose shape
+  depends on componentType — not normalized.
+end note
+
+@enduml

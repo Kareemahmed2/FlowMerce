@@ -1,0 +1,141 @@
+@startuml CartAndOrderFulfillment_Class_Diagram
+title Cart & Order Fulfillment (CartManagement + OrderManagement) — Class Diagram
+
+skinparam backgroundColor #FFFFFF
+skinparam classFontSize 18
+skinparam classAttributeFontSize 15
+skinparam class {
+  BackgroundColor #EAF2FF
+  BorderColor #1A73E8
+  ArrowColor #444444
+}
+
+' ── CartManagement ───────────────────────────────────────────────────────────
+
+class ShoppingCart {
+  -Integer cartId
+  -LocalDateTime createdAt
+  -LocalDateTime expiresAt
+}
+
+class CartItem {
+  -Integer cartItemId
+  -Integer quantity
+  -BigDecimal priceAtAdd
+  -LocalDateTime addedAt
+}
+
+class Wishlist {
+  -Integer wishlistId
+  -LocalDateTime createdAt
+}
+
+' ── OrderManagement ──────────────────────────────────────────────────────────
+
+class Order {
+  -Integer orderId
+  -OrderStatus status
+  -LocalDateTime orderDate
+  -String shippingAddress
+  -String billingAddress
+  -BigDecimal subtotal
+  -BigDecimal tax = 0
+  -BigDecimal shippingCost
+  -BigDecimal total
+  -String paymentMethod
+  -String trackingNumber
+  -String shippingCarrier
+  -String idempotencyKey
+}
+
+enum "Order.OrderStatus" as OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+class OrderItem {
+  -Integer orderItemId
+  -Integer quantity
+  -BigDecimal price
+  -BigDecimal discount = 0
+  -BigDecimal tax = 0
+}
+
+class Invoice {
+  -Integer invoiceId
+  -LocalDateTime issuedAt
+  -String invoiceNumber
+}
+
+' ── External (Identity & Access, Store & Storefront, Catalog & Inventory) ──
+
+class "IdentityAccess.Customer" as Customer {
+  (see Identity & Access diagram)
+}
+class "StoreAndStorefront.Store" as Store {
+  (see Store & Storefront diagram)
+}
+class "CatalogAndInventory.Product" as Product {
+  (see Catalog & Inventory diagram)
+}
+
+' ── Relationships ────────────────────────────────────────────────────────────
+
+Customer "1" -- "0..*" ShoppingCart : @ManyToOne
+Store "1" -- "0..*" ShoppingCart : @ManyToOne
+ShoppingCart "1" -- "0..*" CartItem : @OneToMany\ncascade=ALL, orphanRemoval
+Product "1" -- "0..*" CartItem : @ManyToOne
+Customer "1" -- "0..*" Wishlist : @ManyToOne
+Product "1" -- "0..*" Wishlist : @ManyToOne
+
+Customer "1" -- "0..*" Order : @ManyToOne
+Store "1" -- "0..*" Order : @ManyToOne
+Order "1" -- "0..*" OrderItem : @OneToMany\ncascade=ALL, orphanRemoval
+Product "1" -- "0..*" OrderItem : @ManyToOne
+Order "1" -- "0..1" Invoice : @OneToOne\ncascade=ALL
+Order -- OrderStatus : @Enumerated(STRING)
+
+ShoppingCart ..> Order : CheckoutService converts\ncart contents into an order
+
+note bottom of ShoppingCart
+  expiresAt is enforced by a scheduled
+  CartCleanupScheduler job (cron "0 0 2 * * *",
+  daily at 2 AM) — no Redis TTL/expiry key.
+end note
+
+note bottom of Wishlist
+  UNIQUE(customer_id, product_id) — a
+  customer can wishlist a given product once.
+end note
+
+note right of CartItem
+  priceAtAdd snapshots the product price at
+  the moment it was added, so later price
+  changes don't retroactively affect the cart.
+end note
+
+note bottom of Order
+  idempotencyKey is UNIQUE at the DB level —
+  backstop for OrderService's Redis fast-path
+  idempotency check (order:idempotency:{key}).
+  trackingNumber/shippingCarrier are denormalized
+  copies of ShippingManagement.Shipment fields
+  (see Payments, Shipping & Integrations diagram).
+end note
+
+note right of Invoice
+  invoiceNumber format: INV-{yyyy}-{orderId
+  zero-padded to 7 digits}, e.g. INV-2026-0000042.
+  No PDF is generated — this is a DB record only.
+end note
+
+note bottom of OrderItem
+  price/discount/tax are snapshotted at order
+  time so later product price changes don't
+  retroactively affect historical orders.
+end note
+
+@enduml

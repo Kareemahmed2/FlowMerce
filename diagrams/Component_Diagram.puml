@@ -1,0 +1,265 @@
+@startuml FlowMerce_Component_Diagram
+title FlowMerce — Component Diagram\n(verified against source, 2026-07-06)
+
+' ─────────────────────────────────────────
+' Revision notes vs. the previous draft:
+'  • Backend runtime corrected: Spring Boot 4.0.2 (Jackson 3) / Java 21 (pom.xml) — was shown as 3/17
+'  • Rate limiter: code comment says "sliding-window" but the impl (INCR + EXPIRE-on-first-hit)
+'    is a FIXED-window counter. Buckets: /auth/** 30, /uploads/** 20, everything else 300 — all per 60s
+'  • Payment: PaymentGatewayAdapter is a STRATEGY interface (its own javadoc says so) despite the name.
+'    Paymob = real, per-store credentials. Fawry AND Stripe = stubs (TODO bodies, no HTTP calls).
+'    Wallet-sim / BankTransfer / COD = real internal logic (no external gateway needed).
+'  • CORRECTED BACK (verified against current files — these 5 claims in the last draft were wrong):
+'      1. MinIO IS in compose.yaml (minio service + backend depends_on) — not a separate stack.
+'      2. AI Assistant IS implemented — frontend/app/api/ai/chat/route.ts is a working Groq proxy
+'         (guardrail prompt, per-IP rate limit, same-origin check). It's just frontend-only (BFF),
+'         never proxied through the Spring backend. Backend has zero AI code; ai_suggestions/reports
+'         tables exist in schema.sql but are unwired (no repository/controller reads them).
+'      3. ShippingManagement is its own top-level package — NOT nested inside OrderManagement.
+'      4. MFA is fully wired, not scaffolded: AuthService issues a Redis-backed email OTP
+'         (mfa:{token}, 5 min TTL, 5 attempts), verified via POST /auth/mfa/verify.
+'      5. schema.sql has a "deliveries" table but no Java entity ever touches it — dead schema,
+'         omitted from the diagram (only "shipments" is real).
+'  • New edges confirmed by reading the actual call sites:
+'      NotifySvc → SseSvc         (Order/PaymentNotificationConsumer call sseService directly)
+'      InventorySvc → SseSvc      (in-process StockChangedEvent → @EventListener → broadcast, no MQ)
+'      ProductSvc → InventorySvc  (getAvailableQuantity on read)
+'      OrderSvc → Redis           (order:idempotency:{key}, fast-path before the DB unique constraint)
+'  • Storefront ownership cache flowmerce:own:{storeId}:{email} (60s TTL) confirmed real — restored.
+'  • FileStorage: POST /uploads → MinIO, but GET /uploads/{file} → local disk only. Real bug, shown as a note.
+'  • Cart cleanup cron = "0 0 2 * * *" (2 AM daily). Invoice # format = INV-{yyyy}-{orderId, 7-digit}.
+'  • Customer Storefront subdomain rewrite ({slug}.flowmerce.tech → /store/{slug}) confirmed in middleware.ts.
+' ─────────────────────────────────────────
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontSize 18
+skinparam titleFontSize 26
+skinparam component {
+  BackgroundColor #EAF2FF
+  BorderColor #1A73E8
+  FontColor #111111
+  FontSize 18
+}
+skinparam database {
+  BackgroundColor #FFF8E1
+  BorderColor #F9A825
+  FontSize 18
+}
+skinparam cloud {
+  BackgroundColor #F3E5F5
+  BorderColor #7B1FA2
+  FontSize 18
+}
+skinparam node {
+  BackgroundColor #E8F5E9
+  BorderColor #2E7D32
+  FontSize 19
+}
+skinparam actor {
+  FontSize 18
+}
+skinparam arrow {
+  Color #444444
+  FontSize 15
+}
+skinparam linetype ortho
+skinparam nodesep 25
+skinparam ranksep 35
+
+' ─────────────────────────────────────────
+' ACTORS
+' ─────────────────────────────────────────
+actor "Merchant" as Merchant
+actor "Customer" as Customer
+actor "Admin" as Admin
+
+' ─────────────────────────────────────────
+' FRONTEND LAYER
+' ─────────────────────────────────────────
+node "Frontend — Next.js 14 / TypeScript" {
+  component "Merchant Dashboard\n(Analytics is client-\ncomputed from Order/\nProduct REST data —\nno backend Analytics\nservice; ai_suggestions/\nreports tables unwired)" as MerchantUI
+  component "Customer Storefront\n(subdomain rewrite via\nmiddleware.ts:\n{slug}.flowmerce.tech\n→ /store/{slug})" as CustomerUI
+  component "Admin Panel" as AdminUI
+  component "AI Assistant Route\n(app/api/ai/chat —\nNext.js API route,\nreal BFF, IMPLEMENTED)\nsame-origin check\nper-IP rate limit\nguardrail system\nprompt prepended\ncalls Groq directly —\nnever touches backend" as AIRoute
+}
+
+' ─────────────────────────────────────────
+' BACKEND LAYER — single Spring Boot 4 monolith,
+' modular packages under /api/v1 (not microservices)
+' ─────────────────────────────────────────
+node "Backend — Spring Boot 4.0.2\n(Jackson 3) / Java 21  (/api/v1)" {
+
+  component "Rate Limit Filter\n(Redis FIXED-window counter,\nrl:{ip}:{auth|uploads|api}\n30 / 20 / 300 req\nper 60s; fails open\non Redis error)" as RateLimitFilter
+
+  component "JWT Auth Filter\n(2-tier Redis session cache\nlive role re-check)" as JwtFilter
+
+  component "Auth Service\n(Merchant/Customer/\nSocial login · JWT\nrefresh-token rotation\nOAuth2 · BCrypt\nemail verify · AdminSeeder\nRedis email-OTP MFA,\nreal, /auth/mfa/verify)" as AuthSvc
+
+  component "User, Merchant & Admin\nManagement Service\n(Profiles · Sessions\nAdmin user/store oversight)" as UserSvc
+
+  component "SSE Service\n(in UserManagement)\n(/stream/private,\n/stream/stock —\nSseEmitter, no WebSockets;\ninvoked by Order, both\nNotification consumers,\nand Inventory)" as SseSvc
+
+  component "Store Management\nService\n(Create · Publish/\nUnpublish · Settings\nno cache — plain DB\nownership checks)" as StoreSvc
+
+  component "Storefront Customization\nService\n(Decorator-pattern\ncomponents · Theme · Pages\ncache-aside + async\nwrite-behind + 60s\nownership cache\nflowmerce:own:{id}:{email})" as SFSvc
+
+  component "Product & Category\nManagement Service\n(CRUD · Reviews · stores\nmedia URLs — never calls\nMinIO itself; reads\nInventorySvc for availableQty)" as ProductSvc
+
+  component "Inventory Management\nService\n(Strategy: Normal/\nReserved/FlashSale\nRedis stock cache\nproduct:{id}:stock\natomic INCR/DECR\nin-process event\naudit log)" as InventorySvc
+
+  component "Cart & Wishlist\nManagement Service\n(+ CheckoutService)\n(DB-backed cart · daily\n2 AM expiry cleanup —\nno Redis/MQ)" as CartSvc
+
+  component "Order Management\nService\n(Orchestrator: Checkout\nInventory · Payment\nShipping · SSE push\nat creation · Invoice\nINV-{yyyy}-{7-digit}\nRedis order:idempotency)" as OrderSvc
+
+  component "Payment Management\nService\n(STRATEGY pattern via\nPaymentGatewayAdapter:\nBankTransfer · COD\nWallet-sim (real)\nPaymob (real, per-store)\nFawry (stub) · Stripe (stub)\nRedis payment:idempotency)" as PaymentSvc
+
+  component "Shipping Management\nService\n(own top-level module;\ncarrier adapters:\nAramex · Bosta · DHL\n— per-store creds)" as ShippingSvc
+
+  component "Integration Management\nService\n(per-store encrypted\ncreds for Paymob/DHL/\nAramex/Bosta · test\nprobes · Credential\nResolver)" as IntegrationSvc
+
+  component "Notification Service\n(RabbitMQ consumers →\nemail template +\npersisted in-app row\n+ direct SSE push)" as NotifySvc
+
+  component "File Storage Service\n(/api/files — typed\nuploads, server-side\nto MinIO, public-read.\nSeparate /uploads:\nPOST→MinIO, but\nGET→local disk\n— real mismatch)" as FileSvc
+
+}
+
+' ─────────────────────────────────────────
+' INFRASTRUCTURE LAYER — compose.yaml =
+' redis + rabbitmq + minio + backend + frontend
+' ─────────────────────────────────────────
+node "Docker Compose stack" {
+  database "Redis 7\n(redis-stack)\nSession cache (2-tier)\nStorefront + ownership\ncache · Inventory\nstock cache · Order +\nPayment idempotency\nMFA codes · Rate limit\n(fails open on error)" as Redis
+  component "RabbitMQ\n3-management\n(flowmerce.order\nexchange · flowmerce\n.payment exchange\ndurable topic,\nJSON payloads)" as MQ
+  component "MinIO\nsingle bucket\n'flowmerce', public-read\nfolders: products/\nlogos/ banners/ themes/\nprofiles/ invoices/\nstorefront/ attachments/\nuploads/ (ai-assets/\npresent, unused)" as MinIO
+}
+
+database "PostgreSQL\nSupabase Cloud\n(EU-West-1, via\nSupavisor session\npooler) — external,\nnot in compose" as PG
+
+' ─────────────────────────────────────────
+' EXTERNAL SERVICES
+' ─────────────────────────────────────────
+cloud "External Services" {
+  component "Groq API\n(llama-3.3-70b-\nversatile) called\ndirectly by the\nfrontend AI route" as Groq
+  component "Payment Gateways\n(Paymob — real,\nper-store · Fawry\n— stub · Stripe — stub)" as PGW
+  component "Shipping Carriers\n(Aramex · Bosta\n· DHL)" as Carriers
+  component "Gmail SMTP\n(order/payment\nemails + MFA codes)" as Mail
+  component "OAuth2 Providers\n(Google · Facebook\n— merchant login only)" as OAuth
+}
+
+' ─────────────────────────────────────────
+' ACTOR → FRONTEND
+' ─────────────────────────────────────────
+Merchant --> MerchantUI : uses
+Customer --> CustomerUI : uses
+Admin --> AdminUI : uses
+
+' ─────────────────────────────────────────
+' FRONTEND → BACKEND (REST)
+' ─────────────────────────────────────────
+MerchantUI --> RateLimitFilter : REST /api/v1\nBearer JWT
+CustomerUI --> RateLimitFilter : REST /api/v1\nBearer JWT
+AdminUI --> RateLimitFilter : REST /api/v1\nBearer JWT
+
+' AI chat bypasses the backend entirely — implemented, frontend-only
+MerchantUI --> AIRoute : chat widget
+AIRoute --> Groq : POST /chat/completions\n(server-side proxy, GROQ_API_KEY)
+
+' ─────────────────────────────────────────
+' FILTER CHAIN  (RateLimit → JWT → UsernamePassword)
+' ─────────────────────────────────────────
+RateLimitFilter --> JwtFilter
+
+JwtFilter --> AuthSvc
+JwtFilter --> UserSvc
+JwtFilter --> StoreSvc
+JwtFilter --> SFSvc
+JwtFilter --> ProductSvc
+JwtFilter --> InventorySvc
+JwtFilter --> CartSvc
+JwtFilter --> OrderSvc
+JwtFilter --> PaymentSvc
+JwtFilter --> ShippingSvc
+JwtFilter --> IntegrationSvc
+JwtFilter --> NotifySvc
+JwtFilter --> FileSvc
+
+' ─────────────────────────────────────────
+' ORDER MANAGEMENT — in-process orchestration
+' ─────────────────────────────────────────
+OrderSvc --> CartSvc : checkout summary
+OrderSvc --> InventorySvc : reserve / confirm stock
+OrderSvc --> PaymentSvc : initiate payment
+OrderSvc --> ShippingSvc : create shipment
+OrderSvc --> SseSvc : push order status (creation)
+
+ProductSvc --> InventorySvc : getAvailableQuantity
+
+InventorySvc --> SseSvc : STOCK_ALERT broadcast\n(in-process event, not MQ)
+
+' ─────────────────────────────────────────
+' PAYMENT / SHIPPING → INTEGRATION MANAGEMENT
+' ─────────────────────────────────────────
+PaymentSvc --> IntegrationSvc : resolve per-store\nPaymob credentials
+ShippingSvc --> IntegrationSvc : resolve per-store\ncarrier credentials
+
+' ─────────────────────────────────────────
+' SERVICE → DB
+' ─────────────────────────────────────────
+AuthSvc --> PG : sessions · verification_tokens
+UserSvc --> PG : users · merchants\ncustomers · admins
+StoreSvc --> PG : stores · store_settings
+SFSvc --> PG : storefront_templates\ntheme_templates · pages\ncomponents · decorators · media
+ProductSvc --> PG : products · categories\nreviews · product_media
+InventorySvc --> PG : inventory\ninventory_transactions
+CartSvc --> PG : shopping_carts · cart_items\nwishlists
+OrderSvc --> PG : orders · order_items\ninvoices
+PaymentSvc --> PG : payments · wallets\nwallet_transactions
+ShippingSvc --> PG : shipments
+IntegrationSvc --> PG : store_integrations\n(encrypted credentials)
+NotifySvc --> PG : notifications
+FileSvc --> PG : file_metadata
+
+' ─────────────────────────────────────────
+' SERVICE → REDIS
+' ─────────────────────────────────────────
+RateLimitFilter --> Redis : rl:{ip}:{bucket} (60s)
+JwtFilter --> Redis : flowmerce:sess:{hash} (30s)\nflowmerce:sess:etag:{hash} (24h)
+AuthSvc --> Redis : mfa:{token} (5 min,\nmax 5 attempts)
+SFSvc --> Redis : flowmerce:sf:{storeId}\nflowmerce:sf:design:{storeId}\nflowmerce:own:{storeId}:{email} (60s)
+InventorySvc --> Redis : product:{productId}:stock\natomic INCR/DECR
+OrderSvc --> Redis : order:idempotency:{key}
+PaymentSvc --> Redis : payment:idempotency:{key}
+
+' ─────────────────────────────────────────
+' SERVICE → RABBITMQ  →  NOTIFICATION
+' ─────────────────────────────────────────
+OrderSvc --> MQ : order.created\norder.status.updated
+PaymentSvc --> MQ : payment.initiated\npayment.succeeded / failed
+MQ --> NotifySvc : consumes both queues
+
+NotifySvc --> SseSvc : push notification\n(direct call, not MQ)
+
+' ─────────────────────────────────────────
+' SERVICE → MINIO
+' ─────────────────────────────────────────
+FileSvc --> MinIO : uploads product/logo/banner/\ntheme/misc files; returns\npublic-read URL
+
+' ─────────────────────────────────────────
+' SERVICE → EXTERNAL
+' ─────────────────────────────────────────
+PaymentSvc --> PGW : Paymob (real, per-store)\nFawry / Stripe (stubs, unused)
+ShippingSvc --> Carriers : Aramex · Bosta · DHL\n(per-store creds)
+IntegrationSvc --> PGW : connection test probes
+IntegrationSvc --> Carriers : connection test probes
+NotifySvc --> Mail : SMTP (@Async)
+AuthSvc --> OAuth : Authorization Code Flow\n(Google · Facebook)
+AuthSvc --> Mail : MFA code email
+
+' ─────────────────────────────────────────
+' SSE BACK TO FRONTEND
+' ─────────────────────────────────────────
+SseSvc --> MerchantUI : SSE /stream/private\n+ /stream/stock (broadcast)
+SseSvc --> CustomerUI : SSE /stream/private
+
+@enduml

@@ -1,12 +1,15 @@
 package com.example.flowmerceproject.StoreMangement.service;
 
 import com.example.flowmerceproject.InventoryManagement.repository.InventoryRepository;
+import com.example.flowmerceproject.OrderManagement.repository.OrderRepository;
+import com.example.flowmerceproject.PaymentManagement.repository.PaymentRepository;
 import com.example.flowmerceproject.ProductManagement.entity.Category;
 import com.example.flowmerceproject.ProductManagement.entity.Product;
 import com.example.flowmerceproject.ProductManagement.repository.CategoryRepository;
 import com.example.flowmerceproject.ProductManagement.repository.ProductRepository;
 import com.example.flowmerceproject.ProductManagement.service.CategoryService;
 import com.example.flowmerceproject.ProductManagement.service.ProductService;
+import com.example.flowmerceproject.ShippingManagement.repository.ShipmentRepository;
 import com.example.flowmerceproject.StoreMangement.dto.CatalogDTOs;
 import com.example.flowmerceproject.StoreMangement.dto.StoreDTOs;
 import com.example.flowmerceproject.StoreMangement.dto.StoreSettingsDTOs;
@@ -43,6 +46,9 @@ public class StoreService {
     private final ProductService productService;
     private final InventoryRepository inventoryRepository;
     private final StorefrontCustomizationService storefrontCustomizationService;
+    private final OrderRepository orderRepository;
+    private final PaymentRepository paymentRepository;
+    private final ShipmentRepository shipmentRepository;
 
     @Transactional
     public StoreDTOs.StoreResponse createStore(String email, StoreDTOs.CreateStoreRequest request) {
@@ -162,6 +168,19 @@ public class StoreService {
     public String deleteStore(String email, Integer storeId) {
         Store store = getStoreAndVerifyOwner(email, storeId);
         storefrontCustomizationService.evictAllCacheForStore(storeId, email);
+
+        // Orders (and payments/shipments) don't cascade from stores at the DB level
+        // on purpose - deleting a store shouldn't silently wipe its financial/audit
+        // trail - so they're deleted explicitly, in FK-safe order, before the store
+        // itself. Categories/products/inventory/reviews/wishlist/cart rows and the
+        // storefront customization tables do cascade at the DB level (see
+        // db/fix_fk_cascades.sql), so no further manual cleanup is needed for those.
+        orderRepository.findByStore_StoreIdOrderByOrderDateDesc(storeId).forEach(order -> {
+            shipmentRepository.findByOrder_OrderId(order.getOrderId()).ifPresent(shipmentRepository::delete);
+            paymentRepository.findByOrder_OrderId(order.getOrderId()).ifPresent(paymentRepository::delete);
+            orderRepository.delete(order);
+        });
+
         storeRepository.delete(store);
         return "Store deleted successfully.";
     }

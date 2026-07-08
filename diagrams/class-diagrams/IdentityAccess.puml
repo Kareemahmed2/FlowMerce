@@ -1,0 +1,103 @@
+@startuml IdentityAccess_Class_Diagram
+title Identity & Access (UserManagement) — Class Diagram
+
+skinparam backgroundColor #FFFFFF
+skinparam classFontSize 18
+skinparam classAttributeFontSize 15
+skinparam class {
+  BackgroundColor #EAF2FF
+  BorderColor #1A73E8
+  ArrowColor #444444
+}
+
+enum Role {
+  ADMIN
+  MERCHANT
+  BUYER
+  GUEST
+}
+
+class User {
+  -Integer userId
+  -String email
+  -String passwordHash
+  -String fullName
+  -String phone
+  -LocalDateTime createdAt
+  -Role role
+  -Boolean isActive
+  -Boolean isMfaEnabled
+}
+
+class Merchant {
+  -Integer merchantId
+  -String businessName
+  -Boolean isVerified
+}
+
+class Customer {
+  -Integer customerId
+}
+
+class Admin {
+  -Integer adminId
+}
+
+class UserProfile {
+  -Integer profileId
+  -String address
+  -String city
+  -String profileImage
+}
+
+class Session {
+  -Integer sessionId
+  -String token
+  -Boolean isRevoked
+  -LocalDateTime createdAt
+  -LocalDateTime expiresAt
+}
+
+class VerificationToken {
+  -String token
+  -String email
+  -TokenType type
+  -LocalDateTime expiresAt
+  -Boolean used
+}
+
+enum "VerificationToken.TokenType" as TokenType {
+  ACTIVATION
+  PASSWORD_RESET
+}
+
+User "1" -- "1" Merchant : @OneToOne\n(user_id, unique)
+User "1" -- "1" Customer : @OneToOne\n(user_id, unique)
+User "1" -- "1" Admin : @OneToOne\n(user_id, unique)
+User "1" -- "0..1" UserProfile : @OneToOne
+User "1" -- "0..*" Session : @ManyToOne
+User "1" -- "1" Role : @Enumerated(STRING)
+VerificationToken -- TokenType : @Enumerated(STRING)
+
+note bottom of User
+  Single "users" table for all actors;
+  Merchant/Customer/Admin are 1:1 role-detail
+  tables joined on user_id (not subclassing).
+end note
+
+note bottom of VerificationToken
+  token is the @Id (opaque string), not an
+  auto-generated numeric key. Used for both
+  account activation and password reset.
+end note
+
+note as N1
+  Referenced by every other group in this
+  documentation set: Store & Storefront (Merchant),
+  Catalog & Inventory (Customer, via Review),
+  Cart & Order Fulfillment (Customer),
+  Payments/Shipping/Integrations (Customer, Merchant),
+  Platform Support (User, via Notification/FileMetadata).
+end note
+
+@enduml

@@ -35,7 +35,7 @@ All paths below are relative to `server.servlet.context-path=/api/v1` (e.g. `/au
 
 | Layer | Technology |
 |---|---|
-| Language / framework | Java, Spring Boot 4 (Jackson 3), Spring Security, Spring Data JPA |
+| Language / framework | Java 21, Spring Boot 4.0.2 (Jackson 3), Spring Security, Spring Data JPA |
 | Database | PostgreSQL (Supabase, EU-West-1, via Supavisor session pooler) |
 | Cache | Redis (`redis/redis-stack`), accessed exclusively via `StringRedisTemplate` — no `@Cacheable`/Spring Cache abstraction anywhere |
 | Messaging | RabbitMQ (topic exchanges, JSON messages via `Jackson2JsonMessageConverter`) |
@@ -60,9 +60,9 @@ Every Redis key in the codebase, in one place. All use `StringRedisTemplate` dir
 | `flowmerce:sess:{sha256(jwt)[:24]}` | 30s, sliding (refreshed on every hit) | role string | **Tier-1** session/role cache — 0 DB queries on hit | UserManagement (`SessionCacheService`, backs `JwtAuthFilter`) | Explicit on logout, refresh-rotation, password change, account deletion, role change (see below) |
 | `flowmerce:sess:etag:{sha256(jwt)[:24]}` | 24h | role string | **Tier-2** long-lived fallback — 1 DB query (session-revocation check) on hit, restores Tier-1 | UserManagement (`SessionCacheService`) | Same as Tier-1 |
 | `rl:{ip}:{auth\|uploads\|api}` | 60s | request counter | Rate limiting (30/60/300 req per 60s respectively) | UserManagement (`RateLimitFilter`) | Natural expiry only |
-| `flowmerce:sf:{storeId}` | 30 min (`storefront.cache.ttl-minutes`) | full storefront JSON (theme + pages + components) | Public storefront read cache | StorefrontCustomization | Explicit, on every mutating storefront/page/component/decorator call **except** media add/delete (gap — see discrepancies) |
-| `flowmerce:sf:design:{storeId}` | 30 min | design/theme JSON | Design-only read cache | StorefrontCustomization | Overwritten directly (not deleted) on every design/theme save |
-| `flowmerce:own:{storeId}:{email}` | 60s, fixed | merchant ID string | Store-ownership verification fast-path (skips 2 DB round-trips) | StorefrontCustomization | **No explicit eviction anywhere** — relies purely on the 60s TTL |
+| `flowmerce:sf:{storeId}` | 30 min (`storefront.cache.ttl-minutes`) | full storefront JSON (theme + pages + components) | Public storefront read cache | StorefrontCustomization | Explicit, on every mutating storefront/page/component/decorator call **except** media add/delete (gap — see discrepancies), and on store hard-delete (`evictAllCacheForStore`, added in `3c73418`) |
+| `flowmerce:sf:design:{storeId}` | 30 min | design/theme JSON | Design-only read cache | StorefrontCustomization | Overwritten directly (not deleted) on every design/theme save; explicitly deleted on store hard-delete (`evictAllCacheForStore`) |
+| `flowmerce:own:{storeId}:{email}` | 60s, fixed | merchant ID string | Store-ownership verification fast-path (skips 2 DB round-trips) | StorefrontCustomization | Evicted for the deleting owner's key on store hard-delete (`StoreService.deleteStore` → `evictAllCacheForStore`, added in `3c73418`); no eviction on any other ownership-affecting event (there is no ownership-transfer feature, so this is the only case that mattered) |
 | `product:{productId}:stock` | none (no expiry set) | available quantity (int string) | Available-stock cache, atomically `DECRBY`/`INCRBY`'d to prevent overselling under concurrency | InventoryManagement (`InventoryServiceImpl`) | Never expires; only overwritten on recompute |
 | `order:idempotency:{key}` | 24h | orderId string | Idempotent order placement (replay-safe checkout) | OrderManagement (`OrderService`) | Natural expiry only |
 | `payment:idempotency:{key}` | 24h | JSON `{paymentId, status}` | Idempotent payment initiation | PaymentManagement (`PaymentServiceImpl`) | Natural expiry only |
@@ -144,18 +144,25 @@ Handles registration/login/activation/password-reset/profile for three roles (Ad
 |---|---|---|---|
 | POST | `/auth/merchant/register` | Public | Register merchant account, sends 24h activation email |
 | GET | `/auth/merchant/activate?token=` | Public | Activate account |
-| POST | `/auth/merchant/login` | Public | Login → JWT + refresh token, sets scoped cookies |
+| POST | `/auth/merchant/login` | Public | Login → JWT + refresh token, sets scoped cookies. If `user.isMfaEnabled`, returns `{mfaRequired: true, mfaToken}` instead and emails a 6-digit code — no tokens issued yet |
+| POST | `/auth/merchant/mfa/verify` | Public | Complete MFA login: `{mfaToken, code}` → same JWT+refresh+cookie response as a normal login |
 | POST | `/auth/merchant/refresh` | Public | Rotate refresh token (single-use), issue new access token |
 | POST | `/auth/merchant/logout` | Public (needs token) | Revoke session, evict cache, clear cookies |
-| GET | `/auth/merchant/me` | Authenticated | Current profile |
+| GET | `/auth/merchant/me` | Authenticated | Current profile (now includes `isMfaEnabled`) |
 | POST | `/auth/merchant/forgot-password` | Public | Send reset email (generic response — no user enumeration) |
 | POST | `/auth/merchant/reset-password` | Public | Complete reset (1h token), revokes all sessions |
 
-**CustomerAuthController — `/auth/customer`** (identical shape to the above, plus):
+**CustomerAuthController — `/auth/customer`** (identical shape to the above, including `/auth/customer/mfa/verify`, plus):
 
 | Method | Path | Auth | Purpose |
 |---|---|---|---|
 | DELETE | `/auth/customer/me` | Authenticated | Delete own customer account |
+
+**MFA (email-based 2FA), real and wired end-to-end since `27b8db4`:**
+- Toggle: `PUT /users/me/mfa` (`UserController`, body `{enabled}`) → `UserService.setMfaEnabled`, persists `User.isMfaEnabled`.
+- Challenge: `AuthService.login()` checks `isMfaEnabled` before issuing tokens; if set, generates a 6-digit code, stores `mfa:{mfaToken}` in Redis (5 min TTL, max 5 verify attempts before the code is invalidated), emails it, and returns `{mfaRequired: true, mfaToken}` with no tokens.
+- Completion: `POST /auth/{merchant,customer}/mfa/verify` (`{mfaToken, code}`) → on success, issues the normal JWT/refresh/cookie response exactly as a passwordless-complete login would.
+- `isMfaEnabled` is surfaced on `GET /users/me`, `GET /auth/merchant/me`, and `GET /auth/customer/me`.
 
 **MerchantController — `/merchants`**
 
@@ -163,17 +170,17 @@ Handles registration/login/activation/password-reset/profile for three roles (Ad
 |---|---|---|---|
 | POST | `/merchants/me` | Authenticated | Create merchant profile, promotes role, evicts session cache |
 | GET | `/merchants/me` | Authenticated | Own merchant profile |
-| DELETE | `/merchants/me` | Authenticated | Delete merchant profile + user, revoke sessions |
+| DELETE | `/merchants/me` | Authenticated | Full cascade: every store's orders (shipment+payment cleanup, then the order) then the store, then the merchant's wallet+transactions, then the merchant row, then sessions/notifications/profile/user — same depth as the admin delete path |
 
 **AdminController — `/admin`** (class-level `hasRole('ADMIN')`)
 
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/admin/users` | List all users |
-| DELETE | `/admin/users/{userId}` | Cascading delete (sessions, notifications, profile, customer/merchant, stores) |
+| DELETE | `/admin/users/{userId}` | `UserService.deleteUserById` — full cascade: sessions, notifications, profile, then (if customer) wallet+transactions and every order's shipment+payment then the order, then the customer row; then (if merchant) every store's orders (same shipment/payment/order cleanup) then the store, then the merchant's wallet+transactions, then the merchant row; finally the user row |
 | GET | `/admin/merchants` | List all merchants |
 | PUT | `/admin/merchants/{merchantId}/verify` | Mark merchant verified |
-| DELETE | `/admin/merchants/{merchantId}` | Delete merchant + user |
+| DELETE | `/admin/merchants/{merchantId}` | `MerchantService`'s admin-delete path — same full cascade as above (stores→orders→shipments/payments, wallet+transactions) before deleting the merchant + user rows |
 | PUT | `/admin/users/{userId}/activate` | Force-activate bypassing email flow |
 | GET | `/admin/stores` | List all stores |
 
@@ -184,7 +191,7 @@ Handles registration/login/activation/password-reset/profile for three roles (Ad
 | GET | `/users/me` | Own profile |
 | PUT | `/users/me` | Update profile |
 | PUT | `/users/me/change-password` | Change password, revokes all sessions |
-| DELETE | `/users/me` | Delete own account (thinner cleanup than admin path — no Customer/Merchant/Store cascade) |
+| DELETE | `/users/me` | `UserService.deleteMyAccount` — only evicts session cache + deletes the `User` row; does **not** clean up notifications, profile, Customer/Merchant, stores, orders, payments, shipments, or wallets (see [Known Discrepancies](#known-discrepancies--dead-code) — still true even after `deleteUserById`/`deleteMerchantById` were fixed) |
 
 **SocialAuthController — `/auth/social`** (public)
 
@@ -469,14 +476,15 @@ Found while reading the actual source — worth cleaning up or at least being aw
 - **`DOCUMENTATION.md` references a nonexistent `UnifiedAuthController`** claimed to serve `/auth/activate` and `/auth/reset-password`. No such class exists. Those two paths are still `permitAll()`-listed in `SecurityConfig` but have no backing `@RequestMapping` — a request to them 404s. The real handlers are the scoped `AuthController`/`CustomerAuthController` (`/auth/merchant/*`, `/auth/customer/*`). Activation/reset emails link to **frontend** routes (`/activate?token=`, `/reset-password?token=`), which presumably call the correctly-scoped backend endpoint themselves.
 - **`payment.webhooks` queue and `wallet.debited`/`wallet.credited` routing keys** are fully declared (exchange/queue/binding) but have no producer and no consumer anywhere — dead scaffolding, likely for an unimplemented inbound-webhook feature.
 - **`OrderNotificationConsumer`'s `PROCESSING` branch** is unreachable — `Order.OrderStatus` has no `PROCESSING` value and no transition produces one.
-- **Ownership cache (`flowmerce:own:`) has no explicit eviction** — a store-ownership change only takes effect after the fixed 60s TTL lapses.
-- **Storefront media add/delete don't evict `flowmerce:sf:{storeId}`** — unlike every other mutating storefront endpoint.
+- **Ownership cache (`flowmerce:own:`) eviction is store-delete-only** — fixed in `3c73418` for the hard-delete path; there's still no eviction hook for any other ownership-affecting event (moot today since there's no ownership-transfer feature).
+- **Storefront media add/delete don't evict `flowmerce:sf:{storeId}`** — unlike every other mutating storefront endpoint, and unlike the store-delete path which does evict it.
 - **`ReviewController`'s ADMIN delete branch is non-functional** — `ReviewService.deleteReview` always resolves the caller as a `Customer` and will throw for an admin caller despite `@PreAuthorize` allowing ADMIN.
 - **`StoreCategoryController`/`CategoryService` has no ownership check** — any authenticated MERCHANT can create/delete categories under any `storeId`, unlike `ProductService`'s ownership-verified equivalent.
 - **`InventoryController`'s `GET /stores/{storeId}/inventory`** likewise has no ownership check — any merchant can view any store's inventory by ID.
 - **The global `inventory.low-stock-threshold` property is dead** — only the per-product `Inventory.lowStockThreshold` column is read.
 - **`UserService.deleteMyAccount` (self-delete) is thinner than the admin delete path** — it doesn't clean up `Customer`/`Merchant`/`Store`/`UserProfile`/notification rows, only sessions + the `User` row.
 - **`GET /api/files` has no `@PreAuthorize`**, unlike every sibling endpoint in `FileUploadController` — reachable by any authenticated user regardless of role.
-- **`MfaVerifyRequest` DTO and `User.isMfaEnabled`** exist but MFA has no controller, service method, or endpoint anywhere — scaffolded, unimplemented.
+- ~~`MfaVerifyRequest` DTO and `User.isMfaEnabled` exist but MFA has no controller, service method, or endpoint anywhere~~ — **fixed in `27b8db4`**: MFA is now real and wired end-to-end (see the MFA subsection under [UserManagement](#1-usermanagement)).
+- **`deleteUserById`/`MerchantService`'s admin-delete paths were fixed in `e906ad0`** to cascade wallets/orders/payments/shipments/stores — but `UserService.deleteMyAccount` (self-delete, `DELETE /users/me`) was *not* touched by that fix and remains the thin path (see the discrepancy above and its own table row).
 - **`/stream/stock`'s SEC-13 comment claims merchant-only scoping**, but the code calls the same unauthenticated-audience `subscribeBroadcast()` used for generic system alerts — any authenticated user of any role receives every stock event, not just the owning merchant.
 - **`/uploads` POST/GET storage-backend mismatch** — see [common (Upload)](#12-common-upload) above.

@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS products (
     created_at  TIMESTAMP WITHOUT TIME ZONE,
     updated_at  TIMESTAMP WITHOUT TIME ZONE,
     FOREIGN KEY (store_id)    REFERENCES stores(store_id)        ON DELETE CASCADE,
-    FOREIGN KEY (category_id) REFERENCES categories(category_id)
+    FOREIGN KEY (category_id) REFERENCES categories(category_id) ON DELETE SET NULL
     );
 CREATE INDEX IF NOT EXISTS idx_products_store    ON products(store_id);
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
@@ -323,7 +323,7 @@ CREATE TABLE IF NOT EXISTS store_integrations (
     last_verified_status    VARCHAR(20),                       -- UNVERIFIED, SUCCESS, FAILED
     created_at              TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
     updated_at              TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
-    FOREIGN KEY (store_id) REFERENCES stores(store_id),
+    FOREIGN KEY (store_id) REFERENCES stores(store_id) ON DELETE CASCADE,
     CONSTRAINT uq_store_integration UNIQUE (store_id, provider)
     );
 
@@ -482,7 +482,7 @@ CREATE TABLE IF NOT EXISTS file_metadata (
     uploaded_by  INT,           -- user_id who uploaded
     uploaded_at  TIMESTAMP WITHOUT TIME ZONE,
     is_deleted   BOOLEAN        DEFAULT false,  -- soft delete
-    FOREIGN KEY (uploaded_by) REFERENCES users(user_id)
+    FOREIGN KEY (uploaded_by) REFERENCES users(user_id) ON DELETE SET NULL
     );
 
 CREATE INDEX IF NOT EXISTS idx_file_metadata_entity

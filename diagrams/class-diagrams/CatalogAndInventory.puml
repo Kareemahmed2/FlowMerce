@@ -1,0 +1,177 @@
+@startuml CatalogAndInventory_Class_Diagram
+title Catalog & Inventory (ProductManagement + InventoryManagement) — Class Diagram
+
+skinparam backgroundColor #FFFFFF
+skinparam classFontSize 18
+skinparam classAttributeFontSize 15
+skinparam class {
+  BackgroundColor #EAF2FF
+  BorderColor #1A73E8
+  ArrowColor #444444
+}
+
+' ── ProductManagement ────────────────────────────────────────────────────────
+
+class Category {
+  -Integer categoryId
+  -String name
+  -String description
+  -LocalDateTime createdAt
+}
+
+class Product {
+  -Integer productId
+  -String name
+  -String description
+  -BigDecimal basePrice
+  -Boolean isActive = true
+  -Double rating = 0.0
+  -LocalDateTime createdAt
+  -LocalDateTime updatedAt
+}
+
+class ProductMedia {
+  -Integer mediaId
+  -String mediaUrl
+  -String mediaType = "IMAGE"
+  -String altText
+}
+
+class Review {
+  -Integer reviewId
+  -Integer rating
+  -String title
+  -String comment
+  -LocalDateTime createdAt
+}
+
+' ── InventoryManagement ──────────────────────────────────────────────────────
+
+class Inventory {
+  -Long inventoryId
+  -Integer productId
+  -Integer storeId = 0
+  -Integer quantity = 0
+  -Integer reservedQuantity = 0
+  -Integer lowStockThreshold = 5
+  -Integer version
+  -LocalDateTime updatedAt
+}
+
+class InventoryTransaction {
+  -Long txnId
+  -Long productId
+  -Integer storeId
+  -Type type
+  -Integer quantityChange
+  -Integer qtyBefore
+  -Integer qtyAfter
+  -String referenceId
+  -String note
+  -LocalDateTime createdAt
+  -String createdBy
+}
+
+enum "InventoryTransaction.Type" as TxnType {
+  RESTOCK
+  SALE
+  RETURN
+  ADJUSTMENT
+  DAMAGE
+}
+
+interface InventoryStrategy {
+  +updateStock(Inventory, int)
+  +canFulfill(Inventory, int) : boolean
+}
+
+class NormalStockStrategy <<@Component("NORMAL")>> {
+  +updateStock(Inventory, int)
+  +canFulfill(Inventory, int) : boolean
+}
+
+class ReservedStockStrategy <<@Component("RESERVED")>> {
+  +updateStock(Inventory, int)
+  +canFulfill(Inventory, int) : boolean
+}
+
+class FlashSaleStrategy <<@Component("FLASH")>> {
+  -MAX_PER_CUSTOMER = 2
+  +updateStock(Inventory, int)
+  +canFulfill(Inventory, int) : boolean
+}
+
+class InventoryStrategyFactory {
+  -Map<String, InventoryStrategy> strategies
+  +getStrategy(String type) : InventoryStrategy
+}
+
+class StockChangedEvent {
+  -Long productId
+  -int newQuantity
+  -int threshold
+  -String changeType
+}
+
+class StockEventListener {
+  +handleStockChanged(StockChangedEvent)
+}
+
+' ── External (Store & Storefront, Identity & Access) ────────────────────────
+
+class "StoreAndStorefront.Store" as Store {
+  (see Store & Storefront diagram)
+}
+class "IdentityAccess.Customer" as Customer {
+  (see Identity & Access diagram)
+}
+
+' ── Relationships ────────────────────────────────────────────────────────────
+
+Store "1" -- "0..*" Category : @ManyToOne
+Store "1" -- "0..*" Product : @ManyToOne
+Category "0..1" -- "0..*" Product : @ManyToOne\n(nullable)
+Product "1" -- "0..*" ProductMedia : @OneToMany\ncascade=ALL, orphanRemoval
+Product "1" -- "0..*" Review : @OneToMany\ncascade=ALL, orphanRemoval
+Customer "1" -- "0..*" Review : @ManyToOne
+
+Product .[#orange]. Inventory : same productId value\n(NO enforced JPA/FK relationship)
+NormalStockStrategy ..|> InventoryStrategy
+ReservedStockStrategy ..|> InventoryStrategy
+FlashSaleStrategy ..|> InventoryStrategy
+InventoryStrategyFactory --> InventoryStrategy : resolves by\nname (NORMAL/\nRESERVED/FLASH)
+InventoryStrategyFactory ..> Inventory
+InventoryTransaction -- TxnType : @Enumerated(STRING)
+StockEventListener ..> StockChangedEvent : @EventListener
+
+note bottom of Review
+  UNIQUE(product_id, customer_id) — one review
+  per customer per product. rating checked
+  1..5 both at the DB (@Check) and Bean
+  Validation (@Min/@Max) layers.
+end note
+
+note bottom of Inventory
+  productId is a plain @Column (Integer, unique),
+  NOT a @ManyToOne to Product — no JPA
+  relationship/FK constraint enforced at the
+  ORM level. @Version enables optimistic locking.
+  ProductService reads InventoryService.getAvailableQuantity()
+  at the service layer to enrich product responses.
+end note
+
+note bottom of InventoryTransaction
+  Immutable audit-log row per stock change —
+  productId here is typed Long, while
+  Inventory.productId is Integer (inconsistent
+  types across the two tables).
+end note
+
+note right of StockEventListener
+  Fires in-process only (Spring
+  ApplicationEvent) — NOT published to
+  RabbitMQ. Broadcasts a "STOCK_ALERT"
+  over SSE when stock crosses lowStockThreshold.
+end note
+
+@enduml

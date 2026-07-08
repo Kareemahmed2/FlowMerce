@@ -4,6 +4,8 @@ import com.example.flowmerceproject.StoreMangement.entity.Store;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -21,6 +23,7 @@ public class Category {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Store store;
 
     @Column(name = "name", nullable = false, length = 100)
