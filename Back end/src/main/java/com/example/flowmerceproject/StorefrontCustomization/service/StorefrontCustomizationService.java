@@ -256,6 +256,12 @@ public class StorefrontCustomizationService {
         template.setPublishedAt(LocalDateTime.now());
         template.setVersion(template.getVersion() + 1);
         templateRepository.save(template);
+        // Keep the store-level gate (checked by StoreService.getBySlug) in sync —
+        // otherwise the live URL's accessibility never reflects this button.
+        if (store.getStatus() != Store.StoreStatus.PUBLISHED) {
+            store.setStatus(Store.StoreStatus.PUBLISHED);
+            storeRepository.save(store);
+        }
         StorefrontTemplateResponse response = toResponseWithComponents(template);
         putInCache(CACHE_KEY_PREFIX + store.getStoreId(), response);
         return response;
@@ -267,8 +273,32 @@ public class StorefrontCustomizationService {
         StorefrontTemplate template = requireTemplate(storeId);
         template.setStatus(StorefrontTemplate.StorefrontStatus.PAUSED);
         templateRepository.save(template);
+        // Keep the store-level gate in sync so the live URL actually goes dark.
+        if (store.getStatus() == Store.StoreStatus.PUBLISHED) {
+            store.setStatus(Store.StoreStatus.PAUSED);
+            storeRepository.save(store);
+        }
         evictCache(store.getStoreId());
         return toResponse(template);
+    }
+
+    /**
+     * Keeps StorefrontTemplate.status in sync when the store-level publish
+     * state changes via StoreService (e.g. the Settings tab's pause toggle).
+     * No-op if no storefront has been initialised yet.
+     */
+    @Transactional
+    public void syncTemplateStatusFromStore(Integer storeId, boolean published) {
+        templateRepository.findWithThemeByStoreId(storeId).ifPresent(template -> {
+            StorefrontTemplate.StorefrontStatus target = published
+                    ? StorefrontTemplate.StorefrontStatus.PUBLISHED
+                    : StorefrontTemplate.StorefrontStatus.PAUSED;
+            if (template.getStatus() == target) return;
+            template.setStatus(target);
+            if (published) template.setPublishedAt(LocalDateTime.now());
+            templateRepository.save(template);
+        });
+        evictCache(storeId);
     }
 
     // ── PAGES ─────────────────────────────────────────────────────────────────

@@ -217,6 +217,7 @@ export function StorefrontPagesIndex() {
       return
     }
     setTemplate(result.data)
+    window.dispatchEvent(new Event('flowmerce-store-updated'))
     showToast('✓ Storefront published')
   }
 
@@ -230,6 +231,7 @@ export function StorefrontPagesIndex() {
       return
     }
     setTemplate(result.data)
+    window.dispatchEvent(new Event('flowmerce-store-updated'))
     showToast('✓ Storefront unpublished')
   }
 
@@ -254,6 +256,7 @@ export function StorefrontPagesIndex() {
       return
     }
     setTheme(result.data)
+    window.dispatchEvent(new Event('flowmerce-store-updated'))
     showToast('✓ Theme saved')
   }
 

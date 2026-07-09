@@ -121,6 +121,8 @@ public class StoreService {
         Store store = getStoreAndVerifyOwner(email, storeId);
         store.setStatus(Store.StoreStatus.PUBLISHED);
         storeRepository.save(store);
+        // Keep the storefront's own status (and its public cache) in sync.
+        storefrontCustomizationService.syncTemplateStatusFromStore(storeId, true);
         return toResponse(store);
     }
 
@@ -129,6 +131,8 @@ public class StoreService {
         Store store = getStoreAndVerifyOwner(email, storeId);
         store.setStatus(Store.StoreStatus.PAUSED);
         storeRepository.save(store);
+        // Keep the storefront's own status (and its public cache) in sync.
+        storefrontCustomizationService.syncTemplateStatusFromStore(storeId, false);
         return toResponse(store);
     }
 
